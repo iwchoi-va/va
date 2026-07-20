@@ -1,0 +1,8 @@
+@CHARSET "EUC-KR";
+/* 2014.6.25 문지윤작성 */
+
+/* 통화_상담원 텍스트그림자 */
+div#group_call label.xw-label-label.xw-mod-font.xw-mod.xw-label-enabled{text-shadow:1px 1px 0 #248532;}
+div#group_agent label.xw-label-label.xw-mod-font.xw-mod.xw-label-enabled{text-shadow:1px 1px 0 #B45741;}
+
+#chart0 tooltip{display:none;}

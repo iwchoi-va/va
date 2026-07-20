@@ -1,0 +1,47 @@
+.xw-progressbar-shell {
+	position : absolute;
+	overflow : hidden;	
+}
+.xw-progressbar{
+	width : 100%;
+	height : 100%;
+	position : absolute;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px; 
+}
+.xw-progress-bar-hcolor{
+    background: linear-gradient(#67e8ff, #0068b8,);
+	background: -moz-linear-gradient(#67e8ff, #0068b8 50%, #67e8ff); 
+	background: -o-linear-gradient(#67e8ff, #0068b8 50%, #67e8ff);
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#67e8ff), color-stop(.5, #0068b8), to(#67e8ff) );
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true',startColorstr=#67e8ff, endColorstr=#0068b8);
+	background-color: #67e8ff;
+}
+.xw-progress-bar-vcolor{
+	background: linear-gradient(#67e8ff, #0068b8,);
+	background: -moz-linear-gradient(left center,#67e8ff , #0068b8 50%, #67e8ff); 
+	background: -o-linear-gradient(360deg,#67e8ff , #0068b8 50%, #67e8ff);
+	background: -webkit-gradient(linear, 0 0, 100% 0%, from(#67e8ff),color-stop(.5, #0068b8), to(#67e8ff) );
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr=#67e8ff, endColorstr=#0068b8);
+	background-color: #67e8ff;
+}
+.xw-progressbar-h {
+	position : absolute;
+	height : 100%;
+	text-align : center;
+	top : 0px;
+	left : 0px;
+}
+.xw-progressbar-v {
+	position : absolute;
+	width : 100%;
+	text-align : center;
+	top : 0px;
+	left : 0px;
+}
+.xw-progressbar-text {
+	height : 100%;
+	width : 100%;
+	text-align : center;
+}

@@ -1,0 +1,82 @@
+
+/* **********search-text area********** */
+.search { position: absolute; width: 490px;  }
+.search .img-wrapper, 
+.search .browser-view { display: inline-block; }
+.browser-view { float: right; margin-top: -31px; cursor: pointer; }
+.img-wrapper { position: absolute; top: 1px; left: 10px; }
+.search .srcKey { width: 490px; height: 30px; text-indent: 40px; }
+
+
+input[type="text"] {
+	display: block;
+	margin-left: 10px;
+	width: 100%;
+	font-size: 12px;
+	appearance: none;
+	box-shadow: none;
+	border-radius: none;
+	border: none;
+	transition: border 0.3s;
+	background:#fff;
+	border:1px solid #ccc9c2;
+	-webkit-ime-mode:active; 
+	-moz-ime-mode:active; 
+	-ms-ime-mode:active; 
+	ime-mode:active; 
+}
+input[type="text"]:focus {outline: none;/*border: solid 1px #969696;*/}
+
+
+/* **********stt area********** */
+div#passage-text,
+div#passage-text-tx,
+div#passage-text-rx {
+	padding : 5px 5px 0px 20px; 
+	position: absolute;
+	width: 480px;
+	height: inherit;
+	overflow: auto;
+	margin: 50px 10px 10px 0px;
+	font-size: 12px;
+	top: 162px;
+	overflow-y: scroll;
+	
+	scrollbar-3dlight-color: #F8F8F8;
+    scrollbar-arrow-color: #F8F8F8;
+    scrollbar-base-color: #F8F8F8;
+    scrollbar-darkshadow-color: #F8F8F8;
+    scrollbar-track-color: #F8F8F8;
+    scrollbar-face-color: #54565B; /*#b5b5b5;*/ 
+}
+
+/*IE11 + */
+::-ms-scrollbar {
+    width: 1px;
+    height: 10px;
+}
+::-ms-scrollbar-button:start:decrement,
+::-ms-scrollbar-button:end:increment  {
+    display: none;
+}
+::-ms-scrollbar-track-piece  {
+    background-color: white;
+    -ms-border-radius: 6px;
+}
+::-ms-scrollbar-thumb:vertical {    
+    background: rgba(0,0,0,0.3) url(scrollbar_thumb_bg.png) no-repeat center;
+}
+::-ms-scrollbar-thumb:horizontal {
+    background: rgba(0,0,0,0.3) url(scrollbar_thumb_bg.png) no-repeat center;
+}
+::-ms-scrollbar-thumb:vertical:hover {
+    background: rgba(0,0,0,0.4) url(scrollbar_thumb_bg.png) no-repeat center;
+}
+
+
+div#passage-text span,
+div#passage-text-tx span,
+div#passage-text-rx span{cursor: pointer;}
+
+span:focus {outline: none;/* background: #C1DAD6;*/}
+

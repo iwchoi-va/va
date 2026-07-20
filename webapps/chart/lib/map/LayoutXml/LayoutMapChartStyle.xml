@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+<!--
+color 텍스트의 기본 컬러
+disabledColor disabled된 텍스트의 컬러
+fill 배경 색상
+fontWeight 폰트 bold 지정 (bold,normal중 택일, 기본 normal)
+fontStyle 폰트 italic 지정 (italic,normal중 택일, 기본 normal)
+fontFamily 폰트 지정
+fontSize 폰트크기 지정(단위:pixel)
+textDecoration 폰트 underline 지정 (underline,none중 택일, 기본 none)
+
+gutterLeft 차트 컨트롤 왼쪽 끝과 차트 데이타 영역 왼쪽 사이의 픽셀 수 (기본 0)
+gutterRight 차트 컨트롤 오른쪽 끝과 차트 데이타 영역 오른쪽 사이의 픽셀 수 (기본 0)
+gutterTop 차트 컨트롤 윗쪽 끝과 차트 데이타 영역 윗쪽 사이의 픽셀 수 (기본 0)
+gutterBottom 차트 컨트롤 아랫쪽 끝과 차트 데이타 영역 아랫쪽 사이의 픽셀 수 (기본 0)
+maximumDataTipCount 최대 표시 가능 데이타팁의 수
+paddingLeft 왼쪽 끝과 컨텐츠 영역 왼쪽 사이의 픽셀 수 (기본 10)
+paddingRight 오른쪽 끝과 컨텐츠 영역 오른쪽 사이의 픽셀 수 (기본 10)
+paddingTop 윗쪽 끝과 컨텐츠 영역 윗쪽 사이의 픽셀 수 (기본 10)
+paddingBottom 아랫쪽 끝과 컨텐츠 영역 아랫쪽 사이의 픽셀 수 (기본 10)
+showDataTipTargets 속성 showDataTips이 true일 경우 타겟에 데이타 포인트를 표시할지 여부 (true,false중 택일, 기본 true)
+-->
+	<MapChart id="mainMap" drillDownEnabled="false" showDataTips="true" color="0xFFFFFF" fontSize="12.5" fontFamily="궁서" fontWeight="bold" showDataTipTargets="false">
+		<series>
+			<MapSeries id="mapseries" selectionMarking="line" color="0x777777" labelPosition="inside" displayName="Map Series">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesZoom duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

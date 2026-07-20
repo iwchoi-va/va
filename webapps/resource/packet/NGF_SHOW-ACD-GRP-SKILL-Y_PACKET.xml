@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service name='SHOW-ACD-GRP-SKILL-YES' ref='HANSOL-NGF' svc_id='SHOW-ACD-GRP-SKILL-YES' resource='server' transaction='false'>
+	<description>정보 조회 (SHOW-AP) </description>
+	<header>
+        <field name='SERVER'        fld_id='SERVER'      default='1'  type='Number'   length='4'  inout='INOUT'/>
+        <field name='BODY_LENGTH'   fld_id='BODY_LENGTH' default='0'  type='Number'   length='4'  inout='INOUT'/>
+        <field name='OMC_DATA'      fld_id='OMC_DATA'    default='1'  type='Number'   length='4'  inout='INOUT'/>
+    </header>
+	<request>
+		<field name='ID'          fld_id='ID'         default='cubex'        type='string'     length='16' inout=''/>
+		<field name='PASSWORD'    fld_id='PASSWORD'   default='cubex'     type='string'     length='32' inout=''/>
+		<field name='DIRECTORY'   fld_id='DIRECTORY'  default='cmd'          type='string'     length='8'  inout=''/>
+		<field name='COMMAND'     fld_id='COMMAND'    default='SHOW-ACD-GRP' type='string'     length='32' inout=''/>
+		<field name='PARAMETER'   fld_id='PARAMETER'  default=''             type='string'     length='0'  inout=''/>
+	</request>
+	<response>
+        <field name='RES_DATE'         fld_id='RES_DATE'        default='' type='line'   length='0'  inout=''/>
+        <field name='RES_TITLE'        fld_id='RES_TITLE'       default='' type='skip'   length='0'  inout=''/>
+        <field name='HOST_NAME'        fld_id='HOST_NAME'       default='' type='string' length='0'  inout=':'/>
+        <field name='LINE0'            fld_id='LINE0'           default='' type='skip'   length='0'  inout=''/>
+        <field name='GP_NO'   		   fld_id='GP_NO'  	        default='' type='string' length='0'  inout=':'/>
+        <field name='GP_NAME'   	   fld_id='GP_NAME'  	    default='' type='string' length='0'  inout=':'/>
+        <field name='TENANT_ID'   	   fld_id='TENANT_ID'  	    default='' type='string' length='0'  inout=':'/>
+        <field name='SKILL'            fld_id='SKILL'           default='' type='string' length='0'  inout=':'/>
+        <field name='ACD_JUNGCHAEK'    fld_id='ACD_JUNGCHAEK'   default='' type='string' length='0'  inout=':'/>
+        <field name='ACD_GAJOONG'      fld_id='ACD_GAJOONG'     default='' type='string' length='0'  inout=':'/>
+        <field name='GAJOONG_TIME'     fld_id='GAJOONG_TIME'    default='' type='string' length='0'  inout=':'/>
+        <field name='EWT'              fld_id='EWT'             default='' type='string' length='0'  inout=':'/>
+        <field name='QUEUE'            fld_id='QUEUE'           default='' type='string' length='0'  inout=':'/>
+        <field name='QUEUE_SIZE'       fld_id='QUEUE_SIZE'      default='' type='string' length='0'  inout=':'/>
+        <field name='QUEUE_WAIT_TI'    fld_id='QUEUE_WAIT_TI'   default='' type='string' length='0'  inout=':'/>
+        <field name='ONE_TH'           fld_id='ONE_TH'          default='' type='string' length='0'  inout=':'/>
+        <field name='TWO_TH'           fld_id='TWO_TH'          default='' type='string' length='0'  inout=':'/>
+        <field name='REPEAT_CT'        fld_id='REPEAT_CT'       default='' type='string' length='0'  inout=':'/>
+        <field name='MANA_PH_NO'       fld_id='MANA_PH_NO'      default='' type='string' length='0'  inout=':'/>
+        <field name='SVC_LEVEL'        fld_id='SVC_LEVEL'       default='' type='string' length='0'  inout=':'/>
+        <field name='PSW_OPT'          fld_id='PSW_OPT'         default='' type='string' length='0'  inout=':'/>
+        <field name='TERM_VDN'         fld_id='TERM_VDN'        default='' type='string' length='0'  inout=':'/>
+        <field name='WAC_WAIT_TIME'    fld_id='WAC_WAIT_TIME'   default='' type='string' length='0'  inout=':'/>
+        <field name='RONA_TIMEOUT'     fld_id='RONA_TIMEOUT'    default='' type='string' length='0'  inout=':'/>
+        <field name='RONA_TO'          fld_id='RONA_TO'         default='' type='string' length='0'  inout=':'/>
+        <field name='LOGIN_AGT_CTN'    fld_id='LOGIN_AGT_CTN'   default='' type='string' length='0'  inout=':'/>
+        <field name='BLK0'             fld_id='BLK0'            default='' type='skip'   length='0'  inout=''/>
+        <field name='LINE1'            fld_id='LINE1'           default='' type='skip'   length='0'  inout=''/>
+        <field name='TITLE1'           fld_id='TITLE1'          default='' type='skip'   length='0'  inout=''/>
+        <field name='LINE2'            fld_id='LINE2'           default='' type='skip'   length='0'  inout=''/>
+        <field name='TITLE2'           fld_id='TITLE2'          default='' type='skip'   length='0'  inout=''/>
+        <field name='LINE3'            fld_id='LINE3'           default='' type='skip'   length='0'  inout=''/>
+        <list name='SHOW_AGENT_LIST'   occurs_fld=''>
+            <field name='AGENT_ID'     fld_id='AGENT_ID'        default=''  type='string'   length='0'   inout=''/>
+            <field name='LEVEL'        fld_id='LEBEL'           default=''  type='string'   length='0'   inout=''/>
+            <field name='LOGIN'        fld_id='LOGIN'           default=''  type='string'   length='0'   inout=''/>
+            <field name='STATE'        fld_id='STATE'           default=''  type='string'   length='0'   inout=''/>
+            <field name='CALL_STATE'   fld_id='CALL_STATE'           default=''  type='string'   length='0'   inout=''/>
+        </list>
+        <field name='LINE4'   fld_id='LINE4'  default='' type='skip'   length='0'  inout=''/>
+        <field name='RESULT'  fld_id='RESULT' default='' type='string' length='0'  inout='='/>
+    </response>
+</service>

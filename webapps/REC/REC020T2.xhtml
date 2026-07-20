@@ -1,0 +1,487 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<style>
+#grd_mon .xw-datagrid {
+	border: none !important;
+}
+
+#grd_mon .xw-datagrid-area-header {
+	border-bottom: 1px solid #d2d2d2;
+}
+
+#grd_mon .xw-datagrid-area-body td {
+	border-left: 1px solid #d2d2d2;
+}
+</style>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*///Make Page
+var c_pageSize = 500;
+var c_page = 1;
+var c_totalPage;
+var c_start = 0;
+var ced_no = "";
+
+var DS_REC_LIST = [];
+var v_url = "service::rec.rec030.sel.do";
+
+/*
+ * 해당 화면 반영 시, 코드북 SYS170 추가 필요!
+ * 센터 추가 시 sys170 추가 필요
+ * 
+ * */
+/* **********************************************************
+ *  Page 로드 시 처음 호출되는 함수
+ *************************************************************/
+function page_load(event) {
+	XwingObject();
+	
+
+	$pnl_rec_grid.setUrl("./REC020T2T1.jsp");
+
+	browserCheck();
+
+	if(browser == "ie") $pan_player.setUrl('../PLY_IE/init.html'); //player 초기화 상태로 set
+	else if(browser == "chrome") $pan_player.setUrl('../player_html5/init.html'); //player 초기화 상태로 set
+
+	g_createOrg("pan_dept", 2, "Y", "N", "Y", "", "전체", false, true);
+	f_getCode();
+	btn_reset_click();
+}
+
+
+/* **********************************************************
+ *  코드북 로드 함수
+ *************************************************************/
+function f_getCode() {
+	var param = {
+			cmd : "getCodes",
+			codeType : "SYS170",
+			useyn : "Y"
+		};
+		var opt = {
+			reqId : "getCodes",
+			url : "service::cs.com.codeutil.do",
+			param : param
+		};
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+		case 'getCodes' :
+			$DS_SYS170.setData(res.SYS170.column, res.SYS170.record);
+		break;
+
+		case "btn_search_click":
+			$DS_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+			
+			c_totalPage	= Math.ceil(res.DS_CNT_LIST.record[0]/c_pageSize);
+			Xwing.getEdit("edt_listCnt").setValue(res.DS_CNT_LIST.record[0]);
+			setPaging();
+			
+			if(DS_REC_LIST.length > 0 ) DS_REC_LIST = [];
+			for(var i =0; i< res.DS_LIST.record.length; i++){
+				var temp = {};
+				for(var j=0; j< res.DS_LIST.column.length; j++){
+					var key = res.DS_LIST.column[j];
+					temp[key] = res.DS_LIST.record[i][j];
+				}
+				
+				DS_REC_LIST.push(temp);
+			}
+			
+			var iframe = document.getElementById('if::pnl_rec_grid');
+
+			var fDoc = null;
+
+			if(iframe) {
+				var frm = iframe.contentWindow || iframe.contentDocument;
+				
+				if (frm.document) {
+				    fDoc = frm.document;
+				}
+			}
+			
+			frm.reloadGrid();
+			
+			
+		break;
+		
+		case "est_save":
+			xwing.Dialog.alert("심사 되었습니다.");
+			est_area_clear();
+			est_area_toggle(false);
+			btn_search_click();
+		break;
+		
+		case "getUcid":
+			$DS_META.setData(res.DS_META.column, res.DS_META.record);
+			$DS_UCID.setData(res.DS_UCID.column, res.DS_UCID.record);
+			$DS_DURA.setData(res.DS_DURA.column, res.DS_DURA.record);
+			if($DS_UCID.size() == 0){ // sponsor에도 없는 설계
+				xwing.Dialog.alert("녹취가 존재하지 않습니다.");
+				return;
+			}
+		break;
+		
+		case "excel_down" :
+			$DS_EXCEL.setData(res.DS_RES.column, res.DS_RES.record);
+			
+				$grd_list_excel.setBinddataset('DS_EXCEL');
+				$grd_list_excel.exportData('녹취리스트','../jsp/export2.jsp', true);
+				$grd_list_excel.setBinddataset('');
+				//Xwing.getDataGrid('grd_list').exportData('녹취리스트',global('G_SERVERURL') + '/jsp/export2.jsp', true);
+			
+		break;
+
+		case "savePlayLog":
+			//nothing...
+		break;
+	}
+}
+
+
+/* ***********************************************************
+ * 	녹취리스트 조회  함수
+ *************************************************************/
+function btn_search_click(event) {
+	if(event != undefined){
+		c_page = 1;
+		c_start = 0;
+	}
+	
+	getSPCallList();
+}
+
+function getSPCallList(){
+	
+	if ($dpk_from_date.getValue() > $dpk_to_date.getValue()) {
+		new xwing.Dialog.alert("종료일자가 시작일자보다 작습니다.", '시간 설정 오류');	
+		Xwing.getEdit("dpk_from_date").focus();
+		
+		return;
+	}
+	
+	if(diffDate($dpk_from_date.getValue(),$dpk_to_date.getValue()) > 32){
+		new xwing.Dialog.alert("한달 이상의 기간 설정이 불가능합니다.", '시간 설정 오류');
+		return;
+	}
+	
+	var spCode = ""; 
+	
+	if($cmb_org2.getValue() != ''){
+		spCode += "'" + $DS_SYS170.getValue($DS_SYS170.indexOfRow("ETC1", $cmb_org2.getValue()),"ETC2") + "'";
+	}else{
+		for(var i =0 ;i< $DS_SYS170.size(); i++){
+			spCode += "'"+$DS_SYS170.getValue(i,"ETC2") + "',";
+		}
+
+		spCode = spCode.slice(0,-1);
+	}
+
+	$DS_LIST.clearData();
+
+	var sdate = $dpk_from_date.getValue()+"000000";
+	var edate = $dpk_to_date.getValue()+"235959";
+	
+	var param	= {
+			_sqlName: "rec.rec020t2.notmatchedList.totCount.sel,rec.rec020t2.notmatchedList.sel",
+			SDATE:sdate,
+			EDATE:edate,
+			AGENT_NM : $edt_user_name.getValue(),
+			CED_NO:$edt_ced_no.getValue(),
+			MRLS_GB:$cmb_mrls_gb.getValue(),
+			CUST_NM:$edt_cust_nm.getValue(),
+			SPCODE : spCode
+			, _START : c_start
+			, _PAGESIZE : c_pageSize
+
+	};
+	
+	var opt 	= {
+			reqId: "btn_search_click",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+/* ***********************************************************
+ * 	리스트 클릭 이벤트  함수 -> 플레이어 실행
+ *************************************************************/
+function rec_tbl_click(p_ucid, p_start_time, p_file_path){
+	$edt_rec_datetime.setValue(p_start_time);
+	
+	//load_player(rec_key, start_time,file_path,ced_no)
+	load_player(p_ucid, p_start_time, p_file_path, "");
+}
+
+
+/* ***********************************************************
+ * 키워드 엔터 이벤트 함수
+ *************************************************************/
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+			btn_search_click();
+	}
+}
+
+function btn_reset_click(){
+	//일자
+	$dpk_from_date.setValue((g_addDate("m", -1, g_toDate()).substring(0,6)+"01")); 	//지난달 01~30
+	$dpk_to_date.setValue(g_addDate("m", -1, g_toDate()).substring(0,6)+g_getLastDay(g_addDate("m", -1, g_toDate()).substring(0,6)));
+	
+	$edt_cust_nm.setValue("");
+	$edt_ced_no.setValue("");
+	$cmb_gubun.setValue("");
+	
+}
+
+/*****************************************************
+*페이징 처리
+******************************************************/
+function setPaging(){
+	Xwing.getButton("btn_page_last").setEnabled(true);
+	Xwing.getButton("btn_page_next").setEnabled(true);
+	Xwing.getButton("btn_page_pre").setEnabled(true);
+	Xwing.getButton("btn_page_first").setEnabled(true);
+
+	if(c_totalPage > 0){
+		$edt_curPage.setValue(c_page);
+		$edt_totalPage.setValue(c_totalPage);
+	}else{
+		$edt_curPage.setValue("");
+		$edt_totalPage.setValue("");
+	}
+	
+	//페이징버튼세팅
+	if( c_page == 1 || c_totalPage == 0 )
+	{
+		Xwing.getButton("btn_page_first").setEnabled(false);
+		Xwing.getButton("btn_page_pre").setEnabled(false);
+	}else{
+		Xwing.getButton("btn_page_first").setEnabled(true);
+		Xwing.getButton("btn_page_pre").setEnabled(true);
+	}
+
+	if( c_page == c_totalPage || c_totalPage == 0 )
+	{
+		Xwing.getButton("btn_page_last").setEnabled(false);
+		Xwing.getButton("btn_page_next").setEnabled(false);
+	}else{
+		Xwing.getButton("btn_page_last").setEnabled(true);
+		Xwing.getButton("btn_page_next").setEnabled(true);
+	}
+
+	if(c_totalPage > 1){
+		$edt_curPage.setEnabled(true);
+	}
+}
+
+function btn_page_first_click(event) {
+	c_page = 1;
+	$edt_curPage.setValue(c_page);
+	c_start =(c_page-1)*c_pageSize;
+	btn_search_click();
+}
+
+function btn_page_pre_click(event) {
+	c_page = c_page-1;
+	$edt_curPage.setValue(c_page);
+	c_start =(c_page-1)*c_pageSize;
+	btn_search_click();
+}
+
+function btn_page_next_click(event) {
+	c_page = c_page+1;
+	$edt_curPage.setValue(c_page);
+	c_start =(c_page-1)*c_pageSize;
+	btn_search_click();
+}
+
+function btn_page_last_click(event) {
+	c_page = c_totalPage;
+	$edt_curPage.setValue(c_page);
+	c_start =(c_page-1)*c_pageSize;
+	btn_search_click();
+}
+
+function cmb_page_change(event) {
+	c_page = Xwing.getDataset("DS_PAGE_CNT").getValue((event.value-1), "PAGE");
+	c_start = (c_page-1)*c_pageSize;
+
+	btn_search_click();
+
+}
+
+function edt_curPage_keydown(event) {
+	if(event.event.keyCode == '13') {
+		if(parseInt($edt_curPage.getValue()) > c_totalPage){
+			xwing.Dialog.alert("전체 페이지 수를 초과합니다.");
+			$edt_curPage.setValue(c_page);
+			return;
+		}
+		if(parseInt($edt_curPage.getValue()) < 1){
+			xwing.Dialog.alert("0보다 큰 숫자를 입력해주세요.");
+			$edt_curPage.setValue(c_page);
+			return;
+		}
+		c_page = parseInt($edt_curPage.getValue());
+		c_start = (c_page-1)*c_pageSize;
+		btn_search_click();
+	}
+}
+
+
+function load_player(rec_key, start_time,file_path,ced_no){
+	
+	var param={
+			rec_key: rec_key,
+			start_time : start_time,
+			log_gb:'L',
+			file_path : file_path,
+			ced_no : ced_no
+			
+	};
+	play(param, 'pan_player', 'N');
+	
+	//청약팝업에서만 플레이어영역 x축에 scroll만듬
+	$('iframe').load(function(){
+			$('iframe').contents().find("head").append($("<style type='text/css'> html { overflow-x:scroll !important;}</style>"));
+	});
+	
+}
+
+
+function page_resize(event) {
+	var w = event.source._opt.width;
+	var pw = 492;	//$pnl_play_area.getWidth(); 로딩시 값을 못가져올 때가 있음
+	var Listsize = w-pw;
+	
+	if(w < 800){ //최대화 전
+		$splitbar0.setLeft(Listsize-5);
+		$pnl_play_area.setLeft(Listsize);
+		$pnl_play_area.setWidth(pw);
+		$pnl_list_area.setWidth(Listsize-5);
+	}else{
+		setTimeout(function(){
+			$splitbar0.setLeft(Listsize-5);
+			$pnl_play_area.setLeft(Listsize);
+			$pnl_play_area.setWidth(pw);
+			$pnl_list_area.setWidth(Listsize-5);
+		},100);
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_LIST" description="녹취리스트">
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_P_CONT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_IP_ISD_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="MONTH_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="NTC_DT"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_RESULT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_COMMENT"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_QC_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_QC_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="EST_RESULT_NM"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PAGE_CNT">
+		<xwing:dataset-column id="TOTAL_PAGE"></xwing:dataset-column>
+		<xwing:dataset-column id="PAGE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GUBUN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>전체</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>MR</xwing:dataset-cell>
+			<xwing:dataset-cell>실손</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>LS</xwing:dataset-cell>
+			<xwing:dataset-cell>정액</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS170" description="SPDB 코드값"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="MRLS녹취리스트2" width="1050" height="768" scroll="false" left="0" load="page_load" top="-5" unload="page_unload" resize="page_resize">
+		<xwing:panel id="pnl_play_area" left="558" top="85" width="492" height="683" scroll="false" anchor="top bottom">
+			<xwing:panel id="pan_player" left="1" top="43" width="491" height="642" anchor="top bottom" borderwidth="1" bordercolor="#202835" borderstyle="dotted" scroll="false">
+			</xwing:panel>
+			<xwing:label id="lbl_subtitle1_0" left="0" top="1" width="497" height="40" styles="label_boxtitle" halign="left" anchor="right left"></xwing:label>
+			<xwing:panel id="pnl_ucid" left="20" top="9" width="313" height="26" scroll="false" anchor="left">
+				<xwing:label id="lbl4_0_0" left="45" top="1" value=":" height="25" width="20" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl4_0_1" left="-45" top="1" value="녹취일시" height="25" width="104" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_rec_datetime" left="70" top="1" height="25" keyup="edt_sch_keyup" width="167" fontsize="11" styles="edit_readonly" mask="datetime"></xwing:edit>
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pnl_list_area" left="0" top="85" width="553" height="684" scroll="false" anchor="all">
+			<xwing:label id="lbl_subtitle1" value="MR/LS 녹취리스트" left="0" top="1" width="550" height="40" styles="label_boxtitle" halign="left" anchor="right left" visible="true"></xwing:label>
+			<xwing:edit id="edt_listCnt" left="495" top="8" height="25" width="50" halign="right" readonly="true" anchor="top right" textpadding="0 6 0 6"></xwing:edit>
+			<xwing:label id="stc_01_1" value="구분" left="-490" top="-135" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:combo id="cmb_type_1" left="-425" top="-135" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" width="99" height="25" value="A" domaintextcolumn="CODENAME" change="cmb_type_change"></xwing:combo>
+			<xwing:button id="btn_page_first" left="305" top="8" mouseover="btn_mouseover" mouseout="btn_mouseout" height="20" width="22" anchor="top right" enabled="false" visible="true" click="btn_page_first_click" iconalign="left" bgimagealign="left top" icon="../images/icon_prev.png" iconmargin="0 0 0 0"></xwing:button>
+			<xwing:button id="btn_page_pre" left="330" top="8" icon="../images/icon_left.png" mouseover="btn_mouseover" mouseout="btn_mouseout" height="20" width="22" anchor="top right" enabled="false" visible="true" click="btn_page_pre_click"></xwing:button>
+			<xwing:edit id="edt_curPage" left="357" top="7" width="32" height="25" halign="right" anchor="top right" readonly="false" textpadding="0 6 0 6" keydown="edt_curPage_keydown"></xwing:edit>
+			<xwing:label id="label0" value="/" left="393" top="10" width="11" height="22" anchor="top right"></xwing:label>
+			<xwing:edit id="edt_totalPage" left="402" top="7" width="33" height="25" halign="right" anchor="top right" readonly="true" textpadding="0 6 0 6" enabled="false"></xwing:edit>
+			<xwing:button id="btn_page_next" left="438" top="8" icon="../images/icon_right.png" mouseover="btn_mouseover" mouseout="btn_mouseout" height="20" width="22" anchor="top right" enabled="false" visible="true" click="btn_page_next_click"></xwing:button>
+			<xwing:button id="btn_page_last" left="463" top="8" icon="../images/icon_next.png" mouseover="btn_mouseover" mouseout="btn_mouseout" height="20" width="22" anchor="top right" enabled="false" visible="true" click="btn_page_last_click"></xwing:button>
+			<xwing:panel id="pnl_rec_grid" left="0" top="44" width="551" height="636" anchor="all"></xwing:panel>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar0" left="552" top="85" width="5" visible="true" bindwidget="r:pnl_play_area,r:pnl_list_area" height="682" anchor="top bottom" cursor="w-resize" styles="split_h"></xwing:splitbar>
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="85" styles="div_search" anchor="top right left" borderwidth="0" borderstyle="solid" scroll="false">
+			<xwing:panel id="pan_dept" left="381" top="15" width="213" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="lbl1" left="0" top="15" value="녹취일시" height="25" width="78" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:panel id="pnl_term" left="85" top="15" height="25" width="222" visible="true">
+				<xwing:datepicker id="dpk_from_date" left="0" top="0" anchor="none" width="100" height="25" visible="true"></xwing:datepicker>
+				<xwing:label id="lbl1_1" left="105" top="0" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+				<xwing:datepicker id="dpk_to_date" left="120" top="0" anchor="none" width="100" height="25"></xwing:datepicker>
+			</xwing:panel>
+			<xwing:label id="lbl12" left="316" top="15" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:button id="btn_search" value="조 회" left="919" top="45" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			<xwing:button id="btn_reset" value="초기화" left="984" top="45" width="60" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_reset_click"></xwing:button>
+			<xwing:label id="lbl_user_nm" left="608" top="15" value="상담원명" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_user_name" left="675" top="15" height="25" keyup="edt_sch_keyup" width="100" fontsize="11"></xwing:edit>
+			<xwing:edit id="edt_ced_no" left="85" top="45" height="25" keyup="edt_sch_keyup" width="196" fontsize="11"></xwing:edit>
+			<xwing:label id="lbl9" left="0" top="45" value="설계번호" height="25" width="78" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:label id="lbl12_0" left="310" top="45" value="고객명" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_cust_nm" left="380" top="45" height="25" keyup="edt_sch_keyup" width="133" fontsize="11"></xwing:edit>
+			<xwing:label id="lbl12_1" left="608" top="45" value="구분" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:combo id="cmb_mrls_gb" left="675" top="45" height="25" width="65" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" fontfamily="NanumGothic"></xwing:combo>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

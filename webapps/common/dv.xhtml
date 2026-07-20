@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.widgat.datagrid.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var hash = new xwing.util.Hash();
+var currentObj;
+var arrGrdCols = new Array();
+var p_objW;
+function dm_load(event) {
+	var ds = Xwing.getDataset("_DS_TREE");
+	if (Xwing.param.p_target) {
+		p_objW = eval("Xwing.parent.Xwing.children."
+				+ Xwing.parent.tab.getCurrentTab());
+
+		var child = p_objW.Xwing.children;		
+		var flag = (g_isNull(child.Xwing) ? "Y" : "N");
+		var arry = [ Xwing.parent.tab.getCurrentTab(), "0", "N",
+				Xwing.parent.tab.getCurrentLabel().getValue() ];
+		ds.addRow(arry);
+		hash.set(Xwing.parent.tab.getCurrentTab(), p_objW.Xwing);
+
+		f_set_node(Xwing.parent.tab.getCurrentTab(), child);
+	} else {
+		p_objW = parent.Xwing;
+		var arry = [ "id", "0", "N", "Default" ];
+		hash.set("id", p_objW.Xwing);
+		ds.addRow(arry);
+	}
+	Xwing.getTree("tree0").expandAll();
+}
+
+function f_set_node(pid, child) {
+	var ds = Xwing.getDataset("_DS_TREE");
+	for ( var i in child) {
+		var v_child = child[i].Xwing.children;		
+		var flag = (g_isNull(v_child.Xwing) ? "Y" : "N")
+		var arry = [ i, pid, flag, i ];
+		ds.addRow(arry);
+		hash.set(i, child[i].Xwing);
+		if (!g_isNull(v_child)) {
+			f_set_node(i, child[i].Xwing.children);
+		}
+	}
+}
+
+function tree0_select(event) {
+	var ds = Xwing.getDataset("_DS_TREE");
+	var obj = hash.get(ds.getValue("id"));
+	getDSList(obj);
+}
+
+function getDSList(obj) {
+	currentObj = obj;
+	var l = obj.getDatasetList().keys();
+	Xwing.getDataset("_DM_DS_LIST").clearData();
+	Xwing.getDataset("_DM_DS_DETAIL").clearData();
+	for ( var i = 0; i < l.length; i++) {
+		Xwing.getDataset("_DM_DS_LIST").addRow([ l[i] ]);
+	}
+}
+
+function grd_ds_list_click(event) {
+	var dg = Xwing.getWidget("datagrid0");
+	dg.setBinddataset("");
+	var strDSID = Xwing.getDataset("_DM_DS_LIST").getValue(
+			Xwing.getDataset("_DM_DS_LIST").getCursor(), "DS_ID");
+	var objDS = currentObj.getDataset(strDSID);
+	var o = Xwing.getDataset("_DM_DS_DETAIL");
+	o.clear();
+	o.setData(objDS.getColumnInfo(), objDS.getData());
+	dg.setBinddataset("_DM_DS_DETAIL");
+	dg.createFormat();
+	
+	//var objGrd = Xwing.getGrid("grd_ds_detail");
+	/*	
+	if( arrGrdCols != undefined && arrGrdCols != null )
+	{	
+	    for( var i = 0; i < arrGrdCols.length; i++ )
+		{
+	    		Xwing.debug(arrGrdCols[i]);
+	    		objGrd.removeColumn(
+					arrGrdCols[i]
+	    		);
+		}
+	}
+	 */
+	/*var arrTmp = objGrd.columnList;
+	for( var i = arrTmp.length - 1; i >=0; i-- )
+	{
+		Xwing.debug(arrTmp[i]);
+		objGrd.removeColumn(
+				arrTmp[i]
+		);
+	}
+	
+	var strDSID = Xwing.getDataset("_DM_DS_LIST").getValue(Xwing.getDataset("_DM_DS_LIST").getCursor(), "DS_ID");
+	
+	var objDS = p_objW.Xwing.getDataset(strDSID);
+	
+	Xwing.getDataset("_DM_DS_DETAIL").clear();
+	
+	Xwing.getDataset("_DM_DS_DETAIL").setData(objDS.getColumnInfo(), objDS.getData());
+
+	var arrCols = objDS.getColumnInfo();
+
+	
+	for( var i = 0; i < arrCols.length; i++ )
+	{
+		arrGrdCols[i] = Xwing.createGridcolumn(
+				{
+				    id:arrCols[i]
+					, title:arrCols[i]
+					, bindcolumn:arrCols[i]
+					, width:100
+	        	}
+	        );
+		
+		objGrd.addColumn(
+				arrGrdCols[i]
+	    );
+	}
+	Xwing.debug(Xwing.getGrid("grd_ds_detail"));*/	
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="_DM_DS_LIST">
+		<xwing:dataset-column id="DS_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="_DM_DS_DETAIL"></xwing:dataset>
+	<xwing:dataset description="" id="_DM_DS_TREE">
+		<xwing:dataset-column id="T_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="T_PID"></xwing:dataset-column>
+		<xwing:dataset-column id="T_LEAFYN"></xwing:dataset-column>
+		<xwing:dataset-column id="T_TEXT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="_DS_TREE">
+		<xwing:dataset-column id="id"></xwing:dataset-column>
+		<xwing:dataset-column id="pid"></xwing:dataset-column>
+		<xwing:dataset-column id="leaf"></xwing:dataset-column>
+		<xwing:dataset-column id="text"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="dv" title="DataSet View" width="600" height="450" left="-10" top="-20" load="dm_load" scroll="false">
+		<xwing:grid id="grd_ds_list" left="130" top="10" width="118" height="430" click="grd_ds_list_click" binddataset="_DM_DS_LIST" anchor="top bottom left" autofit="true">
+			<xwing:grid-column id="DataSet" title="DataSet" bindcolumn="DS_ID" width="95"></xwing:grid-column>
+		</xwing:grid>
+		<xwing:datagrid id="datagrid0" left="252" top="10" width="339" anchor="all" height="430"></xwing:datagrid>
+		<xwing:tree id="tree0" left="6" top="10" height="430" binddataset="_DS_TREE" idcolumn="id" pidcolumn="pid" leafyncolumn="leaf" textcolumn="text" select="tree0_select" width="120" treeline="true" anchor="top bottom"></xwing:tree>
+	</xwing:page>
+</body>
+</html>

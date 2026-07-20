@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../vsens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/tunning.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<style>
+input {
+	background: none !important;
+	box-shadow: none !important;
+}
+</style>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var getParameter = function (param) {
+    var returnValue;
+    var url = location.href;
+    var parameters = (url.slice(url.indexOf('?') + 1, url.length)).split('&');
+    for (var i = 0; i < parameters.length; i++) {
+        var varName = parameters[i].split('=')[0];
+        if (varName.toUpperCase() == param.toUpperCase()) {
+            returnValue = parameters[i].split('=')[1];
+            return decodeURIComponent(returnValue);
+        }
+    }
+};
+
+function login_load(event) {
+	var v_contact_id = getParameter("contact_id");
+	var v_start_time = getParameter("start_time");
+	var v_play_user_id = getParameter("play_user_id");
+	
+	var v_http_url = "http://127.0.0.1:8090/MSENS/player_html5/player.html?contact_id=" + v_contact_id + "&start_time=" + v_start_time + "&play_user_id=" + v_play_user_id;
+	
+	var w = window.open(v_http_url, "V-SENS PLAYER", "width=500, height=677, left=0, top=0, location=no, resizable=no, menubar=no, status=no");
+	
+	if (w == null) {
+		alert("팝업차단을 해제 후 로그인 해 주세요.");
+		return;
+	}
+	
+	self.opener = self;
+	window.close();
+}
+
+function openTunning(paramSet) {
+	tunning_popup(paramSet);
+}/*]]>*/</script>
+<xwing:data></xwing:data>
+</head>
+<body>
+	<xwing:page id="recplayer_pop" title="V-SENS" width="679" height="447" scroll="false" load="login_load" left="24" top="24" bgcolor="#ffffff">
+	</xwing:page>
+</body>
+</html>

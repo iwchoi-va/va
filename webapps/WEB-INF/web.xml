@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	id="VSENS" version="3.0">
+	<display-name>VSENS</display-name>
+	<listener>
+		<listener-class>com.locus.jedi.waf.controller.WebInitializer</listener-class>
+	</listener>
+	<listener>
+  		<listener-class>kr.co.kico.wfm.encmapper.listener.WfmEncMapperListener</listener-class>
+    </listener>
+<!--      <listener>
+  		<listener-class>sens.service.webaction.SensServiceListener</listener-class>
+    </listener>
+    -->
+	<servlet>
+		<display-name>AdminServlet</display-name>
+		<servlet-name>AdminServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.view.AdminServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<display-name>FrontServlet</display-name>
+		<servlet-name>FrontServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.controller.FrontServlet2</servlet-class>
+	</servlet>
+	<servlet>
+		<display-name>LoginServlet</display-name>
+		<servlet-name>LoginServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.LoginServlet2</servlet-class>
+	</servlet>
+	<servlet>
+		<display-name>PopupServlet</display-name>
+		<servlet-name>PopupServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.view.PopupServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<display-name>SocketServlet</display-name>
+		<servlet-name>SocketServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.socket.SocketServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<display-name>WebpageServlet</display-name>
+		<servlet-name>WebpageServlet</servlet-name>
+		<servlet-class>com.locus.jedi.waf.view.WebpageServlet</servlet-class>
+	</servlet>
+
+ 	<servlet>
+   		 <servlet-name>WebSocket</servlet-name>
+   		 <servlet-class>stat.cm.alarm.websocket.WebSocketServer</servlet-class>
+  	</servlet>
+	
+<!--   	<servlet>
+   		 <servlet-name>AndroidLoginServlet</servlet-name>
+   		 <servlet-class>android.action.login.AndroidLoginServlet</servlet-class>
+  	</servlet> -->
+ 
+  	
+	<servlet-mapping>
+		<servlet-name>FrontServlet</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>FrontServlet</servlet-name>
+		<url-pattern>*.xmldo</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>WebpageServlet</servlet-name>
+		<url-pattern>*.page</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PopupServlet</servlet-name>
+		<url-pattern>*.popup</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminServlet</servlet-name>
+		<url-pattern>*.admin</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>LoginServlet</servlet-name>
+		<url-pattern>/LoginServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SocketServlet</servlet-name>
+		<url-pattern>/socket.sck</url-pattern>
+	</servlet-mapping>
+
+  	<servlet-mapping>
+    	<servlet-name>WebSocket</servlet-name>
+    	<url-pattern>/websocket</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	
+<!--      <servlet-mapping>
+		<servlet-name>AndroidLoginServlet</servlet-name>
+		<url-pattern>/android</url-pattern>
+	</servlet-mapping> -->
+
+
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+ 
+	<!-- Filter Definition -->
+	<filter>
+		<filter-name>XwingFilter</filter-name>
+		<filter-class>xwing.filter.XwingFilter</filter-class>
+	</filter>
+
+	<!-- >filter> <filter-name>XwingCacheFilter</filter-name> <filter-class>xwing.filter.XwingFilter</filter-class> 
+		<init-param> <param-name>expirationTime</param-name> <param-value>3600</param-value> 
+		</init-param> </filter -->
+
+	<!-- <filter>
+		<filter-name>GZIPFilter</filter-name>
+		<filter-class>xwing.filter.GZIPFilter</filter-class>
+	</filter>  -->
+	<!-- Filter Definition -->
+
+	<!--filter-mapping> <filter-name>XwingCacheFilter</filter-name> <url-pattern>/xwing/config/xwing.config</url-pattern> 
+		</filter-mapping> <filter-mapping> <filter-name>XwingCacheFilter</filter-name> 
+		<url-pattern>*.js</url-pattern> </filter-mapping> <filter-mapping> <filter-name>XwingCacheFilter</filter-name> 
+		<url-pattern>*.css</url-pattern> </filter-mapping> -->
+	<filter-mapping>
+		<filter-name>XwingFilter</filter-name>
+		<url-pattern>*.xhtml</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>XwingFilter</filter-name>
+		<url-pattern>/xwing/js/xwing.js</url-pattern>
+	</filter-mapping>
+
+	<!-- GZip Filter Begin -->
+	<!-- <filter-mapping>
+		<filter-name>GZIPFilter</filter-name>
+		<url-pattern>*.js</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>GZIPFilter</filter-name>
+		<url-pattern>*.css</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>GZIPFilter</filter-name>
+		<url-pattern>*.xhtml</url-pattern>
+	</filter-mapping> -->
+	<!-- GZip Filter End -->
+
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/common/error.jsp</location>
+	</error-page>
+
+        <distributable/>
+
+</web-app>

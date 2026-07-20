@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-config>
+	<request name="oba.oba010t5.getEstimationInfo" login="false">
+		<description>평가모듈 webaction 연동</description>
+		<action-class>sens.src.estimate.EstimationWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+</request-config>

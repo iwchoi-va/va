@@ -1,0 +1,564 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var type = "";
+var sdate = "", edate = "", stime= "", etime = "";
+var ced_no = "";
+var grade = "", new_user = "", selected_dept = "", cntr_cd= "",anl_yn= "", selected_user="";
+var v_url = "service::bis.bis020t1.getSecretScript.sel.do";
+
+function page_load(event) {
+	XwingObject();
+	//$DS_VSS160.copyFrom(parent.$DS_VSS160);
+	
+	type = parent.type;
+	sdate = parent.sdate;
+	edate = parent.edate;
+	stime = parent.stime;
+	etime = parent.etime;
+	ced_no = parent.ced_no;
+	grade = parent.grade;
+	new_user = parent.new_user;
+	anl_yn = parent.anl_yn;
+	
+	initPage();
+	selected_dept = "";
+	selected_user = "";
+	excelDownAuth($btn_excel);
+	
+	if(parent.$cmb_org2.getValue() != ''){
+		$DS_PARAM.copyFrom(parent.top.$DS_DEPT_LIST_ALL);
+		$DS_PARAM.filter("[DEPT_LEVEL == '2'][DEPT0_CD=='"+parent.$cmb_org1.getValue()+"'][DEPT1_CD=='"+parent.$cmb_org2.getValue()+"']");
+	}else{
+		$DS_PARAM.copyFrom(parent.top.$DS_DEPT_LIST_ALL);
+		$DS_PARAM.filter("[DEPT_LEVEL == '2'][DEPT0_CD=='"+parent.$cmb_org1.getValue()+"']");
+	}
+	
+	if(type == "USER"){
+		selected_dept = parent.$cmb_org3.getValue();
+		
+		
+		getUser();
+		grid_visible();
+	}
+	//$DS_PARAM.copyFrom(parent.top.$DS_DEPT_LIST_ALL);
+	//$DS_PARAM.filter("[DEPT_LEVEL == '2'][DEPT0_CD=='"+parent.$cmb_org1.getValue()+"']");
+	f_searchRes();
+}
+
+
+function initPage(page){
+	if(page == 2){
+		$lbl_subtitle1.setValue("팀별통계");
+		$grd_dept1_list.setVisible(false);
+		$grd_dept2_list.setVisible(true);
+		$grd_dept3_list.setVisible(false);
+		$splitbar.setVisible(false);
+		$pnl_detail.setVisible(false);
+		$lbl_dept2_nm.setVisible(true);
+		$lbl_dept3_nm.setVisible(false);
+	}else if(page == 3){
+		$lbl_subtitle1.setValue("상담사별통계");
+		$grd_dept1_list.setVisible(false);
+		$grd_dept2_list.setVisible(false);
+		$grd_dept3_list.setVisible(true);
+		$lbl_dept2_nm.setVisible(false);
+		$lbl_dept3_nm.setVisible(true);
+		
+		if(selected_user != ''){
+			$grd_dept3_list.setHeight($pnl_detail.getTop()-65);
+			$splitbar.setVisible(true);
+			$pnl_detail.setVisible(true);
+		}else{
+			$grd_dept3_list.setHeight($grd_dept2_list.getHeight());
+			$splitbar.setVisible(false);
+			$pnl_detail.setVisible(false);
+		}	
+	}else{
+		$lbl_subtitle1.setValue("센터별통계");
+		$lbl_dept2_nm.setVisible(false);
+		$lbl_dept3_nm.setVisible(false);
+		$grd_dept1_list.setVisible(true);
+		$grd_dept2_list.setVisible(false);
+		$grd_dept3_list.setVisible(false);
+		$splitbar.setVisible(false);
+		$pnl_detail.setVisible(false);
+	}
+	
+}
+//개인정보처리항목 분석결과 조회
+function f_searchRes(){
+	
+	 var param	= {		
+			 type : type,
+			 sdate : sdate + stime,
+			 edate : edate + etime,
+			 ced_no : ced_no,
+			 grade : grade,
+			 new_user : new_user,
+			 cntr_cd : cntr_cd,
+			 selected_dept : selected_dept,
+			 anl_yn : anl_yn,
+			 DS_PARAM: $DS_PARAM
+	 }
+	 
+	 parent.g_orgToParam("", param);
+	 parent.g_productToParam("", param);
+	 
+	 
+	var opt = {
+			reqId: 'f_searchRes',
+			url: v_url, 
+			param: param,
+			indicator: null,
+			showError: true					
+	};
+	Xwing.request(opt, callback);
+	
+}
+
+function f_searchDetail(selected_user){
+	
+	 var param	= {		
+			 _sqlName: "bis.bis020.secretScriptbyUser.sel",
+			 sdate : sdate + stime,
+			 edate : edate + etime,
+			 ced_no : ced_no,
+			 grade : grade,
+			 //new_user : new_user,
+			 cntr_cd : cntr_cd,
+			 user_id : selected_user,
+			 anl_yn : anl_yn
+	 }
+	 
+	 parent.g_productToParam("", param);
+	 
+	 
+	var opt = {
+			reqId: 'f_searchDetailRes',
+			url: "service::bis.bis030t1.getUser.sel.do", 
+			param: param,
+			indicator: null,
+			showError: true					
+	};
+	Xwing.request(opt, callback);
+	
+}
+
+//클릭한 팀의 상담사 정보 조회하기
+function getUser(){
+	
+	var param	= {		
+			_sqlName: "bis.bis030t1.getUser.sel",
+			selected_dept : selected_dept
+	};
+	
+	var opt = {
+			reqId: 'getUser',
+			url: "service::bis.bis030t1.getUser.sel.do", 
+			param: param,
+			indicator: null,
+			showError: true					
+	};
+	Xwing.request(opt, callback);
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "f_searchRes" :
+			
+			if(type == "DEPT1"){
+				$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+				$edit_rowcnt.setValue($DS_RES.size());
+			}else if(type == "DEPT2"){
+				$DS_RES2.setData(res.DS_RES.column, res.DS_RES.record);
+				$edit_rowcnt.setValue($DS_RES2.size());
+			}else if(type == "USER"){
+				$DS_RES3.setData(res.DS_RES.column, res.DS_RES.record);
+				$edit_rowcnt.setValue($DS_RES3.size());
+			}
+			
+			f_makeGrid();
+
+		break;
+		case "getUser" :
+			$DS_PARAM.setData(res.DS_USER.column,res.DS_USER.record);
+			
+			f_searchRes();
+			
+		break;
+		
+		case "f_searchDetailRes" :
+			$DS_DETAIL_RES.setData(res.DS_DETAIL_RES.column, res.DS_DETAIL_RES.record);
+			
+		break;
+		
+	}
+}
+
+function f_makeGrid(){
+
+	var col_cnt = [];
+	var col_name1= "소분류코드";
+	var col_name2 = "소분류명"
+	
+	if(type == "DEPT1"){
+		col_cnt = $DS_RES.getColumnInfo();
+	}
+	else if(type == "DEPT2"){ 
+		col_cnt = $DS_RES2.getColumnInfo();
+	}else{
+		col_cnt = $DS_RES3.getColumnInfo();
+	}
+
+	var f_column = "<xwing:datagrid-colgroup>"
+		 + "<xwing:datagrid-column width='100'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='150'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='60'></xwing:datagrid-column>";
+
+	for(var i =2; i< col_cnt.length-1;i++){
+		
+		f_column += "<xwing:datagrid-column width='85'></xwing:datagrid-column>";
+	}
+	
+	f_column += "</xwing:datagrid-colgroup>";
+	
+	var f_head = "<xwing:datagrid-head>"
+	   	   + "<xwing:datagrid-row height='30'>"
+	   	+ "<xwing:datagrid-cell text='"+col_name1+"'></xwing:datagrid-cell>"
+	   	   + "<xwing:datagrid-cell text='"+col_name2+"'></xwing:datagrid-cell>"
+	 	   + "<xwing:datagrid-cell text='설계건수'></xwing:datagrid-cell>";	
+	
+	for(var i =3; i< col_cnt.length;i++){
+		var dept = col_cnt[i].split("_")[1];
+		var idx = -1;
+		
+		if(type == "USER")  idx = $DS_PARAM.indexOfRow(type+"_ID", dept);
+		else idx = $DS_PARAM.indexOfRow(type+"_CD", dept);
+		
+		var dept_nm = $DS_PARAM.getValue(idx, type+"_NAME");
+
+		f_head += "<xwing:datagrid-cell text='"+dept_nm+"'></xwing:datagrid-cell>";
+		
+	}
+	
+	f_head += "</xwing:datagrid-row>"
+		   + "</xwing:datagrid-head>";
+	
+	var f_body = "<xwing:datagrid-body>"
+		   + "<xwing:datagrid-row>";
+	
+	for(var i =0; i< col_cnt.length; i++){ 
+		f_body += "<xwing:datagrid-cell bindcolumn='"+col_cnt[i]+"' halign='center' expr='setColor'></xwing:datagrid-cell>";
+		
+	}
+	
+	f_body += "</xwing:datagrid-row>"
+ 	   +"</xwing:datagrid-body>";
+	
+	var f_context = f_column + f_head + f_body ;
+	
+	if(type == "DEPT1") $grd_dept1_list.addContent(f_context, true);
+	else if(type == "DEPT2") $grd_dept2_list.addContent(f_context, true);
+	else $grd_dept3_list.addContent(f_context, true);
+
+
+}
+
+function grid_visible(){
+	if(type == "DEPT2"){
+		$lbl_dept2_nm.setVisible(true);
+		$lbl_dept3_nm.setVisible(false);
+		$grd_dept1_list.setVisible(false);
+		$grd_dept2_list.setVisible(true);
+		$grd_dept3_list.setVisible(false);
+		
+	}else if(type == "USER"){
+		$lbl_dept2_nm.setVisible(false);
+		$lbl_dept3_nm.setVisible(true);
+		$grd_dept1_list.setVisible(false);
+		$grd_dept2_list.setVisible(false);
+		$grd_dept3_list.setVisible(true);
+		
+	}else{
+		
+	}
+}
+
+
+function grd_dept1_list_dblclick(event) {
+	var nCell = event.cell._getColIndex();
+	var columns = $DS_RES.getColumnInfo();
+
+	if(nCell < 3){
+		new xwing.Dialog.alert("특정 센터를 클릭해야 조회할 수 있습니다.");
+		return;
+	}
+
+		parent.lbl_sub2_click();
+		$lbl_subtitle1.setValue("팀별통계");
+		
+		type ="DEPT2";
+		selected_dept = columns[nCell].split("_")[1];
+		cntr_cd = selected_dept;
+
+		$DS_PARAM.copyFrom(parent.top.$DS_DEPT_LIST_ALL);
+		$DS_PARAM.filter("[DEPT_LEVEL == '3'][DEPT1_CD=='"+selected_dept+"']");
+		$lbl_dept2_nm.setValue("(센터 : "+parent.top.$DS_DEPT_LIST_ALL.getValue(parent.top.$DS_DEPT_LIST_ALL.indexOfRow("DEPT1_CD",selected_dept), "DEPT1_NAME")+")");
+		//$lbl_dept2_nm.setLeft($lbl_dept2_nm.getLeft()-15);
+
+		grid_visible();
+		f_searchRes();
+	/*}else if(type == "DEPT2"){
+		parent.lbl_sub3_click();
+		$lbl_subtitle1.setValue("상담사별통계");
+	
+		type = "USER";
+		selected_dept = columns[nCell+1].split("_")[1];
+		
+		$lbl_dept_nm.setValue("(팀 : "+parent.top.$DS_DEPT_LIST_ALL.getValue(parent.top.$DS_DEPT_LIST_ALL.indexOfRow("DEPT2_CD",selected_dept), "DEPT2_NAME")+")");
+		$lbl_dept_nm.setLeft($lbl_dept_nm.getLeft()+30);
+		
+		getUser();
+		
+	}else{
+		xwing.Dialog.alert("조회할 하위레벨이 존재하지 않습니다.");
+		return;
+	}*/
+}
+
+function grd_dept2_list_dblclick(event) {
+	var nCell = event.cell._getColIndex();
+	var columns = $DS_RES2.getColumnInfo();
+	
+	if(nCell < 3){
+		new xwing.Dialog.alert("특정 팀을 클릭해야 조회할 수 있습니다.");
+		return;
+	}
+	
+	parent.lbl_sub3_click();
+	$lbl_subtitle1.setValue("상담사별통계");
+
+	type = "USER";
+	selected_dept = columns[nCell].split("_")[1];
+	$lbl_dept3_nm.setValue("(팀 : "+parent.top.$DS_DEPT_LIST_ALL.getValue(parent.top.$DS_DEPT_LIST_ALL.indexOfRow("DEPT2_CD",selected_dept), "DEPT2_NAME")+")");
+	//$lbl_dept3_nm.setLeft($lbl_dept3_nm.getLeft()+30);
+	grid_visible();
+	
+	getUser();
+}
+
+
+function grd_dept3_list_dblclick(event) {
+	var nCell = event.cell._getColIndex();
+	var columns = $DS_RES3.getColumnInfo();
+	
+	if(nCell < 3){
+		new xwing.Dialog.alert("특정 상담사를 클릭해야 조회할 수 있습니다.");
+		return;
+	}
+	
+	
+	selected_user = columns[nCell].split("_")[1];
+	
+	$pnl_detail.setVisible(true);
+	$splitbar.setVisible(true);
+	$lbl_subtitle2.setValue( $DS_PARAM.getValue($DS_PARAM.indexOfRow("USER_ID", selected_user), "USER_NAME")+"님의 개인정보처리항목준수결과");
+	$grd_dept3_list.setHeight($pnl_detail.getTop()-65);
+
+	
+	f_searchDetail(selected_user);
+	
+}
+
+
+function btn_excel_click(event) {
+	var ds_name = "";
+	var grd_name = "";
+	if($grd_dept1_list.getVisible()){
+		ds_name = "DS_RES";
+		grd_name = "grd_dept1_list";
+	}else if($grd_dept2_list.getVisible()){
+		ds_name = "DS_RES2";
+		grd_name = "grd_dept2_list";
+	}else{
+		ds_name = "DS_RES3";
+		grd_name = "grd_dept3_list";
+	}
+	
+	if(Xwing.getDataset(ds_name).size() > 0) {
+		Xwing.getDataGrid(grd_name).exportData('개인정보처리항목분석결과','../jsp/export2.jsp', true);
+	} else {
+		new xwing.Dialog.alert("출력할 데이터가 없습니다.");
+	}
+}
+
+function grd_detail_list_dblclick(event) {
+	
+	var ced_no = $DS_DETAIL_RES.getValue(event.rowIdx,"CON_ENT_DGN_NO");
+	
+	var opt = {
+			id: 'BIS020P1',
+			url: './BIS020P1.xhtml',
+			width: 885,
+			height: 720,
+			draggable:true,
+			resizable : false,
+			modal: true,
+			title : '개인정보처리항목분석결과',
+			param : {
+				ced_no : ced_no,
+				DS_DETAIL_RES : $DS_DETAIL_RES.getRow(event.rowIdx)
+			}
+		};
+	
+	var BIS020P1 = new parent.xwing.Dialog(opt);
+	BIS020P1.open();
+}
+
+function setColor(cellObj,rowIdx) {
+	var val={};
+	var dataset = "";
+	if(type == "DEPT1"){
+		dataset = Xwing.getDataset("DS_RES");
+	}else if(type == "DEPT2"){
+		dataset = Xwing.getDataset("DS_RES2");
+	}else{
+		dataset = Xwing.getDataset("DS_RES3");
+	}
+	var bindcolumn = cellObj.getBindcolumn();
+	
+	if(bindcolumn.indexOf("COL_") != -1 )
+		val["bgcolor"] = ( dataset.getValue(rowIdx, bindcolumn) != "0/0" ? "#FFC19E" : "" ) ; //#FFFFE4 //lightsalmon
+	
+	if (val)
+		return val;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset description="소속리스트" id="DS_PARAM"></xwing:dataset>
+	<xwing:dataset description="결과리스트(센터)" id="DS_RES"></xwing:dataset>
+	<xwing:dataset description="상담사리스트" id="DS_USER"></xwing:dataset>
+	<xwing:dataset id="DS_RES2" description="결과리스트(팀)"></xwing:dataset>
+	<xwing:dataset id="DS_RES3" description="결과리스트(상담사)"></xwing:dataset>
+	<xwing:dataset id="DS_DETAIL_RES">
+		<xwing:dataset-column id="CON_ENT_DGN_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_ENT_DGN_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="700" load="page_load" scroll="false" top="-5">
+		<xwing:panel id="pan_daily_statics" left="0" top="0" width="1050" height="703" anchor="top right left" visible="true" scroll="false" styles="pan_box_title">
+			<xwing:label id="lbl_subtitle1" value="센터별통계" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:datagrid id="grd_dept1_list" left="15" top="50" width="1020" height="640" rownum="true" binddataset="DS_RES" anchor="all" resizable="true" sortable="true" autofit="true" dblclick="grd_dept1_list_dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="소분류코드"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="소분류명"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="CLASS_DATE" suppress="true" halign="center" expr="setColor" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="MAIN_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:edit id="edit_rowcnt" left="960" top="7" width="45" height="25" halign="right" anchor="top right" readonly="true"></xwing:edit>
+			<xwing:button id="btn_excel" left="1009" top="7" height="25" width="25" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center" click="btn_excel_click"></xwing:button>
+			<xwing:label id="lbl_dept2_nm" left="110" top="9" width="368" height="22" fontweight="bold" fontfamily="WallBoardFond" fontcolor="#303030" fontsize="12" anchor="top"></xwing:label>
+			<xwing:datagrid id="grd_dept2_list" left="15" top="50" width="1020" height="640" rownum="true" binddataset="DS_RES2" anchor="all" resizable="true" sortable="true" autofit="true" visible="false" dblclick="grd_dept2_list_dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="소분류코드"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="소분류명"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="CLASS_DATE" suppress="true" halign="center" expr="setColor" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="MAIN_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:datagrid id="grd_dept3_list" left="13" top="50" width="1020" height="640" rownum="true" binddataset="DS_RES3" anchor="all" resizable="true" sortable="true" autofit="false" visible="false" dblclick="grd_dept3_list_dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="소분류코드"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="소분류명"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="CLASS_DATE" suppress="true" halign="center" expr="setColor" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="MAIN_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:splitbar id="splitbar" left="0" top="400" height="5" borderwidth="0" width="1050" cursor="n-resize" bindwidget="r:pnl_detail,r:grd_dept3_list" bartype="vertical" anchor="top right left" visible="false" shadow="#58728d 0 -3 0 0"></xwing:splitbar>
+			<xwing:panel id="pnl_detail" left="0" top="405" width="1050" height="296" visible="false" anchor="all">
+				<xwing:datagrid id="grd_detail_list" left="16" top="50" width="1020" height="241" rownum="true" binddataset="DS_DETAIL_RES" anchor="all" resizable="true" sortable="true" autofit="false" visible="true" dblclick="grd_detail_list_dblclick">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="85"></xwing:datagrid-column>
+						<xwing:datagrid-column width="130"></xwing:datagrid-column>
+						<xwing:datagrid-column width="130"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="상담사"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="설계번호"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="설계일시"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="개인정보처리항목"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell bindcolumn="USER_NAME" suppress="true" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CON_ENT_DGN_NO" suppress="true" expr="setColor" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CON_ENT_DGN_DATE" suppress="true" expr="setColor" mask="datetime" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="REGU_CNT" suppress="true" expr="setColor" halign="center"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:label id="lbl_subtitle2" value="설계번호별 정보" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			</xwing:panel>
+			<xwing:label id="lbl_dept3_nm" left="135" top="9" width="368" height="22" fontweight="bold" fontfamily="WallBoardFond" fontcolor="#303030" fontsize="12" anchor="top"></xwing:label>
+			<xwing:label id="lbl_notice" value="※ 폐쇄된 조직은 통계에 포함되지 않습니다" left="732" top="12" width="230" height="22" anchor="top right"></xwing:label>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

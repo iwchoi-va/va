@@ -1,0 +1,101 @@
+.xw-list-shell {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.xw-list{
+	width: 100%;
+	height:100%;
+	border: 1px solid #798da7;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	vertical-align: middle;
+	box-shadow: inset #c1c1c1 1px 1px 3px; 
+	-moz-box-shadow: inset #c1c1c1 1px 1px 3px;	
+	background:#ffffff;
+	overflow-x:hidden;
+	overflow-y:auto;	
+	cursor:pointer;
+	display:-webkit-box;
+}
+
+.xw-list-item{
+	overflow:hidden;
+}
+
+.xw-list-span{
+	margin:0px;
+	padding:2px;
+	vertical-align:top;
+	-moz-user-select:none;
+	display:inline-block;
+}
+
+.xw-list-item-odd{ 
+	border-bottom:1px solid #d2d2d2;
+	color:#373737;
+}
+
+.xw-list-item-even{
+	 border-bottom:1px solid #d2d2d2;
+	 color:#373737;	 
+	 background-color: #f4f4f4;
+}
+
+.xw-list-item:hover{
+	background:#ebebeb;	
+}
+
+.xw-list-item-hoverless:hover{
+	background:#fff;	
+}
+
+.xw-list-item-selected{
+	background:#c5cfdc;	
+}
+
+.xw-list-item-selected:hover{
+	background:#c5cfdc;	
+}
+
+.xw-list-item-underline:hover{
+	border-bottom:1px dotted blue;
+}
+
+.xw-list-item-upline:hover{
+	border-top:1px dotted blue;
+}
+
+.xw-list-ghost{
+	background:#D9E8FB;
+	position:relative;	
+	width:auto;
+	height:auto;
+	top:0px;
+	left:0px;
+	margin:0px;
+	padding:0px;
+	z-index:9999;	
+	border:1px dotted blue;	
+}
+
+.xw-list-noperm{
+	background:url(img/tree/permission-no.png) no-repeat center center;
+	width:18px;
+	height:inherit;
+	-moz-user-select:none;
+}
+
+.xw-list-perm{
+	background:url(img/tree/permission-yes.png) no-repeat center center;
+}
+
+.xw-list-li{
+	margin:0px;
+	mapping:0px;
+	overflow-x:hidden;
+}
+
+ 

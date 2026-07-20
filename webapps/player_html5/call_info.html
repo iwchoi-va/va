@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	        
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	    <style>
+			html {
+				overflow: hidden;
+				resize: both;
+				height: 100%;
+			}
+			body {
+				background: #434343;
+				color: #fff;
+				font-family: "NanumBarunGothic", Helvetica, Arial, sans-serif;
+				overflow: hidden;
+				height: 100%;
+				width: 100%;
+				margin: 0 auto;
+			}
+			table {
+				position: absolute;
+				width: 396px;
+				height: 150px;
+				top: 50%;
+				left: 50%;
+				margin: -83px 0 0 -198px;
+				color: #fafafa;
+				font-size: 12px;
+				background: #434343;
+			}
+			table tr {
+				border-bottom: 1px dashed #f7f1e2;
+				height:28px;
+			}
+			table td {
+			
+				vertical-align: middle;
+				font-size: 15px;
+				color:#4cc8e9;
+				font-weight:400;
+				
+			}
+			table tr:hover td {
+				background: #2D3E50;
+			}
+			
+			table td span.glyphicon {
+				margin-left: 20px;
+				margin-right: 6px;
+				font-size: 18px;
+				top: 4px;
+			}
+			table tr:last-child {
+				letter-spacing: 0.08em;
+				border-bottom:none;
+			}
+		</style>
+		<!-- jQuery -->
+		<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>  
+    	<script type='text/javascript' src='../js/servicemanager.js'></script>
+    </head>
+    
+    <body onLoad="calling()">
+     
+    
+    <table border="0" cellspacing="0" cellpadding="0">
+    <colgroup><col width="37%" /><col width="" /></colgroup>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>고객명</td>
+        <td id="regist_no"></td>
+      </tr>
+      <tr class='even'>
+        <td><span class="" aria-hidden="true"></span>계약정보</td>
+        <td id="ani"></td>
+      </tr>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>상품명</td>
+        <td id="cate"></td>
+      </tr>
+       <tr>
+        <td><span class="" aria-hidden="true"></span>담보</td>
+        <td id="tacate"></td>
+      </tr>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>전체보험료</td>
+        <td id="tacate"></td>
+      </tr>  
+      <tr>
+        <td><span class="" aria-hidden="true"></span>통화일시</td>
+        <td id="date"></td>
+      </tr>
+    </table>
+    
+    <script>
+   		var xhr = new XMLHttpRequest();
+	 	function calling(){
+	 		//constContext(); //브라우저 우측 메뉴 막아.
+			document.body.oncontextmenu = function(){return false;};
+	 		
+	 		var host = parent.host;
+    		var contact_id = parent.contact_id;
+    		var rec_key = parent.rec_key;
+    		
+    		var url = serviceConfig.url;
+    		var field = serviceConfig.sfield;
+    		//var param = field.fn_sfield + "=" + field.sfield.replace("value","DOCID");
+    		//var param = field.fn_exquery + "=" + field.contact_id.replace("value",contact_id) + "&";
+    		//param += field.fn_rfield + "=Date,CUST_NAME,INCALL_NO,OUTCALL_NO,CATE_NM,TACATE_NM";
+    		
+    		xhr.onreadystatechange = loader;
+    		//xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=call_info&rec_key=" + rec_key),false);
+    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=call_info&rec_key=" + rec_key + "&contact_id="+ contact_id),false);  
+    		xhr.send(null);
+	 	}
+	 	
+	 	function loader(){
+   			if(xhr.readyState == 4 && xhr.status == 200) {
+   				var result = JSON.parse(xhr.responseText);
+   				var data = result.DATA;
+   				//var column = data.column;
+	        	
+   				var regist_no =  data.record[0][0];
+   				var incall = data.record[0][1];
+   				var outcall = data.record[0][2];
+   				var cate = data.record[0][3];
+   				var date = data.record[0][4];
+   				
+   				var cate_nm='', tacate_nm='';
+   				if(cate!=''){
+   					//cate_nm = cate.substring(cate.lastIndexOf("^")+1);
+   					var cate_arr1 = cate.split('#');
+	   				var cate_arr2 = cate_arr1[0].split('^');
+	   				cate_nm = cate_arr2[2];
+   				}
+   				/*if(tacate!=''){
+   					//tacate_nm = tacate.substring(tacate.lastIndexOf("^")+1);
+	   				var tacate_arr1 = tacate.split('#');
+	   				var tacate_arr2 = tacate_arr1[0].split('^');
+	   				tacate_nm = tacate_arr2[2];
+   				}*/
+	        	//document.getElementById("cust_name").innerHTML = cust_name;
+   				document.getElementById("regist_no").innerHTML = regist_no;
+	        	document.getElementById("ani").innerHTML = incall.length>0?incall:outcall;
+	        	document.getElementById("cate").innerHTML = cate_nm;
+	        	//document.getElementById("tacate").innerHTML = tacate_nm;
+	        	document.getElementById("date").innerHTML = date.substring(0,4)+"-"+date.substring(4,6)+"-"+date.substring(6,8)+"  "+date.substring(8,10)+":"+date.substring(10,12)+":"+date.substring(12,14)
+	        												+ " ("+parent.contact_id+") ";
+	        	
+	        	$("#cate").attr("title", (cate.replace(/\^/g, ' - ')).replace(/\#/g, '\n'));
+	        	//$("#tacate").attr("title", (tacate.replace(/\^/g, ' - ')).replace(/\#/g, '\n'));
+	        	//document.getElementById("cate").setAttribute("title", cate.replace(/\#/g, '\\n'));
+	        	//document.getElementById("tacate").setAttribute("title", tacate);
+   			}
+	   	}
+    </script>
+    
+</body>
+</html>

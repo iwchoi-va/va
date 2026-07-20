@@ -1,0 +1,39 @@
+
+/* **********button control area********** */
+.sub-menu { padding: 10px 0px 5px 10px; margin-top: -31px; }
+.sub-menu .btn_info,
+.sub-menu .btn_rank,
+.sub-menu .btn_summary,
+.sub-menu .btn_memo,
+.sub-menu .btn_history,
+.sub-menu .btn_showText { 
+	display: inline-block;
+	cursor: pointer;
+	height: 40px;
+	width: 40px; 
+	border-width: 0px;
+	background-position: center center;
+	outline: none;
+}
+.sub-menu .btn_close { 
+	display: inline-block;
+	cursor: pointer;
+	height: 40px;
+	width: 40px; 
+	border-width: 0px;
+	background-position: center center;
+	outline: none;
+	float: right;
+}
+
+.sub-menu .button button:focus {outline:0;}
+
+
+iframe { width: 480px; padding-left: 10px; }
+
+
+
+
+
+
+

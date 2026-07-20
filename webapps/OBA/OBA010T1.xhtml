@@ -1,0 +1,505 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/ageutil.js" type="text/javascript" charset="UTF-8"></script>
+<style>
+	 #grd_dmbo .xw-datagrid-area-body{
+		min-height:80px;
+	} 
+	#grd_dmbo.xw-datagrid-shell,#grd_dmbo .xw-mod-border{
+		min-height:110px;
+	}
+</style>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba030p1.sel.do";
+var browser="";
+var ced_no="",user_id="",self_popup=false;
+var tm_no = "";
+var estimateAuth=[];
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		var query = location.search.substring(1);
+		
+		var parameters = {};
+		var keyValues = query.split(/&/);
+		for (var prop in keyValues) {
+		    var keyValuePairs = keyValues[prop].split(/=/);
+		    var key = keyValuePairs[0];
+		    var value = keyValuePairs[1];
+		    parameters[key] = value;
+		}
+		
+		//하위탭에서 사용하는 전역변수들
+		self_popup= g_isEmpty(parameters['self_popup'])? false:parameters['self_popup'];
+		ced_no= g_isEmpty(parameters['ced_no'])? parent.ced_no:parameters['ced_no'];
+		user_id	= g_isEmpty(parameters['user_id'])? parent.user_id:parameters['user_id'];
+		
+		//QC 평가표 VISIBLE 여부		
+		if(!self_popup){
+			$tmpDs.setData(parent.$DS_GROUPAUTH.getColumnInfo(),parent.$DS_GROUPAUTH.getData('[ETC4 == "Y"]'));
+			for ( var i = 0 ; i < $tmpDs.size(); i++) {
+				if($tmpDs.getValue(i, "CODEID") != ""){
+					estimateAuth.push($tmpDs.getValue(i, "CODEID"));
+				}
+			}
+			estimateAuth=estimateAuth.toString();
+			if(estimateAuth.indexOf(parent.user_group_cd) > -1){
+				$btn_estimate.setVisible(true);
+			}else{
+				$btn_estimate.setVisible(false);
+			}
+		}else{
+			$btn_popup.setVisible(false);
+			estimateAuth = parameters['estimateAuth'];
+			if(estimateAuth.indexOf(parameters['user_group_cd']) > -1){
+				$btn_estimate.setVisible(true);
+			}else{
+				$btn_estimate.setVisible(false);
+			}
+		}
+		
+		getInfo();
+		lbl_tab1_click();
+		//엑셀다운권한정의
+		excelDownAuth($btn_excel,false,false);
+}
+
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+function getInfo(){
+	var opt = {
+			reqId: "getInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1.getInfo.sel', 
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+//---엑셀버튼클릭
+function btn_excel_click(event){
+	
+	$DS_EXCEL.clear();
+	$DS_EXCEL.copyFrom($DS_INFO);
+	
+	for(var i =0 ; i<$DS_DMBO.size(); i++){
+		$DS_EXCEL.setValue(i,'DMBO_NM',$DS_DMBO.getValue(i,'DMBO_NM'));
+		$DS_EXCEL.setValue(i,'DMBO_GB',$DS_DMBO.getValue(i,'DMBO_GB'));
+		$DS_EXCEL.setValue(i,'INSUR_AMT',$DS_DMBO.getValue(i,'INSUR_AMT'));
+		$DS_EXCEL.setValue(i,'BASIC_PREM',$DS_DMBO.getValue(i,'BASIC_PREM'));
+		$DS_EXCEL.addRow();
+	}
+	
+	if(Xwing.getDataset('DS_EXCEL').size() > 0) {
+		Xwing.getDataGrid('grd_excel').exportData('가입설계번호_상세정보', '../jsp/export2.jsp', true); 
+	} else {
+		xwing.Dialog.alert("출력할 데이터가 없습니다.");
+	}
+	
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getInfo":
+			$DS_INFO.setData(res.DS_LIST.column, res.DS_LIST.record);
+			
+			tm_no = $DS_INFO.getValue(0,"TM_NO");
+			
+		/*	
+			if($DS_INFO.getValue(0,"RE_ANL_YN") == "TRUE"){
+				xwing.Dialog.alert("추가 콜이 발생히여 재분석 중입니다.");
+			}
+			
+			//expr duration
+			var opt="",opt2="";
+			dsName="DS_INFO";
+			var totalSeconds = $DS_INFO.getValue(0,'DURATION');
+			//var score = $DS_RES.getValue(rowIdx, "SCORE");
+			
+			totalSeconds = Math.floor(totalSeconds / 100);
+			var h = (Math.floor(totalSeconds / 3600)).toString();
+			totalSeconds %= 3600;
+			var m = (Math.floor(totalSeconds / 60)).toString();
+			var s = (Math.floor(totalSeconds % 60)).toString();
+			opt = (h.length==1?"0"+h:h) + ":" + (m.length==1?"0"+m:m) + ":" + (s.length==1?"0"+s:s);
+			$DS_INFO.setValue(0,"DURATION",opt);*/
+			
+			
+			//피보험자 나이
+			//$DS_INFO.setValue(0,"P_AGE",f_getInsurAge(2,$DS_INFO.getValue(0,"CON_ENT_DGN_DATE"),$DS_INFO.getValue(0,"P_ISD_CD")));
+			//담보
+			var dmbo_no = $DS_INFO.getValue(0, "DMBO_NM").split("&");
+			var insur_amt = $DS_INFO.getValue(0, "INSUR_AMT").split("&");
+			var dmbo_gb = $DS_INFO.getValue(0, "DMBO_GB").split("&");
+			var basic_prem = $DS_INFO.getValue(0, "BASIC_PREM").split("&");
+			for(var i = 0, len = dmbo_no.length; i<len; i++){
+				$DS_DMBO.addRow();
+				$DS_DMBO.setValue(i,"DMBO_NM",dmbo_no[i]);
+				$DS_DMBO.setValue(i,"DMBO_GB",dmbo_gb[i]);
+				$DS_DMBO.setValue(i,"INSUR_AMT",insur_amt[i]);
+				$DS_DMBO.setValue(i,"BASIC_PREM",basic_prem[i]);
+			}
+			$grd_dmbo.setSelection(0);
+			
+			parent.prod_cd =$DS_INFO.getValue(0, "PROD_CD");
+			parent.prod_nm =$DS_INFO.getValue(0, "PROD_NM");
+			
+			break;
+		default: break;	
+	}
+}
+
+
+
+function lbl_tab1_click(event) {
+	lbl_tab_action('lbl_tab1',"./OBA010T1T1.xhtml"); //상세정보
+}
+function lbl_tab2_click(event) {
+	lbl_tab_action('lbl_tab2',"./OBA010T1T2.xhtml"); //고지사항
+}
+function lbl_tab3_click(event) {
+	lbl_tab_action('lbl_tab3',"./OBA010T1T3.xhtml");//UW심사이력
+}
+function lbl_tab4_click(event) {
+	lbl_tab_action('lbl_tab4',"./OBA010T1T4.xhtml");//의료비조회
+}
+function lbl_tab5_click(event) {
+	lbl_tab_action('lbl_tab5',"./OBA010T1T5.xhtml");//정액담보조회
+}
+function lbl_tab6_click(event) {
+	lbl_tab_action('lbl_tab6',"./OBA010T1T6.xhtml");//친권자정보
+}
+function lbl_tab7_click(event) {
+	lbl_tab_action('lbl_tab7',"./OBA010T1T7.xhtml");//통합계약 이력
+}
+function lbl_tab8_click(event) {
+	lbl_tab_action('lbl_tab8',"./OBA010T1T8.xhtml");//EDD
+}
+function lbl_tab9_click(event) {
+	if(tm_no == "")  xwing.Dialog.alert("가입설계번호가 존재하지 않습니다."); // TM_NO가 없으면 승환계약정보 안띄움
+	else lbl_tab_action('lbl_tab9',"./OBA010T1T9.xhtml");//승환계약 
+}
+
+function lbl_tab_action(lbl,page){
+	for(var i = 1; i<10;i++){
+		if('lbl_tab'+i != lbl){
+			Xwing.getLabel('lbl_tab'+i).setFontweight('normal');
+			Xwing.getLabel('lbl_tab'+i).setBgcolor('');
+			Xwing.getLabel('lbl_tab'+i).setFontcolor('');
+		}else{
+			Xwing.getLabel(lbl).setFontweight('bold');
+			Xwing.getLabel(lbl).setBgcolor('#58728d');
+			Xwing.getLabel(lbl).setFontcolor('#fff');
+		}
+	}
+	
+	if(lbl == "lbl_tab8" || lbl == "lbl_tab2"){//팝업 URL 연동시 빈페이지 안뜨게.  
+		$pan_tab_content2.setUrl(page);	
+	}else	$pan_tab_content.setUrl(page);	
+}
+
+/*
+ * 평가표 팝업 닫을때 업데이트해야하는 정보 업데이트 하는부분
+ * */
+function close_est_popup(){
+	var p_user_id = parent.user_id.length < 8 ? "23921376" : parent.user_id; // VA의 888888 아이디때문에 우선 이렇게 처리함
+	//var p_user_id = parent.user_id; // ※ 운영반영시에는 이걸로 변경 필요!!
+	
+	var opt = {
+			reqId: "close_est_popup",
+			url: "service::oba.oba010t5.getEstimationInfo.do",
+			
+			param: {
+				cmd :"UpdViewStatus", 
+				ent_dgn_no : ced_no,
+				user_id : p_user_id,
+				type : "close"
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function btn_estimate_click(event) {
+	setTimeout(function(){
+		window.open("./OBA010T5.jsp?ENTDGNNO="+ced_no+"&USERID="+parent.user_id, "QC 평가표", "width=950, height=715, left=0, top=0, location=no,resizable=no, scrollbars=no");	
+	}, 10);
+}
+
+function btn_popup_click(event) {
+	window.open("./OBA010T1.xhtml?self_popup=true&ced_no="+ced_no+"&user_group_cd="+parent.user_group_cd+"&estimateAuth="+estimateAuth+"&user_id="+user_id, "청약정보 상세팝업", "width=783, height=861, left=500, top=10, location=no,resizable=no, scrollbars=yes");
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_INFO">
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="CUST_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_FULLNM"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="MONTH_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CALL_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="DURATION"></xwing:dataset-column>
+		<xwing:dataset-column id="P_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="NAB_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="JUDGE_STAT"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="RNW_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEDUCT_AMT"></xwing:dataset-column>
+		<xwing:dataset-column id="REL_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="P_AGE"></xwing:dataset-column>
+		<xwing:dataset-column id="JOB_CLASS"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="DUP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="HCDT_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_AGREE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SIXTYFIVE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="RJCT_SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REL_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="INSUR_AMT"></xwing:dataset-column>
+		<xwing:dataset-column id="BASIC_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="EDD_REGN_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="PROFIT_PROMISE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="FATCH_YN"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DMBO">
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BASIC_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="INSUR_AMT"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_GB"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_EXCEL">
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="INSUR_AMT"></xwing:dataset-column>
+		<xwing:dataset-column id="BASIC_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_GB"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="tmpDs"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="855" load="page_load" scroll="false">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="855" anchor="all" bgcolor="#eee" scroll="false">
+			<xwing:panel id="pan_anl_info" left="0" top="380" width="769" height="480" scroll="false" anchor="right bottom left" cursor="n-resize">
+				<xwing:panel id="panel_tab1" left="0" top="0" width="769" height="30" click="panel_tab1_click" borderwidth="0" borderstyle="none" scroll="false" bgcolor="#fff" anchor="right left">
+					<xwing:label id="lbl_tab2" value="고지사항" left="80" top="0" width="80" height="30" fontcolor="#000000" bgcolor="#fff" halign="center" click="lbl_tab2_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab3" value="UW심사이력" left="160" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab3_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab4" value="의료비조회" left="240" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab4_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab5" value="정액담보조회" left="320" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab5_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab1" value="상세정보" left="0" top="0" width="80" height="30" fontcolor="#ffffff" halign="center" bgcolor="#58728d" click="lbl_tab1_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab6" value="친권자정보" left="400" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab6_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab7" value="통합계약이력" left="480" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab7_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab8" value="EDD" left="560" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab8_click" cursor="pointer"></xwing:label>
+					<xwing:label id="lbl_tab9" value="승환계약" left="640" top="0" width="80" height="30" fontcolor="#000000" halign="center" bgcolor="#fff" click="lbl_tab9_click" cursor="pointer"></xwing:label>
+				</xwing:panel>
+				<xwing:panel id="pan_tab_content2" left="10" top="-60" scroll="false" width="50" height="50" anchor="all" visible="false">
+				</xwing:panel>
+				<xwing:panel id="pan_tab_content" left="0" top="31" scroll="false" width="769" height="445" anchor="all">
+				</xwing:panel>
+			</xwing:panel>
+			<xwing:panel id="pan_base_info" left="0" top="0" scroll="true" width="769" height="378" anchor="all">
+				<xwing:label id="lbl_subtitle2" value="기본정보" left="4" top="0" width="765" height="40" styles="label_boxtitle" halign="left" anchor="top right left" bggradientdir="horizontal" bgimagealign="left center"></xwing:label>
+				<xwing:label id="lbl_user_id" left="16" top="63" value="상담사명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_user_id" left="101" top="63" height="25" width="124" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="USER_NM"></xwing:edit>
+				<xwing:label id="lbl_dept" left="205" top="63" value="소속" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_dept" left="290" top="63" height="25" width="220" fontsize="11" bindcolumn="DEPT_FULLNM" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_title1" value=" 설계기본정보" left="20" top="44" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_prod_nm" left="16" top="91" value="상품명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_prod_nm" left="101" top="91" height="25" width="409" fontsize="11" bindcolumn="PROD_NM" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_judge_stat" left="506" top="63" value="심사상태" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_judge_stat" left="591" top="63" height="25" width="153" fontsize="11" bindcolumn="JUDGE_STAT" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_con_cont_name" left="18" top="119" value="계약자" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_con_cont_name" left="102" top="119" height="25" width="95" fontsize="11" bindcolumn="CON_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_ip_isd_nm" left="203" top="119" value="피보험자" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_ip_isd_nm" left="287" top="119" height="25" width="95" fontsize="11" bindcolumn="P_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_olt_deposit_nm" left="403" top="119" value="납입자" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_olt_deposit_nm" left="487" top="119" height="25" width="95" fontsize="11" bindcolumn="NAB_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_1" left="18" top="257" value="담보정보" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:datagrid id="grd_dmbo" left="103" top="263" width="642" height="103" rownum="false" checkbox="false" binddataset="DS_DMBO" anchor="all" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap" click="grd_vrs_list_click" topsummary="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="350"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell text="종류"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="담보명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="보장금액" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="보험료"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell bindcolumn="DMBO_GB" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="left" bindcolumn="DMBO_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="INSUR_AMT" halign="right" mask="comma"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BASIC_PREM" halign="right" mask="comma"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:label id="lbl_rel_nm" left="19" top="174" value="계피관계" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_rel_nm" left="102" top="174" height="25" width="95" fontsize="11" bindcolumn="REL_NM" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_p_age" left="204" top="174" value="보험연령" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_p_age" left="287" top="174" height="25" width="95" fontsize="11" bindcolumn="P_AGE" enabled="false" binddataset="DS_INFO" halign="right"></xwing:edit>
+				<xwing:label id="lbl_job_class" left="404" top="174" value="직업급수" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_job_class" left="487" top="174" height="25" width="95" fontsize="11" bindcolumn="JOB_CLASS" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_prod_des" left="19" top="204" value="상품소개" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_dup_yn" left="204" top="204" value="승환계약" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_hcdt_yn" left="379" top="204" value="검진할인대상" height="25" width="105" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_con_month_prem" left="18" top="146" value="월보험료" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_con_month_prem" left="102" top="146" height="25" width="95" fontsize="11" bindcolumn="MONTH_PREM" enabled="false" mask="comma" halign="right" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_rnw_prem" left="203" top="146" value="갱신보험료" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_rnw_prem" left="287" top="147" height="24" width="95" fontsize="11" bindcolumn="RNW_PREM" enabled="false" mask="comma" halign="right" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_deduct_amt" left="403" top="146" value="만기금" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_deduct_amt" left="487" top="146" height="25" width="95" fontsize="11" bindcolumn="DEDUCT_AMT" enabled="false" mask="comma" halign="right" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_con_gree_yn" left="3" top="234" value=" 전자적&#10;사전동의" height="25" width="96" anchor="left" styles="label_subtitle" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_sixtyfive_yn" left="204" top="234" value="65세 안내장&#10;발송 동의" height="25" width="80" anchor="left" styles="label_subtitle" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_rej_sms_yn" left="379" top="234" value="미청약 거절 &#10;통보 SMS 안내동의" height="25" width="105" anchor="left" styles="label_subtitle" fontsize="10"></xwing:label>
+				<xwing:edit id="edt_prod_des" left="102" top="204" height="25" width="95" fontsize="11" bindcolumn="PROD_DESC" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_dup_yn" left="287" top="204" height="25" width="95" fontsize="11" bindcolumn="DUP_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_hcdt_yn" left="487" top="204" height="25" width="95" fontsize="11" bindcolumn="HCDT_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_con_agree_yn" left="102" top="234" height="25" width="95" fontsize="11" bindcolumn="CON_AGREE_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_sixtyfive_yn" left="287" top="234" height="25" width="95" fontsize="11" bindcolumn="SIXTYFIVE_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_rej_sms_yn" left="487" top="234" height="25" width="95" fontsize="11" bindcolumn="RJCT_SMS_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:datagrid id="grd_excel" left="30" top="313" width="59" height="56" rownum="true" checkbox="false" anchor="top right left" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap" visible="false" binddataset="DS_EXCEL">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="150"></xwing:datagrid-column>
+						<xwing:datagrid-column width="250"></xwing:datagrid-column>
+						<xwing:datagrid-column width="140"></xwing:datagrid-column>
+						<xwing:datagrid-column width="150"></xwing:datagrid-column>
+						<xwing:datagrid-column width="300"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="60"></xwing:datagrid-column>
+						<xwing:datagrid-column width="60"></xwing:datagrid-column>
+						<xwing:datagrid-column width="60"></xwing:datagrid-column>
+						<xwing:datagrid-column width="60"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column width="250"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="가입설계번호"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="소속"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상담사명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="심사상태"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상품명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="계약자명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="피보험자명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="납입자명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="월보험료"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="갱신보험료"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="만기금"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="계피관계" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="보험연령" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="직업급수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상품소개"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="승환계약"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검진할인대상" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="전자적사전동의" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="65세 안내장&#10;발송 동의"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="미청약 거절통보&#10;SMS 안내동의" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="EDD&#10;등록대상여부"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="사망보험금&#10;수익자"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="종류"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="담보명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="보장금액"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="보험료"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell bindcolumn="CED_NO" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="DEPT_FULLNM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="USER_NM" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="JUDGE_STAT" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="PROD_NM" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CON_NAME" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="P_NAME"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="NAB_NAME"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="MONTH_PREM" halign="right" mask="comma"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="right" mask="comma" bindcolumn="RNW_PREM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="DEDUCT_AMT" halign="right" mask="comma"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="REL_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="P_AGE"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="JOB_CLASS"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="PROD_DESC"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="DUP_YN"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="HCDT_YN"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="CON_AGREE_YN"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="SIXTYFIVE_YN" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell halign="center" bindcolumn="RJCT_SMS_YN"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="EDD_REGN_YN" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="PROFIT_PROMISE_YN" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="DMBO_GB"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="DMBO_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="INSUR_AMT" mask="comma" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BASIC_PREM" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:label id="lbl_edd_yn" left="585" top="204" value="EDD" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_edd_yn" left="648" top="204" height="25" width="95" fontsize="11" bindcolumn="EDD_REGN_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_profit_promise_yn" left="585" top="234" value="사망보험금&#10;수익자" height="25" width="60" anchor="left" styles="label_subtitle" fontsize="10"></xwing:label>
+				<xwing:edit id="edt_profit_promise_yn" left="648" top="234" height="25" width="95" fontsize="11" bindcolumn="PROFIT_PROMISE_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_fatca_yn" left="585" top="174" value="FATCA &#10;대상자여부" height="25" width="60" anchor="left" styles="label_subtitle" fontsize="10"></xwing:label>
+				<xwing:button id="btn_excel" left="735" top="9" height="25" width="25" click="btn_excel_click" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center"></xwing:button>
+				<xwing:button id="btn_estimate" value=" QC 평가표" left="616" top="116" anchor="none" styles="btn_normal" width="127" tabindex="4" height="53" iconalign="left" borderwidth="1" shadow="0 0 0 " borderstyle="solid" fontsize="15" fontfamily="NanumGothicBold" bgimagealign="left center" bgimagerepeat="no-repeat" icon="../images/result.png" fontcolor="#111" visible="false" click="btn_estimate_click"></xwing:button>
+				<xwing:button id="btn_popup" value="상세정보" left="665" top="9" width="60" click="btn_popup_click" height="25" borderwidth="1" fontfamily="WallBoardFond" fontsize="11" anchor="top right"></xwing:button>
+				<xwing:edit id="edt_fatca_yn" left="648" top="174" height="25" width="95" fontsize="11" bindcolumn="FATCA_YN" enabled="false" binddataset="DS_INFO"></xwing:edit>
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar" left="0" top="380" height="5" borderwidth="0" width="775" cursor="n-resize" bindwidget="r:pan_base_info,r:pan_anl_info" bartype="vertical" anchor="right bottom left" visible="true" shadow="#58728d 0 -3 0 0"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

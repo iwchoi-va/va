@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	        
+	   <!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">  -->
+	    <style>
+	  	  html {
+				overflow: hidden;
+				resize: both;
+				height: 100%;
+			}
+			body {
+				background: #434343;
+				color: #fff;
+				font-family: 'Dotum','돋움', "NanumBarunGothic", Helvetica, Arial, sans-serif;
+				overflow: hidden;
+				height: 100%;
+				width: 100%;
+				margin: 0 auto;
+			}
+			table {
+				position: absolute;
+				width: 396px;
+				height: 150px;
+				top: 50%;
+				left: 50%;
+				margin: -83px 0 0 -198px;
+				color: #fafafa;
+				font-size: 12px;
+				background: #434343;
+			}
+			table tr {
+				border-bottom: 1px dashed #f7f1e2;
+				height:28px;
+			}
+			table td {
+			
+				vertical-align: middle;
+				font-size: 12px;
+				color:#4cc8e9;
+				font-weight:400;
+				
+			}
+			table tr:hover td {
+				background: #2D3E50;
+			}
+			
+			table td span.glyphicon {
+				margin-left: 20px;
+				margin-right: 6px;
+				font-size: 18px;
+				top: 4px;
+			}
+			table tr td:first-child {
+				text-align:left;
+				font-size:13px;
+			}
+			/* table tr td:nth-child(2) {
+				color:#fff;
+			} */
+			 table tr td:last-child {
+				color:#fff;
+			} 
+			#date{
+				font-size:10px;
+			}
+			table tr:last-child {
+				letter-spacing: 0.08em;
+				border-bottom:none;
+			}
+		</style>
+		<!-- jQuery -->
+		<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>  
+    	<script type='text/javascript' src='../js/servicemanager.js'></script>
+    </head>
+    
+    <body onLoad="calling()">
+     
+    
+    <table border="0" cellspacing="0" cellpadding="0">
+   <colgroup><col width="30%" /><col width="" /></colgroup>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>상담사명</td>
+        <td id="user_nm"></td>
+      </tr>
+      <tr class='even'>
+        <td><span class="" aria-hidden="true"></span>고객명</td>
+        <td id="cust_nm"></td>
+      </tr>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>상품명</td>
+        <td id="prod_nm"></td>
+      </tr>
+       <tr>
+        <td><span class="" aria-hidden="true"></span>담보</td>
+        <td id="dmbo_nm"></td>
+      </tr>
+      <tr>
+        <td><span class="" aria-hidden="true"></span>월납보험료</td>
+        <td id="tot_prem"></td>
+      </tr>  
+      <tr>
+        <td><span class="" aria-hidden="true"></span>통화일시</td>
+        <td id="date"></td>
+      </tr>
+    </table>
+    
+    <script>
+   		var xhr = new XMLHttpRequest();
+	 	function calling(){
+	 		//constContext(); //브라우저 우측 메뉴 막아.
+	 		
+			document.body.oncontextmenu = function(){return false;};
+
+	 		var host = parent.host;
+    		var ced_no =  parent.meta.ced_no;
+    		var rec_key = parent.meta.rec_key;
+    		
+
+    		xhr.onreadystatechange = loader;
+    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=call_info&rec_key=" + rec_key + "&ced_no="+ ced_no),false);
+    		xhr.send(null);
+	 	}
+	 	
+	 	function loader(){
+   			if(xhr.readyState == 4 && xhr.status == 200) {
+   				var result = JSON.parse(xhr.responseText);
+   				var data = result;
+   				//var column = data.column;
+	        	
+   				//var cust_name = data.record[0][1];
+   				var user_nm = data.USER_NM;
+   				var cust_nm =  data.CUST_NM;
+   				var prod_nm = data.PROD_NM;
+   				var dmbo_nm = data.DMBO_NM;
+   				var tot_prem = data.TOT_PREM;
+   				var ucid_date = data.UCID_DATE;
+   				//var tacate = data.record[0][5];
+   					
+   				var dmbo1_nm = "";
+   				
+   				if(dmbo_nm!=''){
+   					//cate_nm = cate.substring(cate.lastIndexOf("^")+1);
+   					var dmbo_arr1 = dmbo_nm.split('^');
+   					if(dmbo_arr1[1] == undefined) dmbo_arr1 = dmbo_arr1[0]; else  dmbo_arr1 = dmbo_arr1[0]+' 등…';
+   					dmbo1_nm = dmbo_arr1;
+   				}
+   				/*if(tacate!=''){
+   					//tacate_nm = tacate.substring(tacate.lastIndexOf("^")+1);
+	   				var tacate_arr1 = tacate.split('#');
+	   				var tacate_arr2 = tacate_arr1[0].split('^');
+	   				tacate_nm = tacate_arr2[2];
+   				}*/
+				
+   				document.getElementById("user_nm").innerHTML = user_nm;
+	        	document.getElementById("cust_nm").innerHTML = cust_nm;
+	        	document.getElementById("prod_nm").innerHTML = prod_nm;
+	        	document.getElementById("dmbo_nm").innerHTML = dmbo1_nm;
+	        	document.getElementById("tot_prem").innerHTML = Number(tot_prem).toLocaleString('en');
+	        	document.getElementById("date").innerHTML = ucid_date.substring(0,4)+"-"+ucid_date.substring(4,6)+"-"+ucid_date.substring(6,8)+"  "+ucid_date.substring(8,10)+":"+ucid_date.substring(10,12)+":"+ucid_date.substring(12,14)
+	        												+ " ("+parent.meta.rec_key+") ";
+	        	
+	        	$("#dmbo_nm").attr("title", (dmbo_nm.replace(/\^/g, ' - ')).replace(/\#/g, '\n'));
+	        	//$("#tacate").attr("title", (tacate.replace(/\^/g, ' - ')).replace(/\#/g, '\n'));*/
+	        	//document.getElementById("cate").setAttribute("title", cate.replace(/\#/g, '\\n'));
+	        	//document.getElementById("tacate").setAttribute("title", tacate);
+   			}
+	   	}
+    </script>
+    
+</body>
+</html>

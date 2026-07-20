@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<request-config>
+	<request name="list.excelUtil" login="true">
+		<description>엑셀파일조회</description>
+		<action-class>sens.util.ExcelUtil</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>
+
+</request-config>

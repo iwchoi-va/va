@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url	= "service::inf.inf100.sel.do";	//request명
+var ucid="";
+
+// 페이지 오픈
+function help_load(event) {
+	XwingObject();
+
+   ucid=parent.param.ucid;
+
+   if(ucid == ""){
+	   callbackgetSTT();
+	   return;
+   }
+ //엑셀다운권한정의
+	excelDownAuth($btn_excel);
+	
+   
+	/*
+	if(top.getGradeAuth(global("G_USER_GRADE")) == 'Y'){
+		$btn_del.setVisible(true);
+		$btn_save.setVisible(true);
+	} else {
+		$btn_del.setVisible(false);
+		$btn_save.setVisible(false);
+	}
+	*/
+	getSTT();
+}
+
+// 녹취록 조회
+function getSTT()
+{
+	$pnl_stt.setUrl("./INF100P2.html");
+	
+	//녹취록 원문조회
+	var sqlName = "inf.inf100p1.getSttContent.sel";
+	
+	
+	var opt = {
+			reqId: 'getSTT',
+			url: "service::msens.xcron.hansol.sttEncryptWebaction.do",
+			param:{ 
+				_sqlName : sqlName
+				,UCID : ucid 
+				,type : "M"
+		          },
+			indicator: null,
+			showError: true
+		};
+	Xwing.request(opt, callback);
+}
+
+//STT문장 조회
+function callbackgetSTT() {
+	var content = "";
+	if(ucid != ""){
+		content = $ds_stt.getValue(0, "CONTENT");
+		//rx|tx 구분 안되있는 경우
+		content = content.replace(/[0-9]/g,'');
+		content = content.replace(/TX\|/gi,"<br>");
+		content = content.replace(/RX\|/gi,"<br>");
+	}else{
+	
+	}
+	
+	var docInit = content;
+	var iframe = document.getElementById("if::pnl_stt");
+	var fDoc = null;
+
+	if(iframe) {
+		var frm = iframe.contentWindow || iframe.contentDocument;
+		frm.f_setContent_box(docInit);
+	}
+}
+
+// 트랜잭션 콜백
+function callback(reqId, res, err, xhr){
+	//* Response 시 에러 발생한 경우
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId)
+	{
+		case "getSTT" :
+			$ds_stt.setData(res.DS_RES.column, res.DS_RES.record);
+
+			setTimeout("callbackgetSTT()", 500);
+		break;
+		default :
+	}
+}
+
+
+function btn_excel_click(event) {
+	location.href = "../jsp/sttExport.jsp?ucid="+ucid;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="ds_stt">
+		<xwing:dataset-column id="CONTENT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_helpins">
+		<xwing:dataset-column id="menuid"></xwing:dataset-column>
+		<xwing:dataset-column id="user_id"></xwing:dataset-column>
+		<xwing:dataset-column id="doc"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_SYS031">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_fileup_image"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="help" title="도움말" width="415" height="545" load="help_load" top="-1" scroll="false">
+		<xwing:panel id="pnl_stt" left="6" top="48" width="402" height="486" borderwidth="0" anchor="all" styles="lbl_board_content" visible="true">
+		</xwing:panel>
+		<xwing:label id="lbl_subtitle" value="녹취록" left="5" top="0" width="404" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+		<xwing:button id="btn_excel" left="376" top="9" height="25" width="25" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center" click="btn_excel_click"></xwing:button>
+	</xwing:page>
+</body>
+</html>

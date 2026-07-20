@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	
+	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+</head>
+	<body>
+		
+		<div id="container" style="padding-top:40px"></div>
+		
+<script type='text/javascript' src='./lib/echarts.min.js'></script>		
+<script>//<![CDATA[ 
+
+	var width, height, option;
+	 var chart = echarts.init(document.getElementById('container'));
+	$( window ).bind("resize", function(){
+		width = parent.$pan_multi_line.getAttribute("width");
+		height = parent.$pan_multi_line.getAttribute("height");
+
+		$("#container").width( width -40 ); // 10: padding-right
+	    $("#container").height( height - 60 ); // 55: legend-y
+		    
+	   //echarts.getInstanceByDom(document.getElementById('container'));
+	   chart.resize(width -40, height - 80, true);
+	});
+
+	window.onload = function(){
+		document.body.oncontextmenu = function(){return false;};
+	}
+
+	
+	function highlight(item){
+	//	var chart = $('#container').highcharts();
+	/* 	for (var i in chart.series){
+			chart.series[i].show();
+			if( chart.series[i].name != item ) {
+				chart.series[i].hide();
+			}
+		} */
+	}
+	
+	$(function () {
+		
+		var category = new Array(); //category: 일자
+		var arrSeries = new Array(); //series: 금지어
+		var data = new Array();   //data: 금지어 건수
+		
+		function getCategory(){
+			for(var i=0; i<parent.$DS_RES.size(); i++) {
+				category[i] = parent.$DS_RES.getValue(i,"DATE"); 
+			}
+
+			return category;
+		}
+		
+		function init(){
+			for(var i=0; i<parent.$DS_SERIES.size(); i++) {
+				arrSeries[i] = parent.$DS_SERIES.getValue(i,"SERIES"); 
+			}
+			var dsObj = parent.$DS_DATE_CNT;
+			var idx = 0, num = 0;
+			
+			while(idx < arrSeries.length){ 
+				data[idx] = new Array();
+					
+				for(var i=0; i<category.length; i++){
+					data[idx].push(dsObj.getValue(num++,"BAN_CNT"));
+				}
+				idx++;
+			}
+		}
+		function getDateName(value) {
+			if(parent.gubun == 'D'){
+				var str = value.substring(0,4)+'-'+value.substring(4,6)+'-'+value.substring(6,8);
+				return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1\n$2');
+			}else if(parent.gubun == 'W') return value.substring(0,4)+"-"+value.substring(4,6)+""+value.substring(6,value.length);
+			else if(parent.gubun == 'M') return value.substring(0,4)+"-"+value.substring(4,6);
+			else if(parent.gubun == 'H') return value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8)+" ("+value.substring(8,10)+'시)';
+		}
+		// 차트 series 생성
+		function getSeries() {
+	        var seriesArray = [];
+	        var series;
+	        
+	        init();
+
+	        for ( var i=0; i<arrSeries.length; i++ ) { 
+	            series = {
+	            	name: arrSeries[i],
+	            	type:'line',
+	                data: []
+	            };
+	            
+	            for ( var j=0; j<category.length; j++ ) {
+	                series.data.push(Number(data[i][j]))
+	            }
+	            seriesArray.push(series);
+	        }
+	        return seriesArray;
+	    }
+		
+		
+		    
+		option = {
+					color: ['#FE7785','#FEC641','#D04159','#94B558','#E98D4C','#337B9D','#338FBE','#33B6E9','#70D3ED','#BDE6F3','#ACE174','#FAD16F','#FC6E51','#9D81E1','#809FC3','#A288E5','#949494','#909085','#F0F0F0','#FF9E7E'], 
+				    toolbox: {
+				        feature: {
+				        //    restore: {show: true, title:'새로고침'}
+				        }
+				    },
+				    tooltip: {
+				        trigger: 'axis',
+				        position: function (point, params, dom, rect, size) {
+				            return [point[0],30];
+				        },
+				        textStyle:{
+	    		        	fontSize : 12
+	    		        },
+	    		        padding : [5,10,5,10],
+	    		        formatter: function (params, ticket, callback) {
+	    		        	params[0].name = getDateName(params[0].name);
+	    		        	var res = params[0].name;
+	    		            for (var i = 0, l = params.length; i < l; i++) {
+	    		            		res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "회";
+	    		            }
+	    		            return res;
+	    		        }
+				    },
+				    legend: {
+				    	type : "scroll", //만약에 legend가 짤리면 scroll로 변경
+				        data:arrSeries,
+				        itemGap : 3,
+	    				itemWdith : 10,
+	    				itemHeight : 15,
+	    				top : "1%"
+				    },
+				    grid: {
+				        left: '3%',
+				        right: '4%',
+				        bottom: '3%',
+				        containLabel: true
+				    },
+				    xAxis: {
+				        type: 'category',
+				        boundaryGap: false,				     
+				        axisLabel: {
+			                formatter: function (value, index) {
+			                	value =  value.toString();
+			                	 if(parent.gubun == 'D'){
+		                				var str = value.substring(4,6)+'/'+value.substring(6,8)+"\r("+value.substring(8)+")";
+		                			    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1\n$2');
+					                	}else if(parent.gubun == 'W') return value.substring(0,4)+"-"+value.substring(4,6)+""+value.substring(6,value.length);
+			                			else if(parent.gubun == 'M') return value.substring(4,6)+'월';
+			                			else if(parent.gubun == 'H') return value.substring(8,10)+'시'; 
+			                }
+		            	},
+				        data: getCategory()
+				    },
+				    yAxis: {
+				        type: 'value',
+				        name: '콜건수',
+				        min: 0,
+				        //interval: 1
+				    },
+				    series: getSeries()
+				};
+			
+	if (option && typeof option === "object") {	    
+		chart.setOption(option,true);
+	}	 
+	});
+	//]]>  
+
+	</script>
+	</body>
+	
+</html>
+

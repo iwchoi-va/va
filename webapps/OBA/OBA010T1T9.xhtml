@@ -1,0 +1,496 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var tm_no = "", con_ent_dgn_no="";
+var v_url = "service::oba.oba010t1t9.sel.do";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+	XwingObject();
+	
+	tm_no = parent.tm_no;
+	con_ent_dgn_no =  parent.ced_no;
+	
+	// 테스트용 
+	//con_ent_dgn_no = "941906050368";
+	//tm_no = "3008230082L0104201940";
+	
+	
+	f_codebook_sel();
+	// aigen 코드북내에서 동의구분 콤보 정보 조회
+	f_aigen_codebook_sel();
+}
+
+function f_codebook_sel() { 
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS020",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+function f_aigen_codebook_sel(){
+	var opt = {
+			reqId: "f_aigen_codebook_sel",
+			url: v_url,
+			param: {
+				_sqlName  : 'msens.est.hansol.getTMCodes.sel', 
+				CODETYPE : "CRS110"
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function f_schChangeContract(){
+	
+	var url = getWebServiceIFURL();	
+	var serviceName ="LTTMINFR0079";
+	
+	var reqJson = '{"planNumber":"'+con_ent_dgn_no+'","jobCls":"srhChangeContract"}';
+	
+	var opt = {
+			reqId: "getChangeContract",
+			url: "service::oba.oba010t1t9.getChangeContract.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "comparedTwistingPolicyList",
+				reqJson :reqJson,
+				DS_RES : $DS_RES
+				
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+	
+}
+
+//승환계약 체크 조회
+function f_schDupAgree(){
+	var opt = {
+			reqId: "getAgreeDupInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1t9.getAgreeDupInfo.sel,oba.oba010t1t9.getInsuplanmast.sel',
+				TM_NO : tm_no
+				
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case "f_codebook_sel" :
+			$DS_SYS020.setData(res.SYS020.column, res.SYS020.record);
+		
+		break;
+		
+		case "f_aigen_codebook_sel" :
+			$DS_AGREE_GB.setData(res.DS_TM_CODE.column, res.DS_TM_CODE.record);
+			
+			//승환계약조회
+			f_schChangeContract();
+			//승환체크조회
+			f_schDupAgree();
+		break;
+		
+		case "getChangeContract" :
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			
+			$DS_NEW_CONTRACT.setData($DS_RES.getColumnInfo(), $DS_RES.getData("[dsgnYn=='Y']"));
+			$DS_BEF_CONTRACT.setData($DS_RES.getColumnInfo(), $DS_RES.getData("[dsgnYn=='N']"));
+		
+		break;
+		
+		case "getAgreeDupInfo" :
+			$DS_AGREE_INFO.setData(res.DS_AGREE_INFO.column, res.DS_AGREE_INFO.record);
+			$DS_DUP_YN.setData(res.DS_DUP_YN.column, res.DS_DUP_YN.record);
+			
+		break;
+		
+
+	}
+
+}
+
+function getWebServiceIFURL(){
+	var hostname = window.location.hostname.split(".");
+	var url ="";
+	var server_gb = "";
+	
+	server_gb = hostname[0];
+	
+	if(hostname[0] == "127") server_gb = "vauat"; // 로컬에서 개발시, uat 서버 붙어서 작업할 수 있도록
+	
+	url = $DS_SYS020.getValue($DS_SYS020.indexOfRow("ETC4", server_gb),"ETC3");
+	
+	url += "tmMciService.do";
+	
+	return url;
+}
+
+function getWebServiceCoreURL(){
+	var hostname = window.location.hostname.split(".");
+	var url ="";
+	
+	server_gb = hostname[0];
+	
+	if(hostname[0] == "127") server_gb = "vauat"; // 로컬에서 개발시, uat 서버 붙어서 작업할 수 있도록
+	
+	url = $DS_SYS020.getValue($DS_SYS020.indexOfRow("ETC4", server_gb),"ETC5");
+	
+	url += "jsp/connect_channel.jsp";
+	
+	return url;
+}
+
+
+function btn_chngCont_click(event) {
+	var url = getWebServiceCoreURL();
+	
+	var con_ent_dgn_no = $DS_DUP_YN.getValue(0,"CON_ENT_DGN_NO");
+	
+	var param		= 'channelCls:TM|planNo:' + con_ent_dgn_no;
+	
+	var data =   '?groupId=AG.QT'
+	+'&menuId=AGQTP087'
+	+'&menunm='+encodeURI("승환비교")
+	+'&delimiter='+'|'
+	+'&param='+encodeURI(param)
+	+'&paramDst='+''
+	+'&callback='+'fn_dupCallback'
+	+'&iWidth='+'1262'
+	+'&iHeight='+'800';
+	
+	window.open(url+data, "_blank", "width=1262, height=800, left=100, top=10, location=no,resizable=no, scrollbars=no");
+
+}
+
+function expr_intRate(cellObj,rowIdx) {
+	var opt = {};
+	var int_rate = "";
+	
+	if(cellObj._opt.id.indexOf("new") > -1) int_rate = $DS_NEW_CONTRACT.getValue(rowIdx,'intRate');
+	else int_rate = $DS_BEF_CONTRACT.getValue(rowIdx,'intRate');
+	
+	opt['value'] = int_rate+"%";
+	
+	return opt;
+	
+}
+
+function expr_pymtTermNm(cellObj,rowIdx) {
+	var opt = {};
+	var pymtTermNm = "";
+	
+	
+	if(cellObj._opt.id.indexOf("new") > -1) pymtTermNm = $DS_NEW_CONTRACT.getValue(rowIdx,'pymtTermNm');
+	else pymtTermNm = $DS_BEF_CONTRACT.getValue(rowIdx,'pymtTermNm');
+	
+	opt['value'] = pymtTermNm+"납";
+	
+	return opt;
+	
+}
+
+function expr_insTermNm(cellObj,rowIdx) {
+	var opt = {};
+	var insTermNm = "";
+	
+	if(cellObj._opt.id.indexOf("new") > -1) insTermNm = $DS_NEW_CONTRACT.getValue(rowIdx,'insTermNm');
+	else insTermNm = $DS_BEF_CONTRACT.getValue(rowIdx,'insTermNm');
+	
+	opt['value'] = insTermNm+"만기";
+	
+	return opt;
+	
+}
+
+function expr_pymtCnt(cellObj,rowIdx) {
+	var opt = {};
+	var pymtCnt = "";
+	
+	if(cellObj._opt.id.indexOf("new") > -1) pymtCnt = $DS_NEW_CONTRACT.getValue(rowIdx,'pymtCnt');
+	else pymtCnt = $DS_BEF_CONTRACT.getValue(rowIdx,'pymtCnt');
+	
+	opt['value'] = pymtCnt+"회";
+	
+	return opt;
+	
+}
+
+function expr_joinAge(cellObj,rowIdx) {
+	var opt = {};
+	var joinAge = "";
+	
+	if(cellObj._opt.id.indexOf("new") > -1) joinAge = $DS_NEW_CONTRACT.getValue(rowIdx,'joinAge');
+	else joinAge = $DS_BEF_CONTRACT.getValue(rowIdx,'joinAge');
+	
+	opt['value'] = joinAge+"세";
+	
+	return opt;
+	
+}
+
+function expr_maskPsnNo(cellObj,rowIdx) {
+	var opt = {};
+	var psn_no = "";
+	
+	psn_no = $DS_AGREE_INFO.getValue(rowIdx, "PSN_NO");
+	
+	psn_no = psn_no.substring(0,6)+ "-"+ psn_no.substring(6,7) + "******";
+	
+	opt['value'] = psn_no;
+	
+	return opt;
+	
+}
+
+function expr_noneText(cellObj,rowIdx) {
+	var opt = {};
+	
+	opt['value'] = "-";
+	
+	return opt;
+	
+}
+
+
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_RES" description="승환계약조회">
+		<xwing:dataset-column id="policyNo"></xwing:dataset-column>
+		<xwing:dataset-column id="prodCode"></xwing:dataset-column>
+		<xwing:dataset-column id="prodName"></xwing:dataset-column>
+		<xwing:dataset-column id="contractorId"></xwing:dataset-column>
+		<xwing:dataset-column id="contractorName"></xwing:dataset-column>
+		<xwing:dataset-column id="insuredId"></xwing:dataset-column>
+		<xwing:dataset-column id="insuredName"></xwing:dataset-column>
+		<xwing:dataset-column id="subscriptionDate"></xwing:dataset-column>
+		<xwing:dataset-column id="policyStatusCode"></xwing:dataset-column>
+		<xwing:dataset-column id="policyStatusName"></xwing:dataset-column>
+		<xwing:dataset-column id="terDate"></xwing:dataset-column>
+		<xwing:dataset-column id="pymtMethod"></xwing:dataset-column>
+		<xwing:dataset-column id="prem"></xwing:dataset-column>
+		<xwing:dataset-column id="joinAmt"></xwing:dataset-column>
+		<xwing:dataset-column id="intRate"></xwing:dataset-column>
+		<xwing:dataset-column id="pymtMethodNm"></xwing:dataset-column>
+		<xwing:dataset-column id="pymtTermNm"></xwing:dataset-column>
+		<xwing:dataset-column id="insTermNm"></xwing:dataset-column>
+		<xwing:dataset-column id="pymtCnt"></xwing:dataset-column>
+		<xwing:dataset-column id="refundAmt"></xwing:dataset-column>
+		<xwing:dataset-column id="joinAge"></xwing:dataset-column>
+		<xwing:dataset-column id="dsgnYn"></xwing:dataset-column>
+		<xwing:dataset-column id="lastPymtMonth"></xwing:dataset-column>
+		<xwing:dataset-column id="conEntDgnNo"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_RDO_CHK" description="승환계약체크_라디오정보">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>예, 있습니다</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>아니오, 없습니다</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_AGREE_GB" description="동의구분">
+		<xwing:dataset-column id="CODE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS020" description="서버URL 정보">
+		<xwing:dataset-column id="column0"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_AGREE_INFO" description="동의여부값"></xwing:dataset>
+	<xwing:dataset id="DS_DUP_YN">
+		<xwing:dataset-column id="TM_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="DUP_YN"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_NEW_CONTRACT" description="신규계약"></xwing:dataset>
+	<xwing:dataset id="DS_BEF_CONTRACT" description="비교 대상계약"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="435" load="page_load" scroll="true">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="435" anchor="right left" bgcolor="#eee" scroll="false">
+			<xwing:label id="lbl_subtitle1" value=" 신규계약" left="15" top="8" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+			<xwing:datagrid id="grd_new_list" left="16" top="30" width="738" height="93" rownum="false" checkbox="false" binddataset="DS_NEW_CONTRACT" anchor="top right left" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" textwrap="prewrap">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="220"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="90"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="90"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell text="상품명" halign="center" fontweight="bold" rowspan="2"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="보험료" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="공시이율"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입기간"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="보험만기"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입횟수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입주기"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell text="해지환급금" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="기본가입금액" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="가입연령"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입완료월"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="계약상태"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="설계번호"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell halign="left" bindcolumn="prodName" rowspan="2"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="prem" mask="comma" halign="right"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="intRate" halign="right" expr="expr_intRate"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtTermNm" halign="center" expr="expr_pymtTermNm"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="insTermNm" halign="center" expr="expr_insTermNm"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtCnt" halign="center" expr="expr_pymtCnt"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtMethodNm" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell bindcolumn="" text="-" halign="right" expr="expr_noneText"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="joinAmt" mask="comma" halign="right"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="joinAge" halign="center" expr="expr_joinAge"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="" text="-" halign="center" expr="expr_noneText"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="" text="-" halign="center" expr="expr_noneText"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="policyNo" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:label id="lbl_subtitle2" value=" 비교안내 대상계약" left="15" top="128" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+			<xwing:label id="lbl_subtitle3" value=" 승환계약 체크" left="15" top="269" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+			<xwing:panel id="pnl_01" left="15" top="291" width="738" height="46" styles="div_perform" borderstyle="solid" borderwidth="1" scroll="false" anchor="right left">
+				<xwing:label id="lbl_question" value="고객님 직전 6개월이내에 소멸된 보험계약(타사계약 포함)이 있거나 향후 6개월 이내에 소멸 예정인 계약(타사계약 포함)이 있습니까?" left="9" top="3" width="750" height="23" textwrap="none" fontcolor="#303030" fontweight="bold" textpadding="0 0 0 0"></xwing:label>
+				<xwing:radio id="rdo_switch_chk" left="260" top="17" width="247" height="29" domaindataset="DS_RDO_CHK" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" anchor="right left" binddataset="DS_DUP_YN" bindcolumn="DUP_YN" enabled="true"></xwing:radio>
+			</xwing:panel>
+			<xwing:datagrid id="grd_check_list" left="15" top="342" width="739" height="84" rownum="true" checkbox="false" binddataset="DS_AGREE_INFO" anchor="right left" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="140"></xwing:datagrid-column>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column width="110"></xwing:datagrid-column>
+					<xwing:datagrid-column width="110"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="25">
+						<xwing:datagrid-cell text="주민번호" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="성명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="동의일자"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="동의시간"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="동의구분"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="동의여부"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="PSN_NO" halign="center" expr="expr_maskPsnNo"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CUSTNAME" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="AGREE_DATE" halign="center" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="AGREE_TIME" halign="center" mask="sec"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="AGREE_GUBN" halign="center" domaindataset="DS_AGREE_GB" domaincodecolumn="CODE" domaintextcolumn="CODENAME"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="AGREE_APP_YN" halign="center" displaytype="checkbox" truevalue="1" falsevalue="0"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_chngCont" value="승환계약" left="687" top="3" anchor="right" width="67" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" styles="btn_search" click="btn_chngCont_click"></xwing:button>
+			<xwing:datagrid id="grd_old_list" left="15" top="150" width="739" height="115" rownum="false" checkbox="false" binddataset="DS_BEF_CONTRACT" anchor="top right left" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" textwrap="prewrap">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="220"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="90"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="95"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell text="상품명" halign="center" fontweight="bold" rowspan="2"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="보험료" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="공시이율"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입기간"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="보험만기"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납임횟수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입주기"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell text="해지환급금" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="기본가입금액" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="가입연령"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="납입완료월"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="계약상태"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="증권번호"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell halign="left" bindcolumn="prodName" rowspan="2"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="prem" mask="comma" halign="right"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="intRate" halign="right" expr="expr_intRate"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtTermNm" halign="center" expr="expr_pymtTermNm"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="insTermNm" halign="center" expr="expr_insTermNm"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtCnt" halign="center" expr="expr_pymtCnt"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="pymtMethodNm" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+					<xwing:datagrid-row height="20">
+						<xwing:datagrid-cell bindcolumn="refundAmt" halign="right"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="joinAmt" mask="comma" halign="right"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="joinAge" halign="center" expr="expr_joinAge"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="lastPymtMonth" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="policyStatusName" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="policyNo" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

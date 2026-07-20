@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DomainConfig>
+    <DataSourcePool>
+		<MailDataSource 
+			Id="smtpdatasource"
+			User="user@gmail.com"
+			Password="{DES}password"
+		>
+			<Property Name="mail.transport.protocol" Value="smtp"/>
+			<Property Name="mail.smtp.host" Value="smtp.gmail.com"/>
+			<Property Name="mail.smtp.port" Value="465"/>
+			<Property Name="mail.smtp.socketFactory.port" Value="465"/>
+			<Property Name="mail.smtp.socketFactory.class" Value="javax.net.ssl.SSLSocketFactory"/>
+			<Property Name="mail.smtp.socketFactory.fallback" Value="false"/>
+		</MailDataSource>		
+	</DataSourcePool>
+	
+    <ServiceDefinition>	
+		<Service Id="restart_notice_service">
+			<Description>XCron 강제종료 후 실행되는 서비스</Description>
+			<RequestFlow><RequestGroup Value="log.send_restart_mail"/></RequestFlow>
+		</Service>
+		
+		<Service Id="empty_notice_service">
+			<Description>Empty Notice</Description>
+		</Service>
+    </ServiceDefinition>
+
+    <RequestServiceDefinition>		
+		<RequestService Id="log.send_restart_mail" DataSource="smtpdatasource">
+			<BatchName>_SHUTDOWNLOG</BatchName>
+			<Envelope>
+				<MailFrom><![CDATA[
+서동욱 <dwseo@hansol.com>
+				]]></MailFrom>
+				<MailTo><![CDATA[
+ISForceLite30 <isforcelite30@gmail.com>
+				]]></MailTo>
+				<MailCc><![CDATA[
+				]]></MailCc>				
+				<MailTitle><![CDATA[
+[사이트명] XCron 서버에 장애가 발생했습니다.
+				]]></MailTitle>
+				<MailBody><![CDATA[ 
+<style type="text/css">
+.table { border-right:solid 1px #F493C1; border-left:solid 1px #F493C1; border-top:solid 1px #F493C1; border-bottom:solid 1px #F493C1; background-color:#F493C1; }
+.table_head { background-color:#FADDEA; padding-top:6px; padding-bottom:7px; color:#E72583; font-weight:bold; text-align:center;  border-right:solid 1px #F493C1;}
+.table_body { background-color:#fff; border-bottom:#d2d2d2; border-right:#d2d2d2; line-height:20px;  text-align:left; color:#747474; padding-left:4px;}
+body { text-align:left; }
+ul, ol, li, dl, dt, dd, p, h1, h2, h3, h4, form, input, adress { margin:0; padding:0; font-size:12px; }
+ul,ol,li { list-style:none; }
+body, td, th, div, dt, dd, li, input, select { color:#2E3221; font-size:12px; font-family:굴림,Dotum,Arial; }
+
+a { color:#666; }a:link { color:#666; text-decoration:underline; }	 
+a:visited { color:#666; text-decoration:none; }
+a:active { color:#666; text-decoration:none; }
+a:hover { color:#0F82BD; text-decoration:underline; }
+</style>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="1" class="table">
+	<tr>
+		<td class="table_head">사이트명</td>
+		<td class="table_body">[사이트명]</td>
+	</tr>
+	<tr>
+		<td class="table_head">서버 IP</td>
+		<td class="table_body">?SERVICE_IP</td>
+	</tr>
+	<tr>
+		<td width="120" class="table_head">서버 PORT</td>
+		<td class="table_body">?SERVICE_PORT</td>
+	</tr>
+	<tr>
+		<td width="120" class="table_head">중지된 서비스</td>
+		<td class="table_body">?SERVICE_NAME_LIST</td>
+	</tr>
+	<tr>
+		<td class="table_head">재시작 일시</td>
+		<td class="table_body">?SHUTDOWN_TIME</td>
+	</tr>
+	<tr>
+		<td class="table_head">장애발생원인</td>
+		<td class="table_body">?SHUTDOWN_MESSAGE</td>
+	</tr>
+	<tr>
+		<td class="table_head">장애조치</td>
+		<td class="table_body">XCron 서버 재시작</td>
+	</tr>
+	
+</table>
+				]]></MailBody>
+			</Envelope>
+		</RequestService>		
+	</RequestServiceDefinition>
+</DomainConfig>

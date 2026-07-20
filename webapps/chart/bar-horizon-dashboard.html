@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="./css/bar-horizon.css">
+	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	
+	</head>
+	<body>
+	  	
+	<script type='text/javascript' src='./lib/echarts.min.js'></script>		
+		<div id="container"></div>
+
+		
+	<script>//<![CDATA[ 
+
+	var width, height,option;
+	var dbl = false;
+	var chart = echarts.init(document.getElementById('container'));
+	$( window ).bind("resize", function(){
+		width = parent.$pnl_va_chart.getAttribute("width");
+		height = parent.$pnl_va_chart.getAttribute("height");
+
+		$("#container").width( width - 20 ); // 20: padding-right 
+	    $("#container").height( height ); 
+		
+	    chart.resize(width, height, true);
+	});
+
+	window.onload = function(){
+		document.body.oncontextmenu = function(){return false;};
+	}
+	
+	$(function () {
+		
+		function getData(){
+			var data = [];
+			
+			data.push({
+				value : parent.$DS_GRD_SCORE.getValue(0, "GRD_YESTER_SCORE"),
+				itemStyle : {
+					normal : {
+						color : '#087bbe'
+					}
+				}
+			});
+			
+			data.push({
+				value : parent.$DS_GRD_SCORE.getValue(0, "GRD_NOW_SCORE"),
+				itemStyle : {
+					normal : {
+						color : '#4ec7e7'
+					}
+				}
+			});
+			
+			return data;
+		}
+		
+		
+		option = {
+			    toolbox: {
+			        feature: {
+			            restore: {show: true,title:'새로고침'}
+			        }
+			    },
+			    tooltip: {
+			        trigger: 'axis',
+			        formatter: '{b}: {c}점',
+			        axisPointer: {
+			            type: 'shadow'
+			        }
+			    },
+			    xAxis: {
+			    	type: 'category',
+			        min: 0,
+			        data: ['전일', '당일']
+			    },
+			    yAxis: {
+			    	 type: 'value',
+			    	 name: '점수',
+				     max:100,
+				     boundaryGap: [0, 0.01]
+			    },
+			    series: [
+			        {
+			            name: '',
+			            type: 'bar',
+			            barWidth : '50%',
+			            label: {
+			                normal: {
+			                    show: true,
+			                    position: 'inside'
+			                }
+			            },
+			            data: getData(),
+			            markLine : {
+			                data : [
+			                    { 
+			                      name : '당월평균',
+			                      yAxis: parent.$DS_GRD_SCORE.getValue(0, "GRD_MON_SCORE"), 
+			                      lineStyle : {color : '#e4701f'} 
+			                    }
+			                ],
+			                label : { show : true, 
+			                	      position : 'middle', 
+			                	      formatter : function(param){
+		                    				return param.name + " : " + param.value;}
+			            			}
+			            }
+			        }
+			    ]
+			};
+		if (option && typeof option === "object") {
+			chart.setOption(option,true);
+		}
+		
+	/* 	setTimeout(function () {
+		    $('#container').highcharts({
+		        chart: { type: 'bar' },
+		        
+		        colors: ['#6F7A84'],
+		        
+		        title: {text: ''},
+		        
+		        subtitle: {text: ''},
+		        
+		        xAxis: {
+		            categories: getCategory(), 
+		            title: {text: null},
+		            labels: {
+		                style: {
+		                    cursor: 'pointer'
+		                }
+		            }
+		        },
+		        
+		        yAxis: {
+		            min: 0,
+		            title: {
+		                text: '',
+		                align: 'high'
+		            },
+		            labels: {overflow: 'justify'}
+		        },
+		       
+		        tooltip: {
+	                headerFormat: '<span style="font-size:11px"><b>{point.key}</b></span><br>',
+	                pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y} %</b><br/>', 
+	                shared: true
+	            },
+	            
+	            legend: {enabled: false},
+	            
+		        plotOptions: {
+		        	bar: {
+		                dataLabels: {
+		                    enabled: true
+		                }
+		            },
+		            series: {
+		            	stacking: 'normal',
+		                cursor: 'pointer',
+		                dataLabels: {
+		                	color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+		                    style: {
+		                        textShadow: '0 0 3px black'
+		                    }
+		                 },
+		                point: {
+		                    events: {
+		            			click: function() {
+		            				parent.reSrc1(this.category);
+		            			}
+		                    }
+		                }
+		            }
+		        },
+		        
+		        credits: {enabled: false},
+		        
+		        series: [{
+		            name: '콜비율(금칙어건수/전체콜)',
+		            //colorByPoint: true,
+		            //type: 'column',
+		            data: getData()
+		        }]
+		        
+		    });
+		    
+		    $('.highcharts-xaxis-labels text, .highcharts-xaxis-labels span').click(function () {
+		    	parent.reSrc1_label(this.textContent || this.innerText);
+		    });
+		    
+		}, 30); */
+	});
+	//]]>  
+
+	</script>
+
+	</body>
+	
+</html>
+

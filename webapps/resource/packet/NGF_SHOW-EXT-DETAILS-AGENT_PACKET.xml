@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service name='SHOW-EXT-DETAILS-AGENT' ref='HANSOL-NGF' svc_id='SHOW-EXT-DETAILS-AGENT' resource='server' transaction='false'>
+<description>정보 조회 (SHOW-EXT-DETAILS-AGENT) </description>
+<header>
+<field name='SERVER'        fld_id='SERVER'      	default='1'  type='Number'   length='4'  inout='INOUT'/>
+<field name='BODY_LENGTH'   fld_id='BODY_LENGTH'    default='0'  type='Number'   length='4'  inout='INOUT'/>
+<field name='OMC_DATA'      fld_id='OMC_DATA'    	default='1'  type='Number'   length='4'  inout='INOUT'/>
+</header>
+<request>
+<field name='ID'          fld_id='ID'         	default='cubex'     type='string'   length='16' 	inout=''/>
+<field name='PASSWORD'    fld_id='PASSWORD'   	default='cubex'  type='string'   length='32' 	inout=''/>
+<field name='DIRECTORY'   fld_id='DIRECTORY'  	default='cmd'       type='string'   length='8'  	inout=''/>
+<field name='COMMAND'     fld_id='COMMAND'    	default='' 			type='string'   length='32' 	inout=''/>
+<field name='PARAMETER'   fld_id='PARAMETER'  	default=''          type='string'   length='0'   	inout=''/>
+</request>
+<response>
+<field name='RES_DATE'      fld_id='RES_DATE'   default='' type='line'   length='0'  inout=''/>
+<field name='RES_TITLE'     fld_id='RES_TITLE'  default='' type='skip'   length='0'  inout=''/>
+<field name='HOST_NAME'     fld_id='HOST_NAME'  default='' type='string' length='0'  inout=':'/>
+<field name='LINE1' fld_id='LINE1' default='' type='skip' length='0' inout=''/>
+<field name='TITLE1' fld_id='TITLE1' default='' type='skip' length='0' inout=''/>
+<field name='LINE2' fld_id='LINE2' default='' type='skip' length='0' inout=''/>
+
+<field name='POOL_ID' fld_id='POOL_ID' default='' type='string' length='0' inout=''/>
+<field name='EXT_NUM' fld_id='EXT_NUM' default='' type='string' length='0' inout=''/>
+<field name='TYPE' fld_id='TYPE' default='' type='string' length='0' inout=''/>
+<field name='REPORT' fld_id='REPORT' default='' type='string' length='0' inout=''/>
+<field name='MONITORED' fld_id='MONITORED' default='' type='string' length='0' inout=''/>
+<field name='RECORD' fld_id='RECORD' default='' type='string' length='0' inout=''/>
+<field name='TENANT' fld_id='TENANT' default='' type='string' length='0' inout=''/>
+
+<field name='BALNK1' fld_id='BALNK1' default='' type='skip' length='0' inout=''/>
+<field name='TITLE2' fld_id='TITLE2' default='' type='skip' length='0' inout=''/>
+<field name='NAME' fld_id='NAME' default='' type='string' length='0' inout=''/>
+<field name='USER_STATION' fld_id='USER_STATION' default='' type='string' length='0' inout=''/>
+<field name='PASSWD' fld_id='PASSWD' default='' type='string' length='0' inout=''/>
+<field name='BALNK2' fld_id='BALNK2' default='' type='skip' length='0' inout=''/>
+<field name='TITLE3' fld_id='TITLE3' default='' type='skip' length='0' inout=''/>
+<field name='UNCONDITIONAL' fld_id='UNCONDITIONAL' default='' type='string' length='0' inout=''/>
+<field name='ACTIVE' fld_id='ACTIVE' default='' type='string' length='0' inout=''/>
+<field name='BUSY' fld_id='BUSY' default='' type='string' length='0' inout=''/>
+<field name='NOANS' fld_id='NOANS' default='' type='string' length='0' inout=''/>
+<field name='NOANS_TIMER' fld_id='NOANS_TIMER' default='' type='string' length='0' inout=''/>
+<field name='ADR_TYPE' fld_id='ADR_TYPE' default='' type='string' length='0' inout=''/>
+<field name='LINE1' fld_id='LINE5' default='' type='skip' length='0' inout=''/>
+		<list name='SHOW_EXT_DETAILS_AGENT_LIST' occurs_fld=''>
+			<field name='ADR_ID' fld_id='AGT_IDX' default='' type='string'
+				length='0' inout='' />
+			<field name='ADR_TYPE' fld_id='AGT_NAME' default='' type='string'
+				length='0' inout='' />
+			<field name='ADR_NUMBER' fld_id='AGT_LOGIN' default='' type='string'
+				length='0' inout='' />
+		</list>
+<field name='LINE2' fld_id='LINE2' default='' type='skip' length='0' inout=''/>
+
+<field name='BALNK3' fld_id='BALNK3' default='' type='skip' length='0' inout=''/>
+<field name='TITLE4' fld_id='TITLE4' default='' type='skip' length='0' inout=''/>
+<field name='CALLED_PARTY_RESTRICTION' fld_id='CALLED_PARTY_RESTRICTION' default='' type='string' length='0' inout=''/>
+<field name='CALLING_PARTY_RESTRICTION' fld_id='CALLING_PARTY_RESTRICTION' default='' type='string' length='0' inout=''/>
+<field name='CALL_RESTR_LVL' fld_id='CALL_RESTR_LVL' default='' type='string' length='0' inout=''/>
+<field name='F_FULLY_RESTR' fld_id='F_FULLY_RESTR' default='' type='string' length='0' inout=''/>
+
+
+<field name='BALNK4' fld_id='BALNK4' default='' type='skip' length='0' inout=''/>
+<field name='TITLE5' fld_id='TITLE5' default='' type='skip' length='0' inout=''/>
+<field name='F_OBSERVED' fld_id='F_OBSERVED' default='' type='string' length='0' inout=''/>
+<field name='F_OBSERVING' fld_id='F_OBSERVING' default='' type='string' length='0' inout=''/>
+<field name='F_PRI_QUE' fld_id='F_PRI_QUE' default='' type='string' length='0' inout=''/>
+<field name='F_AGENT_SKILL' fld_id='F_AGENT_SKILL' default='' type='string' length='0' inout=''/>
+<field name='F_REMOTE_LOGOUT' fld_id='F_REMOTE_LOGOUT' default='' type='string' length='0' inout=''/>
+<field name='AUTO_ANSWER' fld_id='AUTO_ANSWER' default='' type='string' length='0' inout=''/>
+<field name='ALLOW_CALL_BRGD' fld_id='ALLOW_CALL_BRGD' default='' type='string' length='0' inout=''/>
+<field name='ALLOW_PICKUP' fld_id='ALLOW_PICKUP' default='' type='string' length='0' inout=''/>
+<field name='AUTO_CALLBACK' fld_id='AUTO_CALLBACK' default='' type='string' length='0' inout=''/>
+<field name='BLANK5' fld_id='BLANK5' default='' type='skip' length='0' inout=''/>
+<field name='LINE3' fld_id='LINE3' default='' type='skip' length='0' inout=''/>
+<field name='RESULT' fld_id='RESULT' default='' type='string' length='0' inout='='/>
+</response>
+</service>
+
+

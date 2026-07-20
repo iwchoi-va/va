@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+* FormID(명) : manage_system.xhtml
+* Form 설명  : 시스템관리 – 시스템을 관리하는 화면.
+* 작성자     : 김윤호
+* 작성일     : 2013-04-04
+=================================================================
+* 변경내역 : 
+* YYYYMMDD 담당자명 변경내용(Why?,What?)
+*******************************************************************************/
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 전역변수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+var v_flag = "INSERT";
+var v_view = "MIN";
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 페이지 로드합수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function page_load(event) {
+	
+	//화면 위젯 세팅
+	XwingObject();
+	//엑셀다운권한정의
+	excelDownAuth($btn_excel);
+	
+	f_search();
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 조회 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_search(){
+	
+	
+	var param = '';
+	
+	param	= {
+			
+			_sqlName: "w_mgmt.sys.schsys.sch",
+		};
+		
+	
+	
+	var opt 	= { 
+			
+		reqId: "SYS_SCH",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 신규 추가 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_save(){
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	
+	var param	= {
+			
+			//_sqlName: "w_mgmt.system.addsys.ins,w_mgmt.system_detail.addsys.ins", 
+			_sqlName: "w_mgmt.system.addsys.ins", 
+			DEVICE_ID: copy.getValue(0, "DEVICE_ID"),
+			DEVICE_IP: copy.getValue(0, "DEVICE_IP"),
+			DEVICE_DESC: copy.getValue(0, "DEVICE_DESC"),
+			USE_YN: copy.getValue(0, "USE_YN"),
+			DEVICE_IP2: copy.getValue(0, "DEVICE_IP2"),
+			DEVICE_IP3: copy.getValue(0, "DEVICE_IP3"),
+			DEVICE_GU1: copy.getValue(0, "DEVICE_GU1"),
+			DEVICE_GU2: copy.getValue(0, "DEVICE_GU2"),
+			DEVICE_LOCAL: copy.getValue(0, "DCD"),
+			OS_GU: copy.getValue(0, "OS_GU"),
+			CPU_NAME:copy.getValue(0, "CPU_NAME"),
+			MEMORY_NAME:copy.getValue(0, "MEMORY_NAME"),
+			DISK_NAME:copy.getValue(0, "DISK_NAME"),
+			DU_SERVER:copy.getValue(0, "DU_SERVER"),
+			DU_HA:copy.getValue(0, "DU_HA"),
+			DU_POW:copy.getValue(0, "DU_POW"),
+			DU_IPSI:copy.getValue(0, "DU_IPSI"),
+			DU_MED:copy.getValue(0, "DU_MED"),
+			DU_AES:copy.getValue(0, "DU_AES"),
+			DU_CLAN:copy.getValue(0, "DU_CLAN"),
+			DOIP_DATE:copy.getValue(0, "DOIP_DATE"),
+			MODEL_NM:copy.getValue(0, "MODEL_NM"),
+			SYSTEM_DESC:copy.getValue(0, "SYSTEM_DESC"),
+			DEVICE_PORT:copy.getValue(0, "DEVICE_PORT"),
+			ADMIN_ID:copy.getValue(0, "ADMIN_ID"),
+			AUTH_NAME:copy.getValue(0, "AUTH_NAME"),
+			AUTH_PASS:copy.getValue(0, "AUTH_PASS"),
+			READ_COMMUNITY:copy.getValue(0, "READ_COMMUNITY"),
+			WRITE_COMMUNITY:copy.getValue(0, "WRITE_COMMUNITY"),
+			SNMP_VERSION:copy.getValue(0, "SNMP_VERSION"),
+			PING_YN:copy.getValue(0, "PING_YN"),
+			PORT_YN:copy.getValue(0, "PORT_YN"),
+			ALARM_YN:copy.getValue(0, "ALARM_YN"),
+			DISP_SEQ:copy.getValue(0, "DISP_SEQ"),
+			DISP_YN:copy.getValue(0, "DISP_YN"),
+			SNMP_YN:copy.getValue(0, "SNMP_YN"),
+			OS_VERSION:copy.getValue(0, "OS_VERSION")
+	};
+	
+	var opt 	= { 
+			
+			reqId: "SYS_INS",
+			url: "service::w_mgmt.sys.inssys.ins.do",
+			param: param
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 수정 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_update(){
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	
+	var param	= {
+			
+			//_sqlName: "w_mgmt.system.updsys.upd,w_mgmt.system_detail.updsys.upd",
+			_sqlName: "w_mgmt.system.updsys.upd",
+			DEVICE_ID: copy.getValue(0, "DEVICE_ID"),
+			DEVICE_IP: copy.getValue(0, "DEVICE_IP"),
+			DEVICE_DESC: copy.getValue(0, "DEVICE_DESC"),
+			USE_YN: copy.getValue(0, "USE_YN"),
+			DEVICE_IP2: copy.getValue(0, "DEVICE_IP2"),
+			DEVICE_IP3: copy.getValue(0, "DEVICE_IP3"),
+			DEVICE_GU1: copy.getValue(0, "DEVICE_GU1"),
+			DEVICE_GU2: copy.getValue(0, "DEVICE_GU2"),
+			DEVICE_LOCAL: copy.getValue(0, "DCD"),
+			OS_GU: copy.getValue(0, "OS_GU"),
+			CPU_NAME:copy.getValue(0, "CPU_NAME"),
+			MEMORY_NAME:copy.getValue(0, "MEMORY_NAME"),
+			DISK_NAME:copy.getValue(0, "DISK_NAME"),
+			DU_SERVER:copy.getValue(0, "DU_SERVER"),
+			DU_HA:copy.getValue(0, "DU_HA"),
+			DU_POW:copy.getValue(0, "DU_POW"),
+			DU_IPSI:copy.getValue(0, "DU_IPSI"),
+			DU_MED:copy.getValue(0, "DU_MED"),
+			DU_AES:copy.getValue(0, "DU_AES"),
+			DU_CLAN:copy.getValue(0, "DU_CLAN"),
+			DOIP_DATE:copy.getValue(0, "DOIP_DATE"),
+			MODEL_NM:copy.getValue(0, "MODEL_NM"),
+			SYSTEM_DESC:copy.getValue(0, "SYSTEM_DESC"),
+			DEVICE_PORT:copy.getValue(0, "DEVICE_PORT"),
+			ADMIN_ID:copy.getValue(0, "ADMIN_ID"),
+			AUTH_NAME:copy.getValue(0, "AUTH_NAME"),
+			AUTH_PASS:copy.getValue(0, "AUTH_PASS"),
+			READ_COMMUNITY:copy.getValue(0, "READ_COMMUNITY"),
+			WRITE_COMMUNITY:copy.getValue(0, "WRITE_COMMUNITY"),
+			SNMP_VERSION:copy.getValue(0, "SNMP_VERSION"),
+			PING_YN:copy.getValue(0, "PING_YN"),
+			PORT_YN:copy.getValue(0, "PORT_YN"),
+			ALARM_YN:copy.getValue(0, "ALARM_YN"),
+			DISP_SEQ:copy.getValue(0, "DISP_SEQ"),
+			DISP_YN:copy.getValue(0, "DISP_YN"),
+			SNMP_YN:copy.getValue(0, "SNMP_YN"),
+			OS_VERSION:copy.getValue(0, "OS_VERSION")
+	};
+	
+	var opt 	= { 
+			
+			reqId: "SYS_UPD",
+			url: "service::w_mgmt.sys.upsys.upd.do",
+			param: param
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 삭제 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_delete(){
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	
+	var param	= {
+			
+			//_sqlName: "w_mgmt.system.delsys.del,w_mgmt.system_detail.delsys.del", 
+			_sqlName: "w_mgmt.system.delsys.del", 
+			DEVICE_ID: copy.getValue(0, "DEVICE_ID")
+	};
+	
+	var opt 	= { 
+			
+			reqId: "SYS_DEL",
+			url: "service::w_mgmt.sys.delsys.del.do",
+			param: param
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 조회 버튼 클릭
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_search_click(event) {
+	
+	f_search();
+	
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 그리드 클릭시 클릭된 정보를 아래에 옮겨보자
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function grd_sys_list_click(event) {
+	v_flag = "UPDATE"; // 수정모드로
+	
+	Xwing.getEdit("edt_sysid").setEnabled(false);
+//	Xwing.getCombo("cmb_sysmenu").setEnabled(false);
+//	Xwing.getCombo("cmb_loc").setEnabled(false);
+//	Xwing.getDatepicker("date_doip").setEnabled(false);
+	
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	var row  = Xwing.getDataset("DS_SYSTEM").getCursor();
+	var date_dt;
+	var date_st;
+	var date = "";
+	
+	copy.copyRowFrom(0, "DS_SYSTEM", row);
+	
+	date_dt = copy.getValue(0, "DOIP_DATE");  // 날자 형식 변경을 위해서.. 날짜 사이의 '-' 를 인식못함.
+	
+	date_st = date_dt.split("-");
+	date += date_st[0];
+	date += date_st[1];
+	date += date_st[2];
+	
+	copy.setValue(0, "DOIP_DATE", date);
+	
+	Xwing.getButton("btn_mib").setEnabled(true);
+	
+	var v_selected 	= Xwing.getGrid("grd_sys_list").getCheckedIdx();
+	var name = "";
+	var DS_CRIT 	= Xwing.getDataset("DS_SYSTEM");
+	//alert("--------"+Xwing.getCombo("cmb_sysmenu").getValue());
+	//if(Xwing.getCombo("cmb_sysmenu").getValue() == "08") {  //위에서 클릭한값이 TTS일경우
+	//	Xwing.getCombo("cmb_port").setEnabled(true);
+	//}
+/*	for(var i = 0; i < v_selected.length; i++) { 
+		try {
+			var id = DS_CRIT.getValue(v_selected[i], "DEVICE_IP");
+			var LOG_NM = DS_CRIT.getValue(v_selected[i], "LOG_NM");
+			name = name+id+"("+LOG_NM+"),";
+		} catch (e) {
+			alert(e);
+			// TODO: handle exception
+		}
+	}*/
+/*	try {
+		Xwing.getTextArea("textarea0").setValue(name);
+	} catch (e) {
+		// TODO: handle exception
+		alert(e);
+	}*/
+	
+/*	if(v_selected.length >= 2) { //2개이상 클릭시
+		Xwing.getGroup("group1").setVisible(false);
+		Xwing.getGroup("group3").setVisible(true);
+		Xwing.getButton("btn_save_all").setVisible(true);
+		Xwing.getButton("btn_save").setVisible(false);
+	}
+	if(v_selected.length <= 1 ) { //2개이하 클릭시
+		Xwing.getGroup("group1").setVisible(true);
+		Xwing.getGroup("group3").setVisible(false);
+		Xwing.getButton("btn_save_all").setVisible(false);
+		Xwing.getButton("btn_save").setVisible(true);
+	}*/
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 초기화
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_refresh_click(event) {
+	v_flag = "INSERT"; // 추가 모드로 변경
+	
+	Xwing.getButton("btn_mib").setEnabled(false);
+	Xwing.getEdit("edt_sysid").setEnabled(true);
+	//Xwing.getCombo("cmb_sysmenu").setEnabled(true);
+	//Xwing.getCombo("cmb_loc").setEnabled(true);
+	Xwing.getDatepicker("date_doip").setEnabled(true);
+	
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	copy.clearData();
+	copy.addRow();
+	//Xwing.getDatepicker("date_doip").setValue(getDateFormat("day"));
+	//Xwing.getCombo("cmb_sysmenu").focus();
+	Xwing.getEdit("edt_disp_seq").setValue(0);
+	f_setData();
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 저장
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_save_click(event) {
+	//if(Xwing.getCombo("cmb_sysmenu").getValue() == ""){
+	//	alert("시스템 종류를 선택해야 합니다.");
+	//	Xwing.getCombo("cmb_sysmenu").focus();
+	//	return;
+	//}
+	if(Xwing.getEdit("edt_sysid").getValue() == ""){
+		alert("시스템ID 를 입력해야 합니다.");
+		Xwing.getEdit("edt_sysid").focus();
+		return;
+	}
+	if(Xwing.getEdit("edt_server").getValue() == ""){
+		alert("서버명을 입력해야 합니다.");
+		Xwing.getEdit("edt_server").focus();
+		return;
+	}
+	/*if(Xwing.getDatepicker("date_doip").getValue() == ""){
+		alert("도입시기를 선택해야 합니다.");
+		return;
+	}*/
+	//if(Xwing.getCombo("cmb_loc").getValue() == "" ){
+	//	alert("위치(센터) 를 선택해야 합니다.");
+	//	Xwing.getCombo("cmb_loc").focus();
+	//	return;
+	//}
+	
+	
+	if(v_flag == "INSERT"){  // 신규 추가시
+		f_save();
+	}else if(v_flag == "UPDATE"){  // 수정시
+		f_update();
+	}
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 셋팅 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_setData(){
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	
+	copy.setValue(0, "DU_SERVER", 0);
+	copy.setValue(0, "DU_HA", 0);
+	copy.setValue(0, "DU_POW", 0);
+	copy.setValue(0, "DU_IPSI", 0);
+	copy.setValue(0, "DU_MED", 0);
+	copy.setValue(0, "DU_AES", 0);
+	copy.setValue(0, "DU_CLAN", 0);
+	//Xwing.getCombo("cmb_OS").setItemindex("0");
+	Xwing.getCombo("cmb_useyn").setItemindex("1");
+	Xwing.getCombo("cmb_snmpyn").setItemindex("1");
+	//Xwing.getCombo("cmb_ping").setItemindex("1");
+	//Xwing.getCombo("cmb_port").setItemindex("1");
+	//Xwing.getCombo("cmb_port").setEnabled(false);
+	Xwing.getCombo("cmb_snmp_version").setItemindex("2");
+	Xwing.getCombo("cmb_alarm").setItemindex("1");
+	Xwing.getCombo("cmb_disp_yn").setItemindex("1");
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 선택항목 삭제
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_delete_click(event) {
+	var copy = Xwing.getDataset("DS_SYSTEM_COPY");
+	var sys_id = copy.getValue(0, "DEVICE_ID");
+	
+	if(v_flag != "UPDATE" || sys_id == ""){
+		alert("삭제할 항목을 선택해야 합니다.");
+		return;
+	}
+	
+	if(!confirm('선택된 시스템 : ' + sys_id +' 를 삭제 하시겠습니까?')){
+		return;
+	}
+	
+	f_delete();
+}
+
+////*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+////* 화면출력 < 그리드 사이즈 키워서 보기 > (height min : 460 , max : 710)
+////*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//function btn_grid_view_click(event) {
+//	var grd_system 	= Xwing.getGrid("grd_sys_list");
+//	var btn_view 	= Xwing.getButton("btn_grid_view");
+//	
+//	if(v_view == "MIN"){
+//		grd_system.setHeight(710);
+//		btn_view.setValue("화면축소");
+//		v_view = "MAX";
+//	}else if(v_view == "MAX"){
+//		grd_system.setHeight(460);
+//		btn_view.setValue("화면출력");
+//		v_view = "MIN";
+//	}
+//	
+//}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 엑셀로 출력
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_excel_click(event) {
+	
+	var datename = "시스템관리";
+	
+//	Xwing.getGrid("grd_sys_list").exportData(datename + "_system","../jsp/export.jsp");
+	
+	Xwing.getDataGrid("grd_sys_list").exportData(datename + "_system.xls","../jsp/export2.jsp","");
+	
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 콜백함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function callback(reqId, res, err, xhr) {
+	
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch(reqId) {
+	
+		case "GET_CODE":
+			Xwing.getDataset("DS_SYS001").setData(res.SYS001.column, res.SYS001.record);
+			$DS_SYS001.insertRow(0, ["","","전체" ]);
+			$cmb_system.setItemindex("0");
+			
+			Xwing.getDataset("DS_SYS003").setData(res.SYS003.column, res.SYS003.record);
+			$DS_SYS003.insertRow(0, ["","","전체" ]);
+			//$cmb_location.setItemindex("0");
+			
+			Xwing.getDataset("DS_SYS005").setData(res.SYS005.column, res.SYS005.record);
+			
+			//상세폼
+			Xwing.getDataset("DS_SYS001_D").setData(res.SYS001.column, res.SYS001.record);
+			$DS_SYS001_D.insertRow(0, ["","","선택" ]);
+			//$cmb_sysmenu.setItemindex("0");
+			
+			Xwing.getDataset("DS_SYS003_D").setData(res.SYS003.column, res.SYS003.record);
+			$DS_SYS003_D.insertRow(0, ["","","선택" ]);
+			//$cmb_loc.setItemindex("0");
+			
+			//최초도입시기 조회
+			f_getFirstDate();
+			
+			break;
+			
+			
+		case "SYS_SCH":
+			Xwing.getDataset("DS_SYSTEM").setData(res.DS_SYSTEM.column, res.DS_SYSTEM.record);
+			Xwing.getDataset("DS_SYSTEM_COPY").setColumnInfo(res.DS_SYSTEM.column);
+			Xwing.getDatepicker("date_doip").setValue(v_today);
+			f_setData();
+			break;
+			
+		case "SYS_INS":
+			btn_refresh_click();
+			f_search();
+			alert("저장이 완료 되었습니다.");
+			break;
+			
+		case "SYS_UPD":
+			btn_refresh_click();
+			f_search();
+			alert("수정이 완료 되었습니다.");
+			break;
+			
+		case "SYS_DEL":
+			btn_refresh_click();
+			f_search();
+			alert("삭제가 완료 되었습니다.");
+			break;
+			
+		case "EXCEL_DOWNLOAD":
+			alert("저장이 완료 되었습니다.");
+			break;
+			
+		case "FISRT_DATE":
+			$DS_FDAY.setData(res.DS_FDAY.column, res.DS_FDAY.record);
+			$date_from.setValue($DS_FDAY.getValue(0,"DOIP_DATE"));
+			break;
+	}
+}
+
+function btn_mib_click(event) {
+	
+		var opt = {
+
+			id		: 'manage_system_mib_pop',
+			title	: 'MIB 목록',
+			url		: '../INF/INF120P1.xhtml',
+			width 	: 860,
+			height	: 650,
+			modal	: false,
+			resizable: false,
+			draggable : true,
+			param	: {
+						p_device_id : Xwing.getDataset("DS_SYSTEM_COPY").getValue(0, "DEVICE_ID"),
+						P_device_gu : Xwing.getDataset("DS_SYSTEM_COPY").getValue(0, "DEVICE_GU1")
+					  }
+			};
+
+		//g_dialog(opt, true);
+		var INF020P1 = new xwing.Dialog(opt);
+		INF020P1.open();
+
+}
+
+/******************************************************
+ * TTS 서버의 7000포트(VTSVC.exe) 감시하기 위함
+ *****************************************************/
+function cmb_sysmenu_change(event) {
+	//alert(Xwing.getCombo("cmb_sysmenu").getValue());
+	var selectValue=Xwing.getCombo("cmb_sysmenu").getValue();
+	//if(selectValue == "08") {
+	//	Xwing.getCombo("cmb_port").setEnabled(true);	
+	//	Xwing.getCombo("cmb_port").setItemindex("0");
+	//}else {
+	//	Xwing.getCombo("cmb_port").setEnabled(false);
+	//	Xwing.getCombo("cmb_port").setItemindex("1");
+	//}
+	
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SYS001">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS003">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYSTEM">
+		<xwing:dataset-column id="DEVICE_GU2"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU2_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ADMIN_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_PORT"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU1"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP2"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP3"></xwing:dataset-column>
+		<xwing:dataset-column id="READ_COMMUNITY"></xwing:dataset-column>
+		<xwing:dataset-column id="WRITE_COMMUNITY"></xwing:dataset-column>
+		<xwing:dataset-column id="SNMP_VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="SNMP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="OS_GU"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_YN_2"></xwing:dataset-column>
+		<xwing:dataset-column id="PING_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_LOCAL"></xwing:dataset-column>
+		<xwing:dataset-column id="CPU_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_SERVER"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_HA"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_POW"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_IPSI"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_MED"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_AES"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_CLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="DOIP_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MODEL_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SYSTEM_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="SYSNAME"></xwing:dataset-column>
+		<xwing:dataset-column id="OS_VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH_PASS"></xwing:dataset-column>
+		<xwing:dataset-column id="PORT_YN"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CHECK">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+			<xwing:dataset-cell>X</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>O</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>사용</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>사용안함</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYSTEM_COPY">
+		<xwing:dataset-column id="DEVICE_GU2"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU2_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ADMIN_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_PORT"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU1"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP2"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_IP3"></xwing:dataset-column>
+		<xwing:dataset-column id="READ_COMMUNITY"></xwing:dataset-column>
+		<xwing:dataset-column id="WRITE_COMMUNITY"></xwing:dataset-column>
+		<xwing:dataset-column id="SNMP_VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="SNMP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="OS_GU"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DISP_YN_2"></xwing:dataset-column>
+		<xwing:dataset-column id="PING_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_LOCAL"></xwing:dataset-column>
+		<xwing:dataset-column id="CPU_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_SERVER"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_HA"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_POW"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_IPSI"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_MED"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_AES"></xwing:dataset-column>
+		<xwing:dataset-column id="DU_CLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="DOIP_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MODEL_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SYSTEM_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="SYSNAME"></xwing:dataset-column>
+		<xwing:dataset-column id="OS_VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH_PASS"></xwing:dataset-column>
+		<xwing:dataset-column id="PORT_YN"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FDAY"></xwing:dataset>
+	<xwing:dataset id="DS_SYS005">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS001_D">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS003_D">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SNMP_VERSION">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>v1</xwing:dataset-cell>
+			<xwing:dataset-cell>V1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>v2c</xwing:dataset-cell>
+			<xwing:dataset-cell>V2C</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>v3</xwing:dataset-cell>
+			<xwing:dataset-cell>V3</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="780" load="page_load" scroll="false">
+		<xwing:button id="btn_excel" left="1010" top="52" height="25" width="25" click="btn_excel_click" styles="btn_normal" icon="../images/ico_excel.png" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10"></xwing:button>
+		<xwing:label id="lbl_subtitle" value="대상시스템 리스트" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:button id="btn_refresh" value="초기화" left="845" top="740" height="25" width="60" click="btn_refresh_click" tabindex="29" anchor="right bottom" shadow="1 1 2 0 #d0d0d0" styles="btn_reset" borderwidth="1"></xwing:button>
+		<xwing:button id="btn_save" value="저장" left="910" top="740" height="25" width="60" styles="btn_action" click="btn_save_click" tabindex="30" anchor="right bottom" shadow="1 1 2 0 #d0d0d0" borderwidth="0"></xwing:button>
+		<xwing:button id="btn_delete" value="삭제" left="975" top="740" height="25" width="60" styles="btn_action" tabindex="31" click="btn_delete_click" anchor="right bottom" borderwidth="0" shadow="1 1 2 0 #d0d0d0" visible="true"></xwing:button>
+		<xwing:datagrid id="grd_sys_list" left="15" top="82" width="1020" height="493" rownum="true" binddataset="DS_SYSTEM" click="grd_sys_list_click" anchor="all" resizable="true" sortable="true" cursor="pointer" checkbox="false">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="시스템ID" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="서버명" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="사용여부" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="SNMP" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="PING체크" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="화면표시" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="알람유무" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="26">
+					<xwing:datagrid-cell bindcolumn="DEVICE_ID"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="DEVICE_DESC" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USE_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SNMP_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PING_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="DISP_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ALARM_YN" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:button id="btn_mib" value="MIB설정" left="13" top="740" height="25" width="80" tabindex="29" anchor="bottom left" enabled="false" bgimagealign="left top" click="btn_mib_click" shadow="1 1 2 0 #d0d0d0" styles="btn_reset" borderwidth="1" visible="true"></xwing:button>
+		<xwing:panel id="pnl_info" left="15" top="585" width="1020" height="142" anchor="right bottom left" styles="div_perform">
+			<xwing:label id="label0_0_1_1_2" value="시스템ID" left="34" top="14" width="74" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_sysid" left="116" top="14" width="150" height="25" styles="edit_mand" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1" value="대표IP" left="34" top="44" width="74" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_mainip" left="116" top="44" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP" tabindex="13" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_0" value="SNMP여부" left="34" top="104" width="74" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:label id="label0_0_1_1_2_0_1_0_0" value="도입시기" left="669" top="14" width="74" height="25" halign="right" styles="label_lititle" visible="false"></xwing:label>
+			<xwing:label id="label0_0_1_1_2_0_0_1" value="서버명" left="330" top="14" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_server" left="436" top="14" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_DESC" tabindex="16" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_1_0_0_0" value="인증명" left="34" top="74" width="74" height="20" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_name" left="116" top="74" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="AUTH_NAME" tabindex="18"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_1_0_0_0_0" value="인증패스워드" left="330" top="74" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_pass" left="436" top="74" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="AUTH_PASS" tabindex="19"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_0_0_0" value="이중화" left="34" top="162" width="74" height="25" halign="right" visible="false"></xwing:label>
+			<xwing:datepicker id="date_doip" left="751" top="14" height="25" tabindex="9" width="150" styles="edit_mand" binddataset="DS_SYSTEM_COPY" bindcolumn="DOIP_DATE" visible="false"></xwing:datepicker>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1" value="사용여부" left="669" top="44" width="74" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:combo id="cmb_useyn" left="751" top="44" height="25" width="150" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="USE_YN" tabindex="20"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_2" value="대표PORT" left="330" top="44" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_mainport" left="436" top="44" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_PORT" tabindex="13" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1_0" value="SNMP버전" left="34" top="129" width="74" height="25" halign="right" visible="false"></xwing:label>
+			<xwing:combo id="cmb_snmp_version" left="116" top="129" height="25" width="150" domaindataset="DS_SNMP_VERSION" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="SNMP_VERSION" tabindex="20" visible="false"></xwing:combo>
+			<xwing:combo id="cmb_ping" left="436" top="104" height="25" width="150" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="PING_YN" tabindex="20"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1_1" value="PING체크여부" left="330" top="104" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:combo id="cmb_alarm" left="436" top="129" height="25" width="150" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="ALARM_YN" tabindex="20" visible="false"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1_1_0" value="알람여부" left="354" top="129" width="74" height="25" halign="right" visible="false"></xwing:label>
+			<xwing:label id="label0_0_1_1_2_0_0_0_1" value="순서" left="669" top="74" width="74" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_disp_seq" left="751" top="74" width="150" height="25" binddataset="DS_SYSTEM_COPY" bindcolumn="DISP_SEQ" tabindex="19"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1_1_0_0" value="화면표시" left="669" top="129" width="74" height="25" halign="right" visible="false"></xwing:label>
+			<xwing:combo id="cmb_disp_yn" left="751" top="129" height="25" width="126" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="DISP_YN" tabindex="20" visible="false"></xwing:combo>
+			<xwing:combo id="cmb_snmpyn" left="116" top="104" height="25" width="150" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="SNMP_YN" tabindex="20"></xwing:combo>
+			<xwing:group id="group2" left="111" top="159" width="482" height="27" visible="false">
+				<xwing:checkbox id="chk_server" label="서버" left="6" top="3" height="20" width="60" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_SERVER" truevalue="1" falsevalue="0" value="0" tabindex="22"></xwing:checkbox>
+				<xwing:checkbox id="chk_ha" label="HA" left="71" top="3" height="20" width="60" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_HA" truevalue="1" falsevalue="0" value="0" tabindex="23"></xwing:checkbox>
+				<xwing:checkbox id="chk_power" label="전원" left="131" top="3" height="20" width="60" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_POW" truevalue="1" falsevalue="0" value="0" tabindex="24"></xwing:checkbox>
+				<xwing:checkbox id="chk_ipsi" label="IPSI" left="196" top="3" height="20" width="60" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_IPSI" value="0" truevalue="1" falsevalue="0" tabindex="25"></xwing:checkbox>
+				<xwing:checkbox id="chk_medpro" label="MedPro" left="261" top="3" height="20" width="65" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_MED" value="0" truevalue="1" falsevalue="0" tabindex="26"></xwing:checkbox>
+				<xwing:checkbox id="chk_clan" label="CLAN" left="341" top="3" height="20" width="65" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_CLAN" value="0" truevalue="1" falsevalue="0" tabindex="27"></xwing:checkbox>
+				<xwing:checkbox id="chk_aes" label="AES" left="411" top="3" height="20" width="65" binddataset="DS_SYSTEM_COPY" bindcolumn="DU_AES" value="0" truevalue="1" falsevalue="0" tabindex="28"></xwing:checkbox>
+			</xwing:group>
+		</xwing:panel>
+		<xwing:button id="btn_search" value="조 회" left="975" top="9" height="25" styles="btn_search" width="60" click="btn_search_click" tabindex="5" anchor="top right" bgcolor="#1FABE0" shadow="0 0 0 0"></xwing:button>
+	</xwing:page>
+</body>
+</html>

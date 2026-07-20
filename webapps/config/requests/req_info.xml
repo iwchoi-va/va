@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<request-config>
+
+	<request name="wfm.info.inf100m" login="true">
+		<description>메뉴관리</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="wfm.info.inf040" login="true">
+		<description>코드북관리</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+    <request name="wfm.info.intro_todo" login="true">
+    <description>서버 장애 관리 </description>
+    <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+    <page type="default">/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="inf.inf070.service.sel" login="true">
+	    <description>시스템 모니터링 - sql </description>
+	    <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+	    <page type="default">/common/Xwing.jsp</page>
+    </request>
+
+    <request name="inf.inf070.systeminfosearch" login="true">
+        <description>시스템모니터링정보 - 조회</description>
+       	<action-class>sens.src.systeminfo.SystemInfoCacheWebAction</action-class>
+        <page type="default">/common/Xwing.jsp</page>
+    </request>
+    
+     <request name="inf.inf080.systeminfosearch" login="true">
+        <description>시스템모니터링정보 - 조회</description>
+       	<action-class>sens.src.systeminfo.SystemInfoCacheWebAction</action-class>
+        <page type="default">/common/Xwing.jsp</page>
+    </request>
+
+    <request name="inf.inf080.sel" login="true">
+		<description>분석시스템관리모니터링</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+    <request name="cs.inf050.player.log.sel" login="true">
+		<description>녹취청취이력</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="inf.inf100.sel" login="true">
+        <description>수동배치화면 SQL</description>
+       	<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type="default">/common/Xwing.jsp</page>
+    </request>
+    <request name="inf.inf130.sel" login="true">
+        <description>ms_stt_meta,ms_stt_bef_meta SQL</description>
+       	<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type="default">/common/Xwing.jsp</page>
+    </request>
+</request-config>

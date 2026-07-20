@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- #이 파일의 업무정의 영역-->
+<request-config>
+	<request name="w_mgmt.menu.list" login="false">
+		<description>[M001]메뉴 리스트 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.menu.delete" login="false">
+		<description>[M002]메뉴 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.menu.addmenu.ins" login="false">
+		<description>[M003]메뉴 추가</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.menu.upmenu.upd" login="false">
+		<description>[M004]메뉴 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.code.selcode.sel" login="false">
+		<description>[M011]코드 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.code.addcode.ins" login="false">
+		<description>[M012]코드 추가</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.code.upcode.upd" login="false">
+		<description>[M013]코드 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.code.delcode.del" login="false">
+		<description>[M014]코드 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.manage_code" login="false">
+		<description>[M015]코드북관리</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+		
+	<request name="w_mgmt.user.schuser.sch" login="false">
+		<description>[M021]사용자 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.user.adduser.ins" login="false">
+		<description>[M022]사용자 추가</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.user.upduser.upd" login="false">
+		<description>[M023]사용자 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.user.deluser.del" login="false">
+		<description>[M024]사용자 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.user.schpasschk.sch" login="false">
+		<description>[M025]사용자 비밀번호 확인</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.user.updpasswd.upd" login="false">
+		<description>[M026]사용자 비밀번호 변경</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.sys.schsys.sch" login="true">
+		<description>[M031]시스템관리 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.sys.inssys.ins" login="false">
+		<description>[M032]시스템관리 등록</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.sys.upsys.upd" login="false">
+		<description>[M033]시스템관리 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.sys.delsys.del" login="false">
+		<description>[M034]시스템관리 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.problem.schcode.sch" login="false">
+		<description>[M041]코드조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.problem.schprob.sch" login="false">
+		<description>[M042]장애 내역 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.problem.updprob.upd" login="false">
+		<description>[M043]문제 장비 처리 업데이트</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.critical.schcrit.sch" login="false">
+		<description>[M051]임계치 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.critical.inscrit.ins" login="false">
+		<description>[M051]임계치 추가</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.critical.updcrit.upd" login="false">
+		<description>[M052]임계치 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.critical.delcrit.del" login="false">
+		<description>[M053]임계치 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.alarm.scharm.sch" login="false">
+		<description>[M061]알람메세지 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.alarm.insarm.ins" login="false">
+		<description>[M062]알람메세지 추가</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.alarm.updarm.upd" login="false">
+		<description>[M063]알람메세지 수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.alarm.delarm.del" login="false">
+		<description>[M064]알람메세지 삭제</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.perfomance.schcode.sch" login="false">
+		<description>[M071]성능보고서 센터 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.perfomance_pbx.schperfom.sch" login="false">
+		<description>[M072]성능보고서 데이터 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.dualization.schduz.sch" login="false">
+		<description>[M081]시스템 이중화 정보 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.infomation.schmemory.sch" login="false">
+		<description>[M091]시스템 안정성 정보 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.perfomance.schinfo.sch" login="false">
+		<description>[M101]성능보고서(교환기 외)</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+		
+	<request name="w_mgmt.systemaging.schaging.sch" login="false">
+		<description>[M110]시스템안정성정보조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.sys.getFirstDate.sch" login="false">
+		<description>[시스템관리]최초도입일자 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="w_mgmt.perfomance_month" login="false">
+		<description>[M102]성능보고서(교환기 외)</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.perfomance_year" login="false">
+		<description>[M102]성능보고서(교환기 외)</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.perfomance_pbx_month" login="false">
+		<description>[M103]성능보고서(교환기)</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="w_mgmt.system.phoneinfo.phone.syn" login="false">
+		<description>[M103]성능보고서(교환기)</description>
+		<action-class>telecaps.common.PhoneXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>		
+	
+	<request name="mon.pbx.SQLXwingWebAction" login="false">
+		<description>교환기메뉴WebAction</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+</request-config>	

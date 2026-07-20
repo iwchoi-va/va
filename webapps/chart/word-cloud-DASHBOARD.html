@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="./css/word-cloud.css">
+</head>
+
+<body> 
+<script src="./js/word-cloud.js"></script>
+<script src="./js/word-cloud-layout.js"></script>
+
+<script>
+		var width, height;
+		var keyMap = new Array(); 
+		
+		var fill = d3.scale.category20();
+		var minScale = 18; //최소 폰트 크기(웹기준)
+		window.onresize = function() {
+			width = parent.$pan_word_cloud.getAttribute("width") - 10;
+		  	height = parent.$pan_word_cloud.getAttribute("height") - 30;
+		  
+		  	d3.select("svg")
+		      .remove();
+		  	
+		  	layout(); //svg 제거 후 다시 그리기
+		} 
+		
+		window.onload = function(){
+			document.body.oncontextmenu = function(){return false;};
+			
+			width = parent.$pan_word_cloud.getAttribute("width") - 10;
+		  	height = parent.$pan_word_cloud.getAttribute("height") - 30;
+		
+		  	var size = parent.$DS_DAILY.size(); // sorted keyword-value to Array 
+			//var max = parent.$DS_DAILY.getValue(0,"RANKING"); //min: valArr[size-1], max: valArr[0]
+			//var totalCnt = parent.$DS_DAILY.sum("RANKING", ""); //total 
+			var val = 60;
+			for(var i=0; i<size; i++){
+				var sub = new Object();     
+				sub['label'] = parent.$DS_DAILY.getValue(i,"KEYWORD"); 
+				var rank = parent.$DS_DAILY.getValue(i,"RANKING");
+				sub['value'] = rank;
+				//var percentage = round(parent.$DS_DAILY.getValue(i,"RANKING")/max*40, 0);
+				//sub['size'] = percentage;// scale for font-size based on with the width
+				sub['size'] = val;
+				keyMap[i] = sub;
+				val -= 10;
+			}
+			
+			layout();
+		}
+	
+		function layout(){//alert("layout");
+			d3.layout.cloud()
+		  	  .size([width, height])
+		      .words(keyMap.map(function(d) {
+			        return {
+			        	text: d.label, 
+			        	size: d.size < minScale ? minScale : d.size
+			        };
+			      })
+		      )
+		      .padding(5)
+		      .rotate(function() { return ~~(Math.random()*2); })
+		      .font("맑은 고딕")
+		      .fontWeight("bold")
+		      .fontSize(function(d) { return d.size;})		
+		      .on("end", draw)
+		      .start();
+		}
+	
+		function draw(words) {
+		  d3.select("body").append("svg")
+		      .attr("width", width)
+		      .attr("height", height)
+			  .append("g")
+		      .attr("transform", "translate("+ width/2 +", " + height/2 +")")	// center
+		    .selectAll("text")
+		      .data(words)
+		    .enter().append("text")
+		      .style("font-size", function(d) { return d.size + "px"; })
+		      .style("font-family", "맑은 고딕")
+		      .style("fill", function(d, i) { return fill(i); })
+		      .style("cursor", "pointer")
+		      .attr("text-anchor", "middle")
+		      .attr("transform", function(d) {
+		        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+		      })
+		      .text(function(d) { return d.text; })
+		  	.on("click", function(d){ parent.reSrc3(d.text);
+		  	});
+		}
+
+		// Math.round() 에 소수점 parameter 추가
+		function round(n, digits) {
+			if (digits >= 0) return parseFloat(n.toFixed(digits)); // 소수부 반올림
+			
+			digits = Math.pow(10, digits); // 정수부 반올림
+			var t = Math.round(n * digits) / digits;
+			
+			return parseFloat(t.toFixed(0));
+		}
+	
+</script>
+</body>

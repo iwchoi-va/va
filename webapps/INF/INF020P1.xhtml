@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var dept_cd;
+
+// 페이지시작
+function page_load(event) {
+	XwingObject();
+	
+	dept_cd = Xwing.param.dept_cd;
+	
+	f_sel_dept();	// 조직 조회
+}
+
+// 펼치기 클릭
+function btn_expand_click(event) {
+	var value = $btn_expand.getValue();
+	if(value == "펼쳐보기"){
+		$tree_dept.expandAll();	
+		$btn_expand.setValue("접어보기");
+	}else if(value == "접어보기"){
+		$tree_dept.collapseAll();	
+		$btn_expand.setValue("펼쳐보기");
+	}
+}
+
+// 접기 클릭
+function btn_collapse_click(event) {
+	$tree_dept.collapseAll();
+}
+
+// 조직조회
+function f_sel_dept() {
+	var v_param = {
+			_sqlName : "cs.hr.hrm100m10p.sel.dept"
+				, sdate : checkDateFormat()
+				, edate : checkDateFormat()
+		};
+		var opt = {
+			reqId : "f_dept_sel",
+			url : 'service::cs.hr.hrm100m10p.sel.dept.do',
+			param : v_param,
+			indicator : null,
+			showError : true
+		};
+
+		Xwing.request(opt, callback);	
+}
+
+// 선택버튼 클릭
+function btn_select_click(event) {
+	var curr = $DS_DEPT_LIST.getCursor();
+
+	var dept_level = $DS_DEPT_LIST.getValue(curr, 'DEPT_LEVEL');
+	
+	if(dept_level < 2) {
+		new xwing.Dialog.alert('같은 레벨로만 이동할 수 있습니다.', '상위조직변경');
+		return;
+	}
+	
+	var upper_dept = $DS_DEPT_LIST.getValue(curr, 'DEPT_CD');
+	var org1_cd = $DS_DEPT_LIST.getValue(curr, 'ORG1_CD');
+	var org2_cd = $DS_DEPT_LIST.getValue(curr, 'ORG2_CD');
+	
+	
+	f_update_upper(upper_dept, org1_cd, org2_cd);
+}
+
+// 상위조직변경
+function f_update_upper(upper_val, org1_val, org2_val) {
+	
+	var v_param = {
+			_sqlName : "cs.hr.hrm100m10p.update.upper"
+				, dept_cd : dept_cd
+				, upper_dept : upper_val
+				, org1_cd : org1_val
+				, org2_cd : org2_val
+		};
+		var opt = {
+			reqId : "f_update_upper",
+			url : 'service::cs.hr.hrm100m10p.update.upper.do',
+			param : v_param,
+			indicator : null,
+			showError : true
+		};
+
+		Xwing.request(opt, callback);
+}
+
+// 콜백함수
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}	
+	
+	switch(reqId) {
+		case "f_dept_sel":
+			$DS_DEPT_LIST.setData( res.DS_DEPT_LIST.column, res.DS_DEPT_LIST.record);
+			$tree_dept.expandAll();
+		break;
+
+		case 'f_update_upper' :
+				new xwing.Dialog.alert('변경되었습니다.', '상위조직변경');
+				parent.f_dept_sel();
+				
+				Xwing.parent.Xwing.getDialog("dept").close();
+			break;
+	}
+
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_DEPT_LIST">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="400" height="500" load="page_load">
+		<xwing:group id="group0" left="10" top="10" styles="div_perform" width="380" height="40">
+			<xwing:label id="label0" value="◈ 해당부서를 클릭 후 선택버튼을 클릭하세요." left="20" top="8" width="246" height="20"></xwing:label>
+			<xwing:button id="btn_expand_" left="226" top="8" width="22" height="20" icon="../images/icon_add.png" anchor="right" click="btn_expand_click" visible="false"></xwing:button>
+			<xwing:button id="btn_collapse" left="253" top="8" width="22" height="20" icon="../images/icon_del.png" anchor="right" click="btn_collapse_click" visible="false"></xwing:button>
+			<xwing:button id="btn_expand" value="접어보기" left="282" top="7" width="90" fontfamily="WallBoardFond" anchor="top right" styles="btn_normal" height="25" textpadding="0 0 0 5" icon="../images/ico_folder_close.png" iconmargin="-3 0 0 0" click="btn_expand_click"></xwing:button>
+		</xwing:group>
+		<xwing:group id="group1" left="10" top="89" styles="div_perform" width="380" height="401">
+			<xwing:tree id="tree_dept" left="0" top="-2" width="378" height="410" binddataset="DS_DEPT_LIST" idcolumn="DEPT_CD" pidcolumn="UPPER_DEPT" leafyncolumn="LEAF_YN" textcolumn="DEPT_NAME"></xwing:tree>
+		</xwing:group>
+		<xwing:button id="btn_select" value="선 택" left="329" top="56" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_select_click" borderstyle="none"></xwing:button>
+	</xwing:page>
+</body>
+</html>

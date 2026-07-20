@@ -1,0 +1,5 @@
+html { overflow:hidden; resize:both; height:100%; }
+body { font-family:'Malgun Gothic';	overflow:hidden; height:100%; width:100%; margin:0 auto; }
+#container { height:100%; margin:0 auto; padding-top:50px; }
+div#container #highcharts-0 { overflow:visible !important; }
+div#container #highcharts-0 svg { overflow:visible !important; }

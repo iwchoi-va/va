@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/ispro.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<link href="../css/src_dashboard.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/servicemanager.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url = "service::com.dashboard.dashboardsearch.do";
+
+/*
+ * 집중관리항목 다시 추가해야하는 경우 : DS_FOC_SCORE 관련된 부분 주석 풀고, DashboardCache쪽에도 foc 관련된 부분 모두 주석 풀면됨
+ * **/
+function page_load(event) {
+	XwingObject();
+
+	//getDashbord();
+	page_resize();
+	f_codebook_sel();
+
+}
+
+function f_codebook_sel() {
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "VSS160",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function getDashbord(){
+	var dash_auth = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC3");
+	var org1_cd = "";
+	var org2_cd = "";
+	var org3_cd = "";
+	var user_id = "";
+	var sel_user_id = global("G_USER_ID");
+	
+	var v_title="※ 조회 기준 : ";
+
+	switch (dash_auth) {
+	case '1':
+		org1_cd = '11002';// global("G_ORG1_CD");
+		v_title += "TM본부";
+		break; //모든 본부 조회
+	case '2': //본부의 한 센터 조회
+		org1_cd = '11002';// global("G_ORG1_CD");
+		org2_cd = global("G_ORG2_CD");
+		v_title += "TM"+" > "+global("G_ORG2_NM")+"센터";
+		break;
+	case '3': //본부 센터, 한팀 조회
+		org1_cd = '11002';// global("G_ORG1_CD");
+		org2_cd = global("G_ORG2_CD");
+		org3_cd = global("G_ORG3_CD");
+		v_title += "TM"+" > "+global("G_ORG2_NM")+">"+global("G_ORG3_NM");
+		break;
+	case '4'://해당 상담사 조회
+		org1_cd = '11002';// global("G_ORG1_CD");
+		org2_cd = global("G_ORG2_CD");
+		org3_cd = global("G_ORG3_CD");
+		user_id = global("G_USER_ID");
+		v_title += "TM"+" > "+global("G_ORG2_NM")+" > "+global("G_ORG3_NM")+" > "+global("G_USER_NAME")+"("+global("G_USER_ID")+") 상담사";
+		break;
+
+
+	default:
+		break;
+	}
+	$lbl_title.setValue(v_title);
+
+	var param = {
+			 analProcess : "DS_PROCESS"
+			    , gradeScore : "DS_GRD_SCORE"
+			    , scriptScore : "DS_VRS_SCORE"
+			    , banScore : "DS_BAN_SCORE"
+			    , secScore : "DS_SEC_SCORE"
+			    , focScore : "DS_FOC_SCORE"
+			    , menScore : "DS_MEN_SCORE"
+			    , befScore : "DS_BEF_SCORE"
+			    , ORG1_CD : org1_cd
+			    , ORG2_CD : org2_cd
+			    , ORG3_CD : org3_cd
+			    , USER_ID : user_id
+			    , SEL_USER_ID : sel_user_id
+		};
+	var opt = {
+			reqId : "getDashbord",
+			url : v_url,
+			param : param
+		};
+
+	Xwing.request(opt, callback);
+}
+
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	switch(reqId) {
+		case 'f_codebook_sel' :
+			$DS_VSS160.setData(res.VSS160.column, res.VSS160.record);
+			getDashbord();
+
+		break;
+
+		case "getDashbord":
+			$DS_PROCESS.setData(res.DS_PROCESS.column, res.DS_PROCESS.record);
+			$DS_GRD_SCORE.setData(res.DS_GRD_SCORE.column, res.DS_GRD_SCORE.record);
+			$DS_VRS_SCORE.setData(res.DS_VRS_SCORE.column, res.DS_VRS_SCORE.record);
+			$DS_BAN_SCORE.setData(res.DS_BAN_SCORE.column, res.DS_BAN_SCORE.record);
+			$DS_SEC_SCORE.setData(res.DS_SEC_SCORE.column, res.DS_SEC_SCORE.record);
+			//$DS_FOC_SCORE.setData(res.DS_FOC_SCORE.column, res.DS_FOC_SCORE.record);
+			$DS_MEN_SCORE.setData(res.DS_MEN_SCORE.column, res.DS_MEN_SCORE.record);
+			$DS_BEF_SCORE.setData(res.DS_BEF_SCORE.column, res.DS_BEF_SCORE.record);
+
+			f_makeGrid();
+			f_makeChart();
+		break;
+
+	}
+}
+
+function f_makeChart(){
+	$pnl_va_chart.setUrl('../chart/bar-horizon-dashboard.html');
+}
+
+function f_makeGrid(){
+	var f_column = "<xwing:datagrid-colgroup>"
+		 + "<xwing:datagrid-column width='80'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='90'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='90'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='90'></xwing:datagrid-column>";
+
+	//등급 최대개수 10개 가능
+	var enableWidth = parseInt(($grd_grade_info.getWidth()-(80+90+90+90))/$DS_VSS160.size());
+		 
+	for(var i =0; i< $DS_VSS160.size();i++){
+		f_column += "<xwing:datagrid-column width='"+enableWidth+"'></xwing:datagrid-column>";
+	}
+
+	f_column += "</xwing:datagrid-colgroup>";
+
+	var f_head = "<xwing:datagrid-head>"
+	   	   + "<xwing:datagrid-row height='30'>"
+	   	   + "<xwing:datagrid-cell text='구분' rowspan='2'></xwing:datagrid-cell>"
+	 	   + "<xwing:datagrid-cell text='제출건수' rowspan='2'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell text='미평가건수' rowspan='2'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell text='평가건수' rowspan='2'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell text='Grade부여현황' colspan='"+$DS_VSS160.size()+"'></xwing:datagrid-cell>";
+
+	f_head += "</xwing:datagrid-row>";
+
+	f_head += "<xwing:datagrid-row height='30'>";
+
+	for(var i =0; i< $DS_VSS160.size();i++){
+		f_head += "<xwing:datagrid-cell text='"+$DS_VSS160.getValue(i, "CODENAME")+"' fontsize='8'></xwing:datagrid-cell>";
+	}
+
+	f_head += "</xwing:datagrid-row>"
+		   + "</xwing:datagrid-head>";
+
+	var f_body = "<xwing:datagrid-body>"
+		   + "<xwing:datagrid-row>";
+
+	var col_info = $DS_PROCESS.getColumnInfo();
+
+	for(var i =1; i< col_info.length;i++){
+		f_body += "<xwing:datagrid-cell bindcolumn='"+col_info[i]+"' halign='center'></xwing:datagrid-cell>";
+	}
+
+
+	f_body += "</xwing:datagrid-row>"
+	   +"</xwing:datagrid-body>";
+
+	var f_context = f_column + f_head + f_body ;
+
+	$grd_grade_info.addContent(f_context, true);
+
+}
+
+function btn_search_auto_click(event) {
+	getDashbord();
+}
+
+function page_resize(){
+
+	setTimeout(function(){
+		var pnl_down_height = $pnl_down.getHeight();
+
+		$pnl_va_vrs.setHeight(pnl_down_height/2-15);
+		$lbl_vrs_now.setTop($pnl_va_vrs.getHeight()/2-35);
+		$lbl_vrs_n_cnt.setTop($pnl_va_vrs.getHeight()/2-45);
+		$lbl_vrs_yester.setTop($pnl_va_vrs.getHeight()/2+45);
+		$lbl_vrs_y_cnt.setTop($pnl_va_vrs.getHeight()/2+35);
+		$lbl_vrs_avg.setTop($pnl_va_vrs.getHeight()/2+45);
+		$lbl_vrs_a_cnt.setTop($pnl_va_vrs.getHeight()/2+35);
+		$lbl_vrs_line.setTop($pnl_va_vrs.getHeight()/2+15);
+
+		$pnl_va_ban.setHeight(pnl_down_height/2-15);
+		$lbl_ban_now.setTop($pnl_va_ban.getHeight()/2-35);
+		$lbl_ban_n_cnt.setTop($pnl_va_ban.getHeight()/2-45);
+		$lbl_ban_yester.setTop($pnl_va_ban.getHeight()/2+45);
+		$lbl_ban_y_cnt.setTop($pnl_va_ban.getHeight()/2+35);
+		$lbl_ban_avg.setTop($pnl_va_ban.getHeight()/2+45);
+		$lbl_ban_a_cnt.setTop($pnl_va_ban.getHeight()/2+35);
+		$lbl_ban_line.setTop($pnl_va_ban.getHeight()/2+15);
+
+		$pnl_va_men.setHeight(pnl_down_height/2-15);
+		$lbl_men_now.setTop($pnl_va_men.getHeight()/4+30);
+		$lbl_men_n_cnt.setTop($lbl_men_now.getTop()+$lbl_men_now.getHeight()+10);
+		$lbl_men_yester.setTop($pnl_va_men.getHeight()/5+10);
+		$lbl_men_y_cnt.setTop($lbl_men_yester.getTop()+$lbl_men_yester.getHeight());
+		$lbl_men_avg.setTop($pnl_va_men.getHeight()/5*3);
+		$lbl_men_a_cnt.setTop($lbl_men_avg.getTop()+$lbl_men_avg.getHeight());
+
+		$pnl_va_sec.setHeight(pnl_down_height/2-15);
+		$pnl_va_sec.setTop($pnl_va_vrs.getTop()+$pnl_va_vrs.getHeight()+7);
+		$lbl_sec_now.setTop($pnl_va_sec.getHeight()/2-35);
+		$lbl_sec_n_cnt.setTop($pnl_va_sec.getHeight()/2-45);
+		$lbl_sec_yester.setTop($pnl_va_sec.getHeight()/2+45);
+		$lbl_sec_y_cnt.setTop($pnl_va_sec.getHeight()/2+35);
+		$lbl_sec_avg.setTop($pnl_va_sec.getHeight()/2+45);
+		$lbl_sec_a_cnt.setTop($pnl_va_sec.getHeight()/2+35);
+		$lbl_sec_line.setTop($pnl_va_sec.getHeight()/2+15)
+
+		$pnl_va_bef.setHeight(pnl_down_height/2-15);
+		$pnl_va_bef.setTop($pnl_va_ban.getTop()+$pnl_va_ban.getHeight()+7);
+		$lbl_bef_now.setTop($pnl_va_bef.getHeight()/2-35);
+		$lbl_bef_n_cnt.setTop($pnl_va_bef.getHeight()/2-45);
+		$lbl_bef_yester.setTop($pnl_va_bef.getHeight()/2+45);
+		$lbl_bef_y_cnt.setTop($pnl_va_bef.getHeight()/2+35);
+		$lbl_bef_avg.setTop($pnl_va_bef.getHeight()/2+45);
+		$lbl_bef_a_cnt.setTop($pnl_va_bef.getHeight()/2+35);
+		$lbl_bef_line.setTop($pnl_va_bef.getHeight()/2+15);
+
+		/*$pnl_va_sec.setHeight(pnl_down_height/2-15);
+		$pnl_va_sec.setTop($pnl_va_vrs.getTop()+$pnl_va_vrs.getHeight()+7);
+		$lbl_sec_now.setTop($pnl_va_sec.getHeight()/4+30);
+		$lbl_sec_n_cnt.setTop($lbl_sec_now.getTop()+$lbl_sec_now.getHeight()+10);
+		$lbl_sec_yester.setTop($pnl_va_sec.getHeight()/5+10);
+		$lbl_sec_y_cnt.setTop($lbl_sec_yester.getTop()+$lbl_sec_yester.getHeight());
+		$lbl_sec_avg.setTop($pnl_va_sec.getHeight()/5*3);
+		$lbl_sec_a_cnt.setTop($lbl_sec_avg.getTop()+$lbl_sec_avg.getHeight());
+
+		$pnl_va_foc.setHeight(pnl_down_height/2-15);
+		$pnl_va_foc.setTop($pnl_va_ban.getTop()+$pnl_va_ban.getHeight()+7);
+		$lbl_foc_now.setTop($pnl_va_foc.getHeight()/4+30);
+		$lbl_foc_n_cnt.setTop($lbl_sec_now.getTop()+$lbl_foc_now.getHeight()+10);
+		$lbl_foc_yester.setTop($pnl_va_foc.getHeight()/5+10);
+		$lbl_foc_y_cnt.setTop($lbl_foc_yester.getTop()+$lbl_foc_yester.getHeight());
+		$lbl_foc_avg.setTop($pnl_va_foc.getHeight()/5*3);
+		$lbl_foc_a_cnt.setTop($lbl_foc_avg.getTop()+$lbl_foc_avg.getHeight());
+
+		$pnl_va_bef.setHeight(pnl_down_height/2-15);
+		$pnl_va_bef.setTop($pnl_va_men.getTop()+$pnl_va_men.getHeight()+7);
+		$lbl_bef_now.setTop($pnl_va_bef.getHeight()/4+30);
+		$lbl_bef_n_cnt.setTop($lbl_bef_now.getTop()+$lbl_bef_now.getHeight()+10);
+		$lbl_bef_yester.setTop($pnl_va_bef.getHeight()/5+10);
+		$lbl_bef_y_cnt.setTop($lbl_bef_yester.getTop()+$lbl_bef_yester.getHeight());
+		$lbl_bef_avg.setTop($pnl_va_bef.getHeight()/5*3);
+		$lbl_bef_a_cnt.setTop($lbl_bef_avg.getTop()+$lbl_bef_avg.getHeight());*/
+
+	}, 50);
+
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_PROCESS" description="분석현황"></xwing:dataset>
+	<xwing:dataset id="DS_VSS160" description="GRADE 항목"></xwing:dataset>
+	<xwing:dataset id="DS_GRD_SCORE" description="GRADE 점수 현황"></xwing:dataset>
+	<xwing:dataset id="DS_VRS_SCORE" description="스크립트현황"></xwing:dataset>
+	<xwing:dataset id="DS_BAN_SCORE" description="금칙어 점수현황"></xwing:dataset>
+	<xwing:dataset id="DS_SEC_SCORE" description="개인정보처리 현황"></xwing:dataset>
+	<xwing:dataset id="DS_FOC_SCORE" description="집중관리항목 현황"></xwing:dataset>
+	<xwing:dataset id="DS_MEN_SCORE" description="필수멘트현황"></xwing:dataset>
+	<xwing:dataset id="DS_BEF_SCORE" description="전월평가점수현황"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="main_dashboard" title="Dashboard" width="1060" height="740" left="24" top="-2" scroll="false" load="page_load" resize="page_resize">
+		<xwing:datagrid id="grd_grade_info" left="30" top="51" width="1002" height="227" rownum="false" autofit="false" anchor="none" sortable="false" textpadding="0 0 0 0" visible="true" borderwidth="0" binddataset="DS_PROCESS">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="97"></xwing:datagrid-column>
+				<xwing:datagrid-column width="118"></xwing:datagrid-column>
+				<xwing:datagrid-column width="118"></xwing:datagrid-column>
+				<xwing:datagrid-column width="118"></xwing:datagrid-column>
+				<xwing:datagrid-column width="110"></xwing:datagrid-column>
+				<xwing:datagrid-column width="110"></xwing:datagrid-column>
+				<xwing:datagrid-column width="110"></xwing:datagrid-column>
+				<xwing:datagrid-column width="110"></xwing:datagrid-column>
+				<xwing:datagrid-column width="110"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="구분" rowspan="2" bgcolor="#1793cc" fontcolor="#ffffff"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="제출건수" rowspan="2" fontcolor="#ffffff" bgcolor="#1793cc"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="미평가건수" rowspan="2" fontcolor="#ffffff" bgcolor="#1793cc"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="평가건수" rowspan="2" fontcolor="#ffffff" bgcolor="#1793cc"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Grade부여현황" colspan="5" fontcolor="#ffffff" bgcolor="#1793cc"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="Excellent" bgcolor="#61c1ee" fontcolor="#ffffff" fontsize="5"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Great" fontcolor="#ffffff" bgcolor="#61c1ee"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Good" fontcolor="#ffffff" bgcolor="#61c1ee"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Not Good" fontcolor="#ffffff" bgcolor="#61c1ee"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Bad" fontcolor="#ffffff" bgcolor="#61c1ee"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell fontweight="bold" halign="center" bindcolumn="RANK" exporttype="number" fontsize="22" cursor="pointer"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="bold" bindcolumn="KEYWORD" fontdecoration="none" cursor="pointer" fontsize="11"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="bolder" bindcolumn="TODAY_SEARCHCOUNT" halign="right" mask="comma"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BEFOREDAY_GAP" halign="right" fontcolor="#0080c0" fontsize="11" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="bolder" bindcolumn="BEFOREWEEKDAY_GAP" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="bolder" bindcolumn="BEFOREMONTH_GAP" halign="right"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:panel id="pnl_down" left="8" top="300" width="1040" height="431" anchor="all" scroll="true">
+			<xwing:panel id="pnl_va_result" left="23" top="5" width="302" height="408" bgcolor="#f8f8f8" anchor="top bottom">
+				<xwing:label id="lbl_title_res" value="VA 최종결과" left="15" top="10" fontweight="bold" fontsize="16" fontcolor="#696b6f" fontfamily="NanumGothic"></xwing:label>
+				<xwing:panel id="pnl_va_chart" left="12" top="40" width="275" height="360" anchor="top bottom"></xwing:panel>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_vrs" left="338" top="5" width="337" height="200" bgcolor="#ffffff" anchor="none" scroll="true" borderwidth="1" borderstyle="solid" bordercolor="#b5b5b5">
+				<xwing:label id="lbl_title_vrs" value="VRS 준수현황" left="0" top="-1" fontweight="normal" fontsize="23" fontcolor="#ffffff" fontfamily="NanumGothic" width="335" height="45" bgcolor="#9adefd" halign="center"></xwing:label>
+				<xwing:label id="lbl_vrs_now" value="당일" left="18" top="64" width="40" height="25" halign="center" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_vrs_n_cnt" value="99.99" left="86" top="51" fontsize="40" width="170" height="52" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_VRS_SCORE" bindcolumn="VRS_NOW_SCORE" halign="center" anchor="none"></xwing:label>
+				<xwing:label id="lbl_vrs_yester" value="전일" left="18" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16" valign="middle" anchor="none"></xwing:label>
+				<xwing:label id="lbl_vrs_y_cnt" value="99.99" left="67" top="121" fontsize="30" width="85" height="51" fontcolor="#4ab3e3" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_VRS_SCORE" bindcolumn="VRS_YESTER_SCORE" halign="right" anchor="none"></xwing:label>
+				<xwing:label id="lbl_vrs_avg" value="당월" left="183" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16" anchor="none"></xwing:label>
+				<xwing:label id="lbl_vrs_a_cnt" value="0000" left="232" top="121" fontsize="30" width="85" height="51" fontcolor="#4ab3e3" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_VRS_SCORE" bindcolumn="VRS_MON_SCORE" halign="right" anchor="none"></xwing:label>
+				<xwing:label id="lbl_vrs_line" left="0" top="110" bgcolor="#9adefd" width="335" height="4"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_ban" left="686" top="5" width="337" height="200" bgcolor="#ffffff" anchor="none" borderstyle="solid" borderwidth="1" bordercolor="#b5b5b5">
+				<xwing:label id="lbl_title_ban" value="금칙어 검출현황" left="0" top="0" fontweight="normal" fontsize="23" fontcolor="#ffffff" fontfamily="NanumGothic" width="335" height="45" halign="center" bgcolor="#24b8fd"></xwing:label>
+				<xwing:label id="lbl_ban_now" value="당일" left="18" top="64" width="40" height="25" halign="center" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_ban_yester" value="전일" left="18" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_ban_avg" value="당월" left="183" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_ban_y_cnt" value="0000" left="67" top="121" fontsize="30" width="85" height="51" fontcolor="#0ba0e5" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BAN_SCORE" bindcolumn="BAN_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_ban_n_cnt" value="0000" left="86" top="51" fontsize="40" width="170" height="51" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BAN_SCORE" bindcolumn="BAN_NOW_SCORE" halign="center"></xwing:label>
+				<xwing:label id="lbl_ban_a_cnt" value="0000" left="232" top="121" fontsize="30" width="85" height="51" fontcolor="#0ba0e5" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BAN_SCORE" bindcolumn="BAN_MON_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_ban_line" left="0" top="110" width="335" height="4" bgcolor="#24b8fd"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_men" left="56" top="215" width="233" height="203" bgcolor="#24b8fd" anchor="none" scroll="false" visible="false">
+				<xwing:label id="lbl_title_men" value="필수멘트 언급현황" left="10" top="10" fontweight="bold" fontsize="16" fontcolor="#ffffff" fontfamily="NanumGothic" width="120" height="22"></xwing:label>
+				<xwing:label id="lbl_men_now" value="당일" left="13" top="39" bgcolor="#68caf9" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_men_yester" value="전일" left="128" top="39" bgcolor="#68caf9" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_men_y_cnt" value="0000" left="127" top="59" fontsize="30" width="85" height="51" fontcolor="#75d3ff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_MEN_SCORE" bindcolumn="MEN_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_men_n_cnt" value="0000" left="8" top="89" fontsize="40" width="115" height="51" fontcolor="#ffffff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_MEN_SCORE" bindcolumn="MEN_NOW_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_men_avg" value="누적" left="128" top="119" bgcolor="#68caf9" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_men_a_cnt" value="0000" left="127" top="141" fontsize="30" width="85" height="51" fontcolor="#75d3ff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_MEN_SCORE" bindcolumn="MEN_MON_SCORE" halign="right"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_sec" left="338" top="213" width="337" height="200" bgcolor="#ffffff" anchor="none" bordercolor="#b5b5b5" borderstyle="solid" borderwidth="1">
+				<xwing:label id="lbl_title_sec" value="개인정보항목 결과" left="0" top="0" fontweight="normal" fontcolor="#ffffff" fontfamily="NanumGothic" width="335" height="45" bgcolor="#0072a7" fontsize="23" halign="center"></xwing:label>
+				<xwing:label id="lbl_sec_now" value="당일" left="18" top="64" width="40" height="25" halign="center" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_sec_yester" value="전일" left="18" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_sec_y_cnt" value="0000" left="67" top="121" fontsize="30" width="85" height="51" fontcolor="#0072a7" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_sec_n_cnt" value="0000" left="86" top="51" fontsize="40" width="170" height="51" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_NOW_SCORE" halign="center"></xwing:label>
+				<xwing:label id="lbl_sec_avg" value="당월" left="183" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_sec_a_cnt" value="0000" left="232" top="121" fontsize="30" width="85" height="51" fontcolor="#0072a7" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_MON_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_sec_line" left="0" top="110" width="335" height="4" bgcolor="#0072a7"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_bef" left="686" top="213" width="337" height="200" bgcolor="#ffffff" anchor="none" bordercolor="#b5b5b5" borderstyle="solid" borderwidth="1">
+				<xwing:label id="lbl_title_bef" value="전월QC평가점수" left="0" top="0" fontweight="normal" fontcolor="#ffffff" fontfamily="NanumGothic" width="335" height="45" bgcolor="#004f74" fontsize="23" halign="center"></xwing:label>
+				<xwing:label id="lbl_bef_now" value="당일" left="18" top="64" width="40" height="25" halign="center" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_bef_yester" value="전일" left="18" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_bef_y_cnt" value="0000" left="67" top="121" fontsize="30" width="85" height="51" fontcolor="#004f74" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_bef_n_cnt" value="0000" left="86" top="51" fontsize="40" width="170" height="51" fontcolor="#535454" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_NOW_SCORE" halign="center"></xwing:label>
+				<xwing:label id="lbl_bef_avg" value="당월" left="183" top="134" width="40" height="25" halign="center" fontcolor="#535454" fontweight="normal" fontfamily="NanumGothic" fontsize="16"></xwing:label>
+				<xwing:label id="lbl_bef_a_cnt" value="0000" left="232" top="121" fontsize="30" width="85" height="51" fontcolor="#004f74" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_MON_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_bef_line" left="0" top="110" width="335" height="4" bgcolor="#004f74"></xwing:label>
+			</xwing:panel>
+			<!-- <xwing:panel id="pnl_va_bef" left="803" top="213" width="220" height="200" bgcolor="#004f74" anchor="none">
+				<xwing:label id="lbl_title_bef" value="전월평가점수 결과" left="15" top="10" fontweight="bold" fontsize="16" fontcolor="#ffffff" fontfamily="NanumGothic" width="154" height="22"></xwing:label>
+				<xwing:label id="lbl_bef_now" value="당일" left="13" top="39" bgcolor="#2f6985" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_bef_yester" value="전일" left="128" top="39" bgcolor="#2f6985" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_bef_y_cnt" value="0000" left="127" top="59" fontsize="30" width="82" height="51" fontcolor="#4084a4" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_bef_n_cnt" value="0000" left="8" top="89" fontsize="40" width="105" height="51" fontcolor="#ffffff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_NOW_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_bef_avg" value="누적" left="128" top="119" bgcolor="#2f6985" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_bef_a_cnt" value="0000" left="127" top="141" fontsize="30" width="82" height="51" fontcolor="#4084a4" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_BEF_SCORE" bindcolumn="BEF_MON_SCORE" halign="right"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_sec" left="338" top="213" width="220" height="200" bgcolor="#0092d6" anchor="none">
+				<xwing:label id="lbl_title_sec" value="개인정보처리항목 결과" left="15" top="10" fontweight="bold" fontsize="16" fontcolor="#ffffff" fontfamily="NanumGothic" width="154" height="22"></xwing:label>
+				<xwing:label id="lbl_sec_now" value="당일" left="13" top="39" bgcolor="#5bcbdd" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_sec_yester" value="전일" left="128" top="39" bgcolor="#5bcbdd" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_sec_avg" value="누적" left="128" top="119" bgcolor="#5bcbdd" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_sec_y_cnt" value="0000" left="127" top="59" fontsize="30" width="82" height="51" fontcolor="#75d3ff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_sec_a_cnt" value="0000" left="127" top="141" fontsize="30" width="82" height="51" fontcolor="#75d3ff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_MON_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_sec_n_cnt" value="0000" left="8" top="89" fontsize="40" width="105" height="51" fontcolor="#ffffff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_SEC_SCORE" bindcolumn="SEC_NOW_SCORE" halign="right"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_va_foc" left="571" top="213" width="220" height="200" bgcolor="#0072a7" anchor="none">
+				<xwing:label id="lbl_title_foc" value="집중관리항목 결과" left="15" top="10" fontweight="bold" fontsize="16" fontcolor="#ffffff" fontfamily="NanumGothic" width="154" height="22"></xwing:label>
+				<xwing:label id="lbl_foc_now" value="당일" left="13" top="39" bgcolor="#44a1ce" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_foc_yester" value="전일" left="128" top="39" bgcolor="#44a1ce" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_foc_y_cnt" value="0000" left="127" top="59" fontsize="30" width="74" height="51" fontcolor="#44a1ce" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_FOC_SCORE" bindcolumn="FOC_YESTER_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_foc_n_cnt" value="0000" left="8" top="89" fontsize="40" width="105" height="51" fontcolor="#ffffff" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_FOC_SCORE" bindcolumn="FOC_NOW_SCORE" halign="right"></xwing:label>
+				<xwing:label id="lbl_foc_avg" value="누적" left="128" top="119" bgcolor="#44a1ce" width="40" height="25" halign="center" fontcolor="#ffffff" fontweight="bolder" fontfamily="NanumGothic" fontsize="12"></xwing:label>
+				<xwing:label id="lbl_foc_a_cnt" value="0000" left="127" top="141" fontsize="30" width="74" height="51" fontcolor="#44a1ce" fontweight="bold" fontfamily="NanumGothic" binddataset="DS_FOC_SCORE" bindcolumn="FOC_MON_SCORE" halign="right"></xwing:label>
+			</xwing:panel>
+			 -->
+		</xwing:panel>
+		<xwing:button id="btn_search_auto" value="조 회" left="971" top="20" anchor="top right" styles="btn_action" width="60" tabindex="0" height="25" iconalign="left" borderwidth="0" borderstyle="none" click="btn_search_auto_click"></xwing:button>
+		<xwing:label id="lbl_title" value="※ 조회 기준 :" left="32" top="15" width="500" fontsize="13"></xwing:label>
+	</xwing:page>
+</body>
+</html>

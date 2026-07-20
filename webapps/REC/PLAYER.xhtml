@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+	<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>	
+	<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>	
+	<script src="../js/servicemanager.js" type="text/javascript" charset="UTF-8"></script>	
+	<style>
+		#grd_mon .xw-datagrid { border:none !important; }
+		#grd_mon .xw-datagrid-area-header{border-bottom: 1px solid #d2d2d2;}
+		#grd_mon .xw-datagrid-area-body td { border-left: 1px solid #d2d2d2; }
+	</style>
+	<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var server_ip,rec_key,contact_id,start_time,keyword;
+
+function page_load(){
+	try{
+		XwingObject();
+		
+		server_ip =  Xwing.param.server_ip;
+		rec_key = Xwing.param.rec_key;
+		contact_id = Xwing.param.contact_id;
+		start_time = Xwing.param.start_time;
+		keyword = Xwing.param.keyword; 
+		
+		var paramStr = "&server_ip="+server_ip+"&rec_key=" + rec_key + "&contact_id=" + contact_id + "&start_time=" + start_time + "&keyword=" + keyword + "&user_grade=" + global("G_USER_GRADE");
+		Xwing.getPanel('pan_player').setUrl(global("G_DOMAINURL")+"/player_html5/player.html?play_yn="+Xwing.param.play_yn+paramStr);
+	}catch(e){
+		alert(e);
+	}
+}
+
+function pan_player_resize(event) {
+	parent.Xwing.getPage("V-SENS PLAYER").setWidth("510");
+	parent.Xwing.getPage("V-SENS PLAYER").setheight("740");
+	return;
+}
+
+
+function page_unload(event) {
+	//parent.__load_val = false;
+}/*]]>*/</script>
+<xwing:data>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="rcm100" width="500" height="693" scroll="false" left="0" load="page_load" top="-5" unload="page_unload">
+		<xwing:panel id="pan_player" left="0" top="0" width="500" height="693" anchor="all" borderwidth="0" bordercolor="#202835" borderstyle="dotted" scroll="false" resize="pan_player_resize"></xwing:panel>
+	</xwing:page>
+</body>
+</html>

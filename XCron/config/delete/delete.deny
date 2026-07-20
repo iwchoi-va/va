@@ -1,0 +1,17 @@
+## 삭제를 허용하지 않을 directory 리스트입니다.
+## Full Path를 입력하세요.
+
+## Unix  Delete Deny Files
+/
+/boot
+/usr
+/usr/bin
+/bin
+
+## Microsoft Windows Delete Deny Files
+C:/
+C:/Windows
+C:/WinNT
+C:/Win95
+C:/Program Files
+C:/Documents and Settings

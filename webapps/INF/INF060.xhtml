@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+
+function page_load(event) {
+	XwingObject();
+	
+	lbl_sub1_click();
+}
+
+function lbl_sub1_click(event) {
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+	
+	Xwing.getLabel('lbl_sub3').setFontweight('normal');
+	Xwing.getLabel('lbl_sub3').setBgcolor('');
+	Xwing.getLabel('lbl_sub3').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub1').setFontweight('bold');
+	Xwing.getLabel('lbl_sub1').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub1').setFontcolor('#fff');
+	
+	$lbl_subtitle1.setVisible('true');
+	$lbl_subtitle2.setVisible('false');
+	$lbl_subtitle3.setVisible('false');
+	
+		
+	$pan_tab.setUrl("./INF060T1.xhtml");
+}
+
+function lbl_sub2_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+	
+	Xwing.getLabel('lbl_sub3').setFontweight('normal');
+	Xwing.getLabel('lbl_sub3').setBgcolor('');
+	Xwing.getLabel('lbl_sub3').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub2').setFontweight('bold');
+	Xwing.getLabel('lbl_sub2').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub2').setFontcolor('#fff');
+	
+	$lbl_subtitle1.setVisible('false');
+	$lbl_subtitle2.setVisible('true');
+	$lbl_subtitle3.setVisible('false');
+	
+	$pan_tab.setUrl("./INF060T2.xhtml");
+}
+
+function lbl_sub3_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+	
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('bold');
+	Xwing.getLabel('lbl_sub3').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub3').setFontcolor('#fff');
+	
+	$lbl_subtitle1.setVisible('false');
+	$lbl_subtitle2.setVisible('false');
+	$lbl_subtitle3.setVisible('true');
+	
+	$pan_tab.setUrl("./INF060T3.xhtml");
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_POPUP_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>popup</xwing:dataset-cell>
+			<xwing:dataset-cell>예</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>main</xwing:dataset-cell>
+			<xwing:dataset-cell>아니오</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>사용</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>사용안함</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MENU">
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="EXPLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_SEQNO"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_CONTEXT">
+		<xwing:dataset-column id="separator"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+		<xwing:dataset-column id="icon"></xwing:dataset-column>
+		<xwing:dataset-column id="onclick"></xwing:dataset-column>
+		<xwing:dataset-column id="disabled"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>대메뉴 추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_rootAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>하위메뉴 추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_childAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>메뉴삭제</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_del_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FOLDER_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>예</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>아니오</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MENU_COPY">
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="EXPLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_SEQNO"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS001"></xwing:dataset>
+	<xwing:dataset id="DS_COM036"></xwing:dataset>
+	<xwing:dataset id="DS_AUTHORITY"></xwing:dataset>
+	<xwing:dataset id="DS_DEPT_INFO">
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYNONYM">
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SYNONYM"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CHANNEL">
+		<xwing:dataset-column id="column0"></xwing:dataset-column>
+		<xwing:dataset-column id="column1"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TAXOID">
+		<xwing:dataset-column id="taxo_id"></xwing:dataset-column>
+		<xwing:dataset-column id="caption"></xwing:dataset-column>
+		<xwing:dataset-column id="syn_taxo_id"></xwing:dataset-column>
+		<xwing:dataset-column id="parent_id"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD">
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_SEQNO"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="MODIFY_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_CP" reset="DS_UPLOAD_CP_reset">
+		<xwing:dataset-column id="TAXO_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_LEVEL"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_CHK"></xwing:dataset>
+	<xwing:dataset id="DS_DOWN">
+		<xwing:dataset-column id="TAXO_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="TAXO_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SYSNONYM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>9</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>VOC유형</xwing:dataset-cell>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>11</xwing:dataset-cell>
+			<xwing:dataset-cell>상품정보관련</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>111</xwing:dataset-cell>
+			<xwing:dataset-cell>상품구성 및 특징</xwing:dataset-cell>
+			<xwing:dataset-cell>11</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>112</xwing:dataset-cell>
+			<xwing:dataset-cell>배송/설치 방법</xwing:dataset-cell>
+			<xwing:dataset-cell>11</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell>113</xwing:dataset-cell>
+			<xwing:dataset-cell>재고 및 주문가능 여부확인</xwing:dataset-cell>
+			<xwing:dataset-cell>11</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>22</xwing:dataset-cell>
+			<xwing:dataset-cell>고객정보관련</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>221</xwing:dataset-cell>
+			<xwing:dataset-cell>고객정보확인</xwing:dataset-cell>
+			<xwing:dataset-cell>22</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>4</xwing:dataset-cell>
+			<xwing:dataset-cell>44</xwing:dataset-cell>
+			<xwing:dataset-cell>주문</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>441</xwing:dataset-cell>
+			<xwing:dataset-cell>주문포기/중단</xwing:dataset-cell>
+			<xwing:dataset-cell>44</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>442</xwing:dataset-cell>
+			<xwing:dataset-cell>주문내역확인</xwing:dataset-cell>
+			<xwing:dataset-cell>44</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_SYN">
+		<xwing:dataset-column id="TAXO_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SYNONYM"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="Xcron관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:panel id="pan_subtitle" left="0" top="0" width="1050" height="35" anchor="top right left" scroll="false" bgcolor="#fff" bggradientcolor="#f1f1f1" shadow="#58728d 0 5 0 0">
+			<xwing:label id="lbl_sub1" value="서비스" left="0" top="0" fontsize="14" fontweight="bold" visible="true" halign="center" height="35" shadow="0 0 0 0" cursor="pointer" click="lbl_sub1_click" fontfamily="WallBoardFond" bgcolor="#58728d" fontcolor="#ffffff"></xwing:label>
+			<xwing:label id="lbl_sub2" value="스케줄" left="100" top="0" fontsize="14" visible="true" height="35" halign="center" cursor="pointer" click="lbl_sub2_click" fontfamily="WallBoardFond"></xwing:label>
+			<xwing:label id="lbl_sub3" value="로그" left="200" top="0" fontsize="14" visible="true" height="35" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub3_click"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pan_tab" left="0" top="89" width="1050" height="691" anchor="all">
+		</xwing:panel>
+		<xwing:label id="lbl_subtitle1" value="서비스" left="0" top="40" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:label id="lbl_subtitle2" value="스케줄" left="0" top="40" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="false"></xwing:label>
+		<xwing:label id="lbl_subtitle3" value="로그" left="0" top="40" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="false"></xwing:label>
+	</xwing:page>
+</body>
+</html>

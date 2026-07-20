@@ -1,0 +1,926 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/xwing.dataset.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+ * FormID(명) :
+ * Form 설명 :
+ * 작성자 :
+ * 작성일 :
+ * =================================================================
+ * 변경내역 :
+ * YYYYMMDD 담당자명 변경내용(Why?,What?)
+ ******************************************************************************/
+
+//*********************************************************************************************************
+// Global Variable
+//********************************************************************************************************/
+var v_Rserver1 = false;
+var v_url = "service::wfm.info.inf040.do";
+//*********************************************************************************************************
+//Page Action
+//********************************************************************************************************/
+function page_load(event) {
+	XwingObject();
+	//엑셀다운권한정의
+	excelDownAuth($btn_excel_type);
+	excelDownAuth($btn_excel_code);
+	f_init();
+	f_codebook_sel();
+}
+
+function f_init() {
+	$cmb_sch_code_type.setValue(1);
+}
+
+function page_resize(event) {
+	// $splitbar0.setLeft($page.getWidth()/2);
+}
+
+function f_codebook_sel() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "COM300,SYS020",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param,
+		indicator : false
+	};
+	Xwing.request(opt, callback);
+}
+
+//*********************************************************************************************************
+//UI Action
+//********************************************************************************************************/
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 코드대분류 그리드 클릭 이벤트함수(하단 대분류 상세 조회 / 우측 소분류 코드 상세 조회)
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function grd_codetype_click(event) {
+	var v_row_idx = $grd_codetype.getSelection();
+
+	//https 적용 후 동작 되지 않음.
+	//$DS_CODETYPE.copyToRow(v_row_idx, "DS_CODETYPE_D", 0);
+
+	//해당 기능 적용
+	$DS_CODETYPE_D.clearData();
+	$DS_CODETYPE_D.addRow();
+	$DS_CODETYPE_D.setValue(0,"NO",$DS_CODETYPE.getValue(v_row_idx,"NO"));
+	$DS_CODETYPE_D.setValue(0,"CODE_TYPE",$DS_CODETYPE.getValue(v_row_idx,"CODE_TYPE"));
+	$DS_CODETYPE_D.setValue(0,"CODE_NAME",$DS_CODETYPE.getValue(v_row_idx,"CODE_NAME"));
+	$DS_CODETYPE_D.setValue(0,"CODE_ID",$DS_CODETYPE.getValue(v_row_idx,"CODE_ID"));
+	$DS_CODETYPE_D.setValue(0,"CODE_GROUP",$DS_CODETYPE.getValue(v_row_idx,"CODE_GROUP"));
+	$DS_CODETYPE_D.setValue(0,"ETC1",$DS_CODETYPE.getValue(v_row_idx,"ETC1"));
+	$DS_CODETYPE_D.setValue(0,"ETC2",$DS_CODETYPE.getValue(v_row_idx,"ETC2"));
+	$DS_CODETYPE_D.setValue(0,"ETC3",$DS_CODETYPE.getValue(v_row_idx,"ETC3"));
+	$DS_CODETYPE_D.setValue(0,"ETC4",$DS_CODETYPE.getValue(v_row_idx,"ETC4"));
+	$DS_CODETYPE_D.setValue(0,"ETC5",$DS_CODETYPE.getValue(v_row_idx,"ETC5"));
+	$DS_CODETYPE_D.setValue(0,"PARENT_TYPE",$DS_CODETYPE.getValue(v_row_idx,"PARENT_TYPE"));
+	$DS_CODETYPE_D.setValue(0,"CENTER_CD",$DS_CODETYPE.getValue(v_row_idx,"CENTER_CD"));
+	$DS_CODETYPE_D.setValue(0,"PARENT_NAME",$DS_CODETYPE.getValue(v_row_idx,"PARENT_NAME"));
+	$DS_CODETYPE_D.setValue(0,"REG_ID",$DS_CODETYPE.getValue(v_row_idx,"REG_ID"));
+	$DS_CODETYPE_D.setValue(0,"REG_TIME",$DS_CODETYPE.getValue(v_row_idx,"REG_TIME"));
+	$DS_CODETYPE_D.setValue(0,"CHG_ID",$DS_CODETYPE.getValue(v_row_idx,"CHG_ID"));
+	$DS_CODETYPE_D.setValue(0,"CHG_TIME",$DS_CODETYPE.getValue(v_row_idx,"CHG_TIME"));
+	$DS_CODETYPE_D.setValue(0,"PARENT_ID",$DS_CODETYPE.getValue(v_row_idx,"PARENT_ID"));
+	$DS_CODETYPE_D.setValue(0,"USE_YN",$DS_CODETYPE.getValue(v_row_idx,"USE_YN"));
+	$DS_CODETYPE_D.setValue(0,"SORT_KEY",$DS_CODETYPE.getValue(v_row_idx,"SORT_KEY"));
+
+	if($DS_CODETYPE.getValue(v_row_idx,"CODE_TYPE")=="COM004"){
+		$btn_upload.setVisible(true);
+	}else{
+		$btn_upload.setVisible(false);
+	}
+	f_data_ctrl("grd_codetype_click");
+	f_stc_ctrl();
+	f_codelist_sel();
+}
+
+function f_codelist_sel() {
+	var v_parent_type = $DS_CODETYPE_D.getValue("PARENT_TYPE");
+	var v_code_type = $DS_CODETYPE_D.getValue("CODE_TYPE");
+	var v_use_yn = $DS_SCH.getValue("USE_YN");
+	var param = {
+		_sqlName : 'wfm.info.inf040.code.sel'
+				+ (g_isEmpty(v_parent_type) ? "" : ",wfm.info.inf040.parentcode.sel"),
+		P_PARENT_TYPE : v_parent_type,
+		P_CODE_TYPE : v_code_type,
+		P_USE_YN : v_use_yn
+	};
+
+	var opt = {
+		reqId : "f_codelist_sel",
+		url : v_url,
+		param : param,
+		indicator : null,
+		showError : true
+	};
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 코드소분류 그리드 클릭 이벤트함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function grd_code_click(event) {
+	var v_row_idx = $grd_code.getSelection();
+	//https 적용 후 동작 되지 않음.
+	//$DS_CODE.copyToRow(v_row_idx, "DS_CODE_D", 0);
+	//해당 기능 적용
+	$DS_CODE_D.clearData();
+	$DS_CODE_D.addRow();
+	$DS_CODE_D.setValue(0,"NO",$DS_CODE.getValue(v_row_idx,"NO"));
+	$DS_CODE_D.setValue(0,"CODE_TYPE",$DS_CODE.getValue(v_row_idx,"CODE_TYPE"));
+	$DS_CODE_D.setValue(0,"CODE_NAME",$DS_CODE.getValue(v_row_idx,"CODE_NAME"));
+	$DS_CODE_D.setValue(0,"CODE_ID",$DS_CODE.getValue(v_row_idx,"CODE_ID"));
+	$DS_CODE_D.setValue(0,"CODE_GROUP",$DS_CODE.getValue(v_row_idx,"CODE_GROUP"));
+	$DS_CODE_D.setValue(0,"ETC1",$DS_CODE.getValue(v_row_idx,"ETC1"));
+	$DS_CODE_D.setValue(0,"ETC2",$DS_CODE.getValue(v_row_idx,"ETC2"));
+	$DS_CODE_D.setValue(0,"ETC3",$DS_CODE.getValue(v_row_idx,"ETC3"));
+	$DS_CODE_D.setValue(0,"ETC4",$DS_CODE.getValue(v_row_idx,"ETC4"));
+	$DS_CODE_D.setValue(0,"ETC5",$DS_CODE.getValue(v_row_idx,"ETC5"));
+	$DS_CODE_D.setValue(0,"PARENT_TYPE",$DS_CODE.getValue(v_row_idx,"PARENT_TYPE"));
+	$DS_CODE_D.setValue(0,"CENTER_CD",$DS_CODE.getValue(v_row_idx,"CENTER_CD"));
+	$DS_CODE_D.setValue(0,"PARENT_NAME",$DS_CODE.getValue(v_row_idx,"PARENT_NAME"));
+	$DS_CODE_D.setValue(0,"REG_ID",$DS_CODE.getValue(v_row_idx,"REG_ID"));
+	$DS_CODE_D.setValue(0,"REG_TIME",$DS_CODE.getValue(v_row_idx,"REG_TIME"));
+	$DS_CODE_D.setValue(0,"CHG_ID",$DS_CODE.getValue(v_row_idx,"CHG_ID"));
+	$DS_CODE_D.setValue(0,"CHG_TIME",$DS_CODE.getValue(v_row_idx,"CHG_TIME"));
+	$DS_CODE_D.setValue(0,"PARENT_ID",$DS_CODE.getValue(v_row_idx,"PARENT_ID"));
+	$DS_CODE_D.setValue(0,"USE_YN",$DS_CODE.getValue(v_row_idx,"USE_YN"));
+	$DS_CODE_D.setValue(0,"SORT_KEY",$DS_CODE.getValue(v_row_idx,"SORT_KEY"));
+	f_data_ctrl("grd_code_click");
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 화면 공통함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_data_ctrl(strGubun) {
+	$edt_code_type.setReadonly(false);
+	$edt_code_id.setReadonly(false);
+	$edt_code_type.setStyles("edit_mand");
+	$edt_code_id.setStyles("edit_mand");
+	if (strGubun == "ben_sel_click") {
+		$DS_CODETYPE_D.clearData();
+		$DS_CODETYPE_D.addRow();
+		$DS_CODE.clearData();
+		$DS_CODE_D.clearData();
+		$DS_CODE_D.addRow();
+		$DS_CODE_D.setValue(0, "USE_YN", "Y");
+		$DS_PARENT.clearData();
+	} else if (strGubun == "grd_codetype_click") {
+		$DS_CODE_D.clearData();
+		$DS_CODE_D.addRow();
+		$DS_CODE_D.setValue(0, "USE_YN", "Y");
+		$DS_PARENT.clearData();
+		$edt_code_type.setStyles("edit_mand_readonly");
+		$edt_code_type.setReadonly(true);
+	} else if (strGubun == "btn_reset_click") {
+		$DS_CODETYPE_D.clearData();
+		$DS_CODETYPE_D.addRow();
+		$DS_CODE.clearData();
+		$DS_CODE_D.clearData();
+		$DS_CODE_D.addRow();
+		$DS_CODE_D.setValue(0, "USE_YN", "Y");
+		$DS_PARENT.clearData();
+	} else if (strGubun == "grd_code_click") {
+		$edt_code_type.setStyles("edit_mand_readonly");
+		$edt_code_id.setStyles("edit_mand_readonly");
+		$edt_code_type.setReadonly(true);
+		$edt_code_id.setReadonly(true);
+	} else if (strGubun == "btn_reset02_click") {
+		$edt_code_type.setStyles("edit_mand_readonly");
+		$edt_code_type.setReadonly(true);
+		$DS_CODE_D.clearData();
+		$DS_CODE_D.addRow();
+		$DS_CODE_D.setValue(0, "USE_YN", "Y");
+	}
+}
+
+function f_stc_ctrl() {
+	$stc_14.setValue(g_evl($DS_CODETYPE_D.getValue("PARENT_NAME"), "부모코드"));
+	$stc_18.setValue(g_evl($DS_CODETYPE_D.getValue("ETC1"), "기타1"));
+	$stc_19.setValue(g_evl($DS_CODETYPE_D.getValue("ETC2"), "기타2"));
+	$stc_20.setValue(g_evl($DS_CODETYPE_D.getValue("ETC3"), "기타3"));
+	$stc_21.setValue(g_evl($DS_CODETYPE_D.getValue("ETC4"), "기타4"));
+	$stc_22.setValue(g_evl($DS_CODETYPE_D.getValue("ETC5"), "기타5"));
+	$grd_code_etc1.setTitle(g_evl($DS_CODETYPE_D.getValue("ETC1"), "기타1"));
+	$grd_code_etc2.setTitle(g_evl($DS_CODETYPE_D.getValue("ETC2"), "기타2"));
+	$grd_code_etc3.setTitle(g_evl($DS_CODETYPE_D.getValue("ETC3"), "기타3"));
+	$grd_code_etc4.setTitle(g_evl($DS_CODETYPE_D.getValue("ETC4"), "기타4"));
+	$grd_code_etc5.setTitle(g_evl($DS_CODETYPE_D.getValue("ETC5"), "기타5"));
+}
+
+
+//*********************************************************************************************************
+//Button Action
+//********************************************************************************************************/
+function btn_sel_click(event) {
+	f_data_ctrl("ben_sel_click");
+	f_stc_ctrl();
+	f_codetype_sel();
+}
+
+function f_codetype_sel() { // 대분류 코드 조회
+	$DS_SCH.setValue(0, "MODULE_TYPE", $DS_COM300.lookUp("CODEID",$cmb_module_type.getValue(), "ETC1"));
+	var param = {
+		_sqlName : 'wfm.info.inf040.codetype.sel'
+	};
+	g_dsToParam("P_", $DS_SCH, 0, param);
+
+	var opt = {
+		reqId : "f_codetype_sel",
+		url : v_url,
+		param : param,
+		indicator : null,
+		showError : true
+	};
+	Xwing.request(opt, callback);
+}
+
+function btn_reset_click(event) {
+	f_data_ctrl("btn_reset_click");
+	f_stc_ctrl();
+}
+
+
+
+function btn_sav_click(event) {
+	if (g_isEmpty($edt_code_type.getValue())) {
+		return xwing.Dialog.alert("코드타입을 입력해주세요.", $page.getTitle(), function(e) {
+			$edt_code_type.focus();
+		});
+		return false;
+	}
+
+	if (g_isEmpty($edt_code_name.getValue())) {
+		return xwing.Dialog.alert("코드타입명을 입력해주세요.", $page.getTitle(), function(e) {
+			$edt_code_name.focus();
+		});
+		return false
+	}
+
+	var v_mode = ($edt_code_type.getReadonly() ? "U" : "I");
+	var v_parent_type = $DS_CODETYPE_D.getValue("PARENT_TYPE");
+	xwing.Dialog.confirm(g_decode(v_mode, "I", "등록", "수정") + "하시겠습니까?", $page.getTitle(),
+			function(b) {
+				if (!b)
+					return false;
+				$DS_CODETYPE_D.setValue(0, "CODE_ID", "00");
+				$DS_CODETYPE_D.setValue(0, "SORT_KEY", "0");
+				$DS_CODETYPE_D.setValue(0, "USE_YN", "N");
+				$DS_CODETYPE_D.setValue(0, "REG_ID", global("G_USER_ID"));
+				$DS_CODETYPE_D.setValue(0, "CHG_ID", global("G_USER_ID"));
+				$DS_SCH.setValue(0, "MODULE_TYPE", $DS_COM300.lookUp("CODEID",
+						$cmb_module_type.getValue(), "ETC1"));
+
+				var v_param = {
+					_sqlName : g_decode(v_mode, "I",
+							'wfm.info.inf040.codebook.ins',
+							'wfm.info.inf040.codebook.upd')
+							+ ",wfm.info.inf040.codetype.sel"
+							+ (g_isEmpty(v_parent_type) ? ""
+									: ",wfm.info.inf040.parentcode.sel"),
+					P_PARENT_TYPE : v_parent_type,
+					P_CODE_TYPE : $DS_CODETYPE_D.getValue("CODE_TYPE")
+				};
+
+				g_dsToParam("", $DS_CODETYPE_D, 0, v_param);
+				g_dsToParam("P_", $DS_SCH, 0, v_param);
+
+				var opt = {
+					reqId : "btn_sav_click_" + v_mode,
+					url : v_url,
+					param : v_param,
+					indicator : null,
+					showError : true
+				};
+				Xwing.request(opt, callback);
+			});
+}
+
+function btn_reset02_click(event) {
+	f_data_ctrl("btn_reset02_click");
+}
+
+function btn_sav02_click(event) {
+
+	if (!($edt_code_type.getReadonly())) {
+		xwing.Dialog.alert("소분류를 저장할 대분류를 선택하세요.");
+		return false;
+	}
+
+	if (g_isEmpty($edt_code_id.getValue())) {
+		xwing.Dialog.alert("코드를 입력해주세요.",$page.getTitle(),function(e) {
+			$edt_code_id.focus();
+		});
+		return false;
+	}
+
+	if (g_isEmpty($edt_code_name_02.getValue())) {
+		xwing.Dialog.alert("코드명을 입력해주세요.",$page.getTitle(),function(e) {
+			$edt_code_name_02.focus();
+		});
+		return false;
+	}
+
+	var v_mode = ($edt_code_id.getReadonly() ? "U" : "I");
+	var v_codetype = $DS_CODETYPE_D.getValue("CODE_TYPE");
+	xwing.Dialog.confirm(g_decode(v_mode, "I", "등록", "수정") + "하시겠습니까?", $page.getTitle(),
+			function(b) {
+				if (!b)
+					return false;
+				$DS_CODE_D.setValue(0, "CODE_TYPE", v_codetype);
+				$DS_CODE_D.setValue(0, "REG_ID", global("G_USER_ID"));
+				$DS_CODE_D.setValue(0, "CHG_ID", global("G_USER_ID"));
+
+				var v_param = {
+					_sqlName : g_decode(v_mode, "I", 'wfm.info.inf040.codebook.ins',
+							'wfm.info.inf040.codebook.upd')
+							+ ",wfm.info.inf040.code.sel",
+					P_CODE_TYPE : v_codetype,
+					P_USE_YN : $DS_SCH.getValue("USE_YN")
+				};
+				g_dsToParam("", $DS_CODE_D, 0, v_param);
+
+				var opt = {
+					reqId : "btn_sav02_click_" + v_mode,
+					url : v_url,
+					param : v_param,
+					indicator : null,
+					showError : true
+				};
+				Xwing.request(opt, callback);
+	});
+
+}
+
+/*********************************************
+* SYS020에 우리 서버 정보가 V-WAS-%%로 입력 되어있어야함.
+**********************************************/
+function btn_refresh_click(event) {
+
+	xwing.Dialog.confirm("코드 초기화 하시겠습니까?", $page.getTitle(), function(e){
+		var ds = Xwing.createDataset('ds',[],[[]]);
+		ds.setData($DS_SYS020.getColumnInfo(), $DS_SYS020.getData('[CODENAME*="V-WAS"]'));
+		
+		for ( var i = 0; i < ds.size(); i++) {
+			var v_ip = ds.getValue(i, "ETC1");
+			//alert(v_ip);
+			//var v_ip = $DS_SYS020.getValue(i, "ETC1");
+
+			param = {
+					cmd	: "exec"
+					,service : 'SVC_MS_020'
+					,SERVER_IP	: v_ip
+					,SERVER_PORT	: '5292'
+					,SERVER_TIMEOUT	: '300000'
+				};
+			
+		
+			var opt = {
+				reqId		: "btn_refresh_click"+i
+				,url		: "service::cs.xcron.control.exe.do"
+				,param		: param
+				,indicator	: null
+				,showError	: true
+			};
+
+			Xwing.request(opt, callback);
+		}
+
+	});
+}
+
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '<br/>' + 'ResultMessage : ' + res.ResultMessage);
+		return false;
+	}
+	if (reqId == "f_codebook_sel") {
+		$DS_COM300.setData(res.COM300.column, res.COM300.record);
+		$DS_COM300.insertRow(0, [ , , '전체', , , , , , , , ]);
+		$DS_SYS020.setData(res.SYS020.column, res.SYS020.record);
+
+	} else if (reqId == "f_codetype_sel") {
+		$DS_CODETYPE.setData(res.DS_CODETYPE.column, res.DS_CODETYPE.record);
+	} else if (reqId == "f_codelist_sel") {
+		$DS_CODE.setData(res.DS_CODE.column, res.DS_CODE.record);
+		if(!g_isNull(res.DS_PARENT)){
+			$DS_PARENT.setData(res.DS_PARENT.column, res.DS_PARENT.record);
+			$DS_PARENT.insertRow(0, [ , '선택', , , ]);
+		}else{
+			$DS_PARENT.clearData();
+		}
+	} else if (reqId == "btn_sav_click_I") {
+		if(!g_isNull(res.DS_PARENT)){
+			$DS_PARENT.setData(res.DS_PARENT.column, res.DS_PARENT.record);
+			$DS_PARENT.insertRow(0, [ , '선택', , , ]);
+		}else{
+			$DS_PARENT.clearData();
+		}
+
+		$DS_CODETYPE.setData(res.DS_CODETYPE.column, res.DS_CODETYPE.record);
+		var v_idx_row = $DS_CODETYPE.indexOfRow("CODE_TYPE", $DS_CODETYPE_D.getValue("CODE_TYPE"));
+		if(v_idx_row == -1){
+			btn_reset_click();
+		}else{
+			$DS_CODETYPE.setCursor(v_idx_row);
+			$edt_code_type.setStyles("edit_mand_readonly");
+			$edt_code_type.setReadonly(true);
+		}
+		f_stc_ctrl();
+	} else if (reqId == "btn_sav_click_U") {
+		if(!g_isNull(res.DS_PARENT)){
+			$DS_PARENT.setData(res.DS_PARENT.column, res.DS_PARENT.record);
+		}else{
+			$DS_PARENT.clearData();
+		}
+
+		$DS_CODETYPE.setData(res.DS_CODETYPE.column, res.DS_CODETYPE.record);
+		var v_idx_row = $DS_CODETYPE.indexOfRow("CODE_TYPE", $DS_CODETYPE_D.getValue("CODE_TYPE"));
+		$DS_CODETYPE.setCursor(v_idx_row);
+		f_stc_ctrl();
+	} else if (reqId == "btn_sav02_click_I") {
+		$DS_CODE.setData(res.DS_CODE.column, res.DS_CODE.record);
+		var v_idx_row = $DS_CODE.indexOfRow("CODE_ID", $DS_CODE_D.getValue("CODE_ID"));
+		if(v_idx_row == -1){
+			btn_reset02_click();
+		}else{
+			$DS_CODE.setCursor(v_idx_row);
+			$edt_code_id.setStyles("edit_mand_readonly");
+			$edt_code_id.setReadonly(true);
+		}
+	} else if (reqId == "btn_sav02_click_U") {
+		$DS_CODE.setData(res.DS_CODE.column, res.DS_CODE.record);
+		var v_idx_row = $DS_CODE.indexOfRow("CODE_ID", $DS_CODE_D.getValue("CODE_ID"));
+		$DS_CODE.setCursor(v_idx_row);
+	} else if(reqId == "sortInit"){
+		//정렬키초기화
+		grd_codetype_click();
+
+	} else if(reqId == "sortAuto"){
+		//정렬키자동생성
+		grd_codetype_click();
+
+	} else if(reqId == "btn_refresh_click0"){
+		var hostname = window.location.hostname.split(".");
+		if(hostname[0] == "va"){
+			v_Rserver1 = true;
+		}else{
+			xwing.Dialog.alert('서버 코드 초기화가 완료되었습니다.');
+			return;
+		}
+	} else if(reqId == "btn_refresh_click1"){
+		if(v_Rserver1){
+			xwing.Dialog.alert('1번,2번 서버 코드 초기화가 완료되었습니다.');
+			v_Rserver1 = false; //또다시 초기화 하는 경우 위해
+			return;
+		}else{
+			xwing.Dialog.alert('코드 초기화에 실패하였습니다. 오류를 확인해주세요.');
+			return;
+		}
+	}
+	else{
+		
+	}
+}
+
+//*** 정렬키초기화 버튼 클릭.
+function btn_sort_init_click(event) {
+
+	var row = Xwing.getDataset("DS_CODETYPE").getCursor();
+	var codeType = Xwing.getDataset("DS_CODETYPE").getValue(row, "CODE_TYPE");
+
+	var v_param = {
+		_sqlName : "wfm.info.inf040.init.sortkey",
+		code_type : codeType
+	};
+
+	var opt = {
+		reqId : "sortInit",
+		url : v_url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+//*** 정렬키자동생성 버튼 클릭.
+function btn_sort_auto_click(event) {
+	var row = Xwing.getDataset("DS_CODETYPE").getCursor();
+	var codeType = Xwing.getDataset("DS_CODETYPE").getValue(row, "CODE_TYPE");
+
+	var v_param = {
+		_sqlName : "wfm.info.inf040.create.sortkey",
+		code_type : codeType
+	};
+
+	var opt = {
+		reqId : "sortAuto",
+		url : v_url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+//*** 대분류 엑셀버튼 클릭.
+function btn_excel_type_click(event) {
+/*	var objGrd = Xwing.getGrid("grd_codetype");
+	var nRows = Xwing.getDataset("DS_CODETYPE").size();
+
+	g_list_exportData(objGrd, "코드북-대분류", nRows, "N", "N", "N");*/
+	if(Xwing.getDataset('DS_CODETYPE').size() > 0) {
+		Xwing.getGrid('grd_codetype').exportData('코드북-대분류', '../jsp/export2.jsp', true);
+	} else {
+		alert("출력할 데이터가 없습니다.");
+	}
+}
+
+//*** 소분류 엑셀버튼 클릭.
+function btn_excel_code_click(event) {
+/*	var objGrd = Xwing.getGrid("grd_code");
+	var nRows = Xwing.getDataset("DS_CODE").size();
+
+	g_list_exportData(objGrd, "코드북-소분류", nRows, "N", "N", "N");*/
+	if(Xwing.getDataset('DS_CODE').size() > 0) {
+		Xwing.getDataGrid('grd_code').exportData('코드북-소분류', '../jsp/export2.jsp', true);
+	} else {
+		alert("출력할 데이터가 없습니다.");
+	}
+}
+
+function btn_excel_code(event) {
+
+}
+
+
+function btn_upload_click(event) {
+	var opt = {
+		id : 'script_upload',
+		url : "./INF040P1.xhtml",
+		width : 615,
+		height : 428,
+		draggable : true,
+		resizable : false,
+		modal : true,
+		title : "상품 업로드",
+	};
+
+	var user_upload = new xwing.Dialog(opt);
+	user_upload.open();
+}
+
+function setScript(ds_script) {
+	$DS_MANAGE_LIST.clearData();
+	$DS_MANAGE_LIST.copyFrom(ds_script);
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_CODE">
+		<xwing:dataset-column id="NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_KEY"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CODETYPE">
+		<xwing:dataset-column id="NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_KEY"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CODETYPE_D">
+		<xwing:dataset-column id="NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_KEY"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CODE_D">
+		<xwing:dataset-column id="NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_KEY"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_COM300">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PARENT">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCH">
+		<xwing:dataset-column id="MODULE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_CODE_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_TEXT"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCH_TYPE">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>코드타입</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>코드명</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS020">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>사용</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>사용안함</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN_ALL">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>전체</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>사용</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>사용안함</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="코드북관리" width="1050" height="780" load="page_load" resize="page_resize" scroll="false">
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="55" styles="div_search" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false">
+			<xwing:label id="stc_01" value="구분" left="15" top="15" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:combo id="cmb_module_type" left="80" top="15" domaindataset="DS_COM300" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" change="cmb_group_change" width="100" height="25"></xwing:combo>
+			<xwing:label id="stc_02" value="대분류" left="195" top="15" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:combo id="cmb_sch_code_type" left="260" top="15" domaindataset="DS_SCH_TYPE" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" change="cmb_group_change" width="100" height="25" binddataset="DS_SCH" bindcolumn="SCH_CODE_TYPE"></xwing:combo>
+			<xwing:edit id="edt_sch_text" left="365" top="15" width="160" height="25" binddataset="DS_SCH" bindcolumn="SCH_TEXT"></xwing:edit>
+			<xwing:label id="stc_03" value="소분류사용여부" left="540" top="15" height="25" halign="right" width="100" styles="label_subtitle"></xwing:label>
+			<xwing:button id="btn_refresh" value="코드초기화" left="830" top="15" width="80" click="btn_refresh_click" height="25" borderwidth="1" fontfamily="WallBoardFond" fontsize="11"></xwing:button>
+			<xwing:combo id="cmb_use_yn" left="645" top="15" domaindataset="DS_USE_YN_ALL" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" change="cmb_group_change" width="100" height="25" binddataset="DS_SCH" bindcolumn="USE_YN"></xwing:combo>
+		</xwing:panel>
+		<xwing:grid id="grd_code2" left="527" top="90" width="523" height="455" binddataset="DS_CODE" autofit="true" anchor="all" cursor="default" click="grd_code_click" movecolumn="false" resizable="true" sortable="true" emptymessage="조회된 데이터가 없습니다." visible="false">
+			<xwing:grid-column id="grd_code_code_id" title="코드" bindcolumn="CODE_ID" width="80" halign="center" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_code_name" title="코드명" bindcolumn="CODE_NAME" width="140" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_etc1" title="기타1" bindcolumn="ETC1" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_etc2" title="기타2" bindcolumn="ETC2" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_etc3" title="기타3" bindcolumn="ETC3" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_etc4" title="기타4" bindcolumn="ETC4" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_etc5" title="기타5" bindcolumn="ETC5" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_sortkey" title="정렬키" width="70" bindcolumn="SORT_KEY" halign="center" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_use_yn" title="사용여부" bindcolumn="USE_YN" width="70" halign="center" fontweight="normal"></xwing:grid-column>
+		</xwing:grid>
+		<xwing:group id="grp_03" left="521" top="545" width="529" height="175" anchor="right bottom left" styles="div_perform" bgcolor="#fdfdf5" borderstyle="none" borderwidth="0">
+			<xwing:label id="stc_15" value="코드" left="11" top="15" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_14" value="부모코드" left="165" top="150" halign="left" width="60" height="25" styles="label_lititle" visible="false"></xwing:label>
+			<xwing:label id="stc_16" value="정렬키" left="275" top="135" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_17" value="코드명" left="11" top="45" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_18" value="기타1" left="11" top="75" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_19" value="기타2" left="275" top="75" halign="left" width="60" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_20" value="기타3" left="11" top="105" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_21" value="기타4" left="275" top="105" halign="left" width="60" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_22" value="기타5" left="11" top="135" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_23" value="사용여부" left="275" top="15" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:combo id="cmb_parent_id" left="235" top="150" width="163" height="25" domaindataset="DS_PARENT" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" binddataset="DS_CODE_D" bindcolumn="PARENT_ID" visible="false"></xwing:combo>
+			<xwing:edit id="edt_code_id" left="81" top="15" width="163" height="25" binddataset="DS_CODE_D" bindcolumn="CODE_ID" styles="edit_mand"></xwing:edit>
+			<xwing:edit id="edt_code_name_02" left="81" top="45" width="427" height="25" binddataset="DS_CODE_D" bindcolumn="CODE_NAME" styles="edit_mand"></xwing:edit>
+			<xwing:edit id="edt_etc1_02" left="81" top="75" width="163" binddataset="DS_CODE_D" bindcolumn="ETC1" height="25"></xwing:edit>
+			<xwing:edit id="edt_etc2_02" left="345" top="75" width="163" binddataset="DS_CODE_D" bindcolumn="ETC2" height="25"></xwing:edit>
+			<xwing:edit id="edt_etc3_02" left="81" top="105" width="163" binddataset="DS_CODE_D" bindcolumn="ETC3" height="25"></xwing:edit>
+			<xwing:edit id="edt_etc4_02" left="345" top="105" width="163" binddataset="DS_CODE_D" bindcolumn="ETC4" height="25"></xwing:edit>
+			<xwing:edit id="edt_etc5_02" left="81" top="135" width="163" binddataset="DS_CODE_D" bindcolumn="ETC5" height="25"></xwing:edit>
+			<xwing:radio id="rdo_use_yn_02" left="346" top="15" height="25" width="162" domaindataset="DS_USE_YN" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" binddataset="DS_CODE_D" bindcolumn="USE_YN" styles="radio" value="Y"></xwing:radio>
+			<xwing:edit id="edt_sort_key" left="345" top="135" width="163" binddataset="DS_CODE_D" bindcolumn="SORT_KEY" height="25"></xwing:edit>
+		</xwing:group>
+		<xwing:splitbar id="splitbar0" left="516" top="106" width="8" visible="true" bindwidget="r:grd_codetype,r:grd_code,r:grp_03,r:grp_02,r:bg_btn,r:bg_btn2,m:lbl_subtitle1,m:btn_excel_type" height="674" styles="split_h" anchor="top bottom" cursor="w-resize"></xwing:splitbar>
+		<xwing:grid id="grd_codetype2" left="0" top="120" width="523" height="455" autofit="true" anchor="top bottom left" cursor="default" click="grd_codetype_click" movecolumn="false" resizable="true" sortable="true" emptymessage="조회된 데이터가 없습니다." visible="false">
+			<xwing:grid-column id="grd_no" title="번호" bindcolumn="NO" width="30" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_group" title="코드그룹" bindcolumn="CODE_GROUP" suppress="true" width="70" halign="center" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_type" title="코드타입" bindcolumn="CODE_TYPE" halign="center" width="80" fontweight="normal"></xwing:grid-column>
+			<xwing:grid-column id="grd_code_name" title="코드명" bindcolumn="CODE_NAME" width="176" fontweight="normal"></xwing:grid-column>
+		</xwing:grid>
+		<xwing:datagrid id="grd_codetype" left="15" top="106" click="grd_codetype_click" binddataset="DS_CODETYPE" width="493" autofit="false" height="440" anchor="top bottom left" rownum="false" virtual="true" sortable="true" styles="table_border" resizable="true">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="45"></xwing:datagrid-column>
+				<xwing:datagrid-column width="88"></xwing:datagrid-column>
+				<xwing:datagrid-column width="111"></xwing:datagrid-column>
+				<xwing:datagrid-column width="229"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="No"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="코드그룹"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="코드타입"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="코드명"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="NO" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CODE_GROUP" halign="center" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CODE_TYPE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CODE_NAME"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle" value="대분류" left="10" top="56" width="502" height="40" styles="label_boxtitle" halign="left" anchor="none" visible="true"></xwing:label>
+		<xwing:label id="lbl_subtitle1" value="소분류" left="525" top="56" width="515" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+		<xwing:group id="grp_02" left="0" top="547" width="516" height="175" scroll="false" anchor="bottom left" enabled="true" visible="true" styles="div_perform" bgcolor="#fdfdf5" borderstyle="none" borderwidth="0">
+			<xwing:edit id="edt_code_type" left="95" top="15" width="163" binddataset="DS_CODETYPE_D" bindcolumn="CODE_TYPE" styles="edit_mand" enabled="true" readonly="false" height="25"></xwing:edit>
+			<xwing:label id="stc_05" value="부모코드" left="274" top="15" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_parent_type" left="344" top="15" width="163" binddataset="DS_CODETYPE" bindcolumn="PARENT_TYPE" height="25"></xwing:edit>
+			<xwing:label id="stc_06" value="코드타입명" left="15" top="45" halign="left" width="80" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_code_name" left="95" top="45" width="412" height="25" binddataset="DS_CODETYPE_D" bindcolumn="CODE_NAME" styles="edit_mand"></xwing:edit>
+			<xwing:label id="stc_08" value="기타1" left="15" top="75" halign="left" width="80" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_etc1" left="95" top="75" width="163" binddataset="DS_CODETYPE_D" bindcolumn="ETC1" height="25"></xwing:edit>
+			<xwing:label id="stc_10" value="기타2" left="274" top="75" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_etc2" left="344" top="75" width="163" binddataset="DS_CODETYPE_D" bindcolumn="ETC2" height="25"></xwing:edit>
+			<xwing:label id="stc_11" value="기타3" left="15" top="105" halign="left" width="80" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_etc3" left="95" top="105" width="163" binddataset="DS_CODETYPE_D" bindcolumn="ETC3" height="25"></xwing:edit>
+			<xwing:label id="stc_12" value="기타4" left="274" top="105" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_etc4" left="344" top="105" width="163" binddataset="DS_CODETYPE_D" bindcolumn="ETC4" height="25"></xwing:edit>
+			<xwing:label id="stc_13" value="기타5" left="15" top="135" halign="left" width="80" height="25" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_etc5_detail_0" left="95" top="135" width="163" binddataset="DS_CODETYPE_D" bindcolumn="ETC5" height="25"></xwing:edit>
+			<xwing:label id="stc_04" value="코드타입" left="15" top="15" halign="left" width="80" height="25" styles="label_lititle"></xwing:label>
+		</xwing:group>
+		<xwing:panel id="bg_btn" left="0" top="720" width="516" height="60" bgcolor="#E7EBEE" anchor="bottom">
+			<xwing:button id="btn_reset" value="신 규" left="377" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_reset_click" borderstyle="none"></xwing:button>
+			<xwing:button id="btn_sav" value="저 장" left="442" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sav_click" borderstyle="none"></xwing:button>
+		</xwing:panel>
+		<xwing:panel id="bg_btn2" left="523" top="720" width="527" height="60" bgcolor="#E7EBEE" anchor="right bottom left">
+			<xwing:button id="btn_sort_init" value="정렬키초기화" left="12" top="15" height="28" width="96" anchor="bottom left" click="btn_sort_init_click" fontfamily="WallBoardFond"></xwing:button>
+			<xwing:button id="btn_sort_auto" value="정렬키자동생성" left="112" top="15" height="28" width="96" anchor="bottom left" click="btn_sort_auto_click" fontfamily="WallBoardFond" visible="false"></xwing:button>
+			<xwing:button id="btn_reset02" value="신 규" left="383" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_reset02_click" borderstyle="none"></xwing:button>
+			<xwing:button id="btn_sav02" value="저 장" left="448" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sav02_click" borderstyle="none"></xwing:button>
+			<xwing:button id="btn_upload" value="엑셀업로드" left="112" top="15" anchor="bottom left" width="80" tabindex="4" height="28" iconalign="left" borderwidth="1" shadow="1 1 2 0 #d0d0d0" borderstyle="solid" click="btn_upload_click" bordercolor="#C6C6C6" visible="false"></xwing:button>
+		</xwing:panel>
+		<xwing:datagrid id="grd_code" left="532" top="106" binddataset="DS_CODE" width="503" height="440" anchor="all" click="grd_code_click" autofit="true" sortable="true" styles="table_border" resizable="true">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="159"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="60"></xwing:datagrid-column>
+				<xwing:datagrid-column width="60"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="코드"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="코드명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="기타1"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="기타2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="기타3"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="기타4"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="기타5"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="정렬키"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="사용여부"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="CODE_ID"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CODE_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ETC1"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ETC2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ETC3"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ETC4"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ETC5"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SORT_KEY"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USE_YN"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:button id="btn_sel" value="조 회" left="765" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sel_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+		<xwing:button id="btn_excel_type" left="484" top="62.5" height="25" width="25" click="btn_excel_type_click" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="none" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center"></xwing:button>
+		<xwing:button id="btn_excel_code" left="1008" top="62.5" height="25" width="25" click="btn_excel_code_click" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center"></xwing:button>
+	</xwing:page>
+</body>
+</html>

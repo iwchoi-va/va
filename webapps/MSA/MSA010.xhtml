@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+
+function page_load(event) {
+	XwingObject();
+	lbl_sub1_click();
+}
+
+
+function lbl_sub1_click(event) {
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub1').setFontweight('bold');
+	Xwing.getLabel('lbl_sub1').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub1').setFontcolor('#fff');
+	
+	$pan_tab1.setVisible(true);
+	$pan_tab2.setVisible(false);
+	
+	$pan_tab1.setUrl("./MSA010T1.xhtml");
+}
+
+function lbl_sub2_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub2').setFontweight('bold');
+	Xwing.getLabel('lbl_sub2').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub2').setFontcolor('#fff');
+	
+	$pan_tab1.setVisible(false);
+	$pan_tab2.setVisible(true);
+	
+	$pan_tab2.setUrl("./MSA010T2.xhtml");
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_VSS160"></xwing:dataset>
+	<xwing:dataset id="DS_VSS170"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="Xcron관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:panel id="pan_subtitle" left="0" top="0" width="1050" height="35" anchor="top right left" scroll="false" bgcolor="#fff" bggradientcolor="#f1f1f1" shadow="#58728d 0 5 0 0">
+			<xwing:label id="lbl_sub1" value="기본관리" left="0" top="0" fontsize="14" fontweight="bold" visible="true" halign="center" height="35" shadow="0 0 0 0" cursor="pointer" click="lbl_sub1_click" fontfamily="WallBoardFond" bgcolor="#58728d" fontcolor="#ffffff"></xwing:label>
+			<xwing:label id="lbl_sub2" value="세부관리" left="100" top="0" fontsize="14" visible="true" height="35" halign="center" cursor="pointer" click="lbl_sub2_click" fontfamily="WallBoardFond"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pan_tab2" left="0" top="41" width="1050" height="741" anchor="all">
+		</xwing:panel>
+		<xwing:panel id="pan_tab1" left="0" top="41" width="1050" height="741" anchor="all">
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,44 @@
+#grd_file_rslt .xw-datagrid{border:3px solid #7ca8c3 !important;}
+div#btn_upload{
+	box-shadow: rgb(175, 183, 188) 2px 2px 2px 0px !important;
+	-moz-box-shadow: rgb(175, 183, 188) 2px 2px 2px 0px !important;}
+	
+	
+/*형태소사전*/
+div#wrap_pnl_msa{position: initial !important;
+margin: 50px auto 0 !important;}
+div#wrap_pnl_msa .xw-group-container.xw-mod-border.xw-mod-background.xw-mod {
+background-size: 100% 100%;
+}
+
+/*사전 그리드 스타일*/
+#grid_list .xw-datagrid{border:none !important; }
+/*헤더*/
+#grid_list .xw-datagrid-area-header{border:none;background:none !important;}
+#grid_list .xw-datagrid-area-header table th{background:none !important;border:none !important;}
+#grid_list .xw-datagrid-area-header table th:hover{border:none !important;}
+#grid_list .xw-datagrid-header-resize.xw-mod th span.xw-datagrid-font.xw-mod{color:#000;font-size:15px; font-weight:bold;}
+/*바디*/
+#grid_list .xw-datagrid-area-body{background:none;}
+#grid_list .xw-datagrid-area-body td{border-right: 0px !important;border-bottom: 1px solid #b1b1b1;}
+#grid_list .xw-datagrid-area-body tbody tr.select{background:none !important; }
+#grid_list .xw-datagrid-body-fix.xw-mod table td:last-child{border-right:0px !important;}
+/*바디_빈칸*/
+#grid_list .grid_list-b-r0c1{border-bottom:none !important;}
+
+/* 사전 분류 */
+#panel_han .xw-button-shell .xw-button,
+#panel_han .xw-button-shell .xw-button .xw-button-label
+{-webkit-transition: all 0.2s;
+  -moz-transition: all 0.2s;
+  transition: all 0.2s;}
+#panel_han .xw-button .xw-button-label{line-height:30px !important;}
+
+#panel_han .xw-button-shell:hover .xw-button{box-shadow:inset 0 0px 0px 15px #1d527a !important;}
+/*#panel_han .xw-button-shell:hover .xw-button span.xw-button-label{margin:1px 0 0 2px !important;}*/
+
+
+
+/*전체*/
+#panel_han #btn_all:hover .xw-button{box-shadow:inset 0 0px 0px 15px #1b5f41 !important;}
+

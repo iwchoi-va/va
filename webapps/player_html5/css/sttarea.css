@@ -1,0 +1,60 @@
+
+/* **********search-text area********** */
+.search {position: absolute; width: 463px;}
+.search .img-wrapper, 
+.search .browser-view { display: inline-block; }
+.browser-view { float: right; margin-top: -33px; cursor: pointer; }
+.img-wrapper {position: absolute;/*top: 2px;left: 10px;*/}
+.search .srcKey { width: 425px; height: 32px; text-indent: 40px; }
+
+input[type="text"] 
+{
+	display: block;
+	margin: 0;
+	width: 100%;
+	font-size: 12px;
+	appearance: none;
+	box-shadow: none;
+	border-radius: none;
+	border: none;
+	transition: border 0.3s;
+	background:#fff;
+	border:1px solid #ccc9c2;
+	-webkit-ime-mode:active; 
+	-moz-ime-mode:active; 
+	-ms-ime-mode:active; 
+	ime-mode:active; 
+}
+input[type="text"]:focus {outline: none;/*border: solid 1px #969696;*/}
+
+
+/* **********stt area********** */
+div#passage-text,
+div#passage-text-tx,
+div#passage-text-rx {
+	padding: 5px 5px 0px 10px;
+	position: absolute;
+	width: 480px;
+	height: inherit;
+	overflow: auto;
+	margin: 45px 10px 10px px;
+	font-size: 12px;
+	top: 165px; /*¿Ã¿¸: 255px*/
+	overflow-y: scroll;
+	scrollbar-3dlight-color: #f7f1e2;
+    scrollbar-arrow-color: #f7f1e2;
+    scrollbar-base-color: #f7f1e2;
+    scrollbar-darkshadow-color: #f7f1e2;
+    scrollbar-track-color: #f7f1e2;
+    scrollbar-face-color: #b5b5b5; 
+}
+
+/*div#passage-text {position: absolute;width: 470px;height: inherit;overflow: auto;margin-top: 40px;margin-bottom: 10px;font-size: 12px;}
+div#passage-text span{cursor: pointer;} */
+
+div#passage-text span,
+div#passage-text-tx span,
+div#passage-text-rx span{cursor: pointer;}
+
+span:focus {outline: none;/* background: #C1DAD6;*/}
+

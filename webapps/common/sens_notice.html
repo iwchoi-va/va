@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>무제 문서</title>
+<script type="text/javascript">
+
+	function init() {
+		var notice_messege = parent.g_notice_messege;
+		var notice_div = document.getElementById("notice_marguee");
+		var v_html = "<b><marquee direction='left' behavior='scroll' loop='1'><font face='맑은고딕' size='4px'>"
+				   + notice_messege
+				   + "</font></marquee></b>";
+		
+		notice_div.innerHTML = v_html;
+	}
+
+</script>
+</head>
+<body onload="init()">
+	<div id="notice_marguee"></div>
+
+</body>
+</html>

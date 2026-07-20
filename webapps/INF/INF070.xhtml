@@ -1,0 +1,1011 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<style type="css/text"></style>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url = "service::inf.inf070.systeminfosearch.do";
+var g_system_time = new Timer;
+var g_system_time2 = new Timer;
+var timeInterval = 180000; //기본 3분
+
+function page_load(event) {
+	XwingObject();
+	timeGo();
+	clearInterval(g_system_time);
+	clearInterval(g_system_time2);
+	f_codebook_sel();
+}
+
+
+function reciever(){
+	getSystem();
+}
+
+
+function f_codebook_sel() {
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "COM001",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function getSystem() {
+	var opt = {
+			reqId : "System_Search"
+			, url : v_url
+			, result_name1 : "DS_DATALIST"
+			, indicator : null
+			, showError : true
+		};
+	Xwing.request(opt, callback);
+}
+
+function getSystemMonitoring() {
+	var opt = {
+			reqId: "getSystemMonitoring",
+			url: "service::inf.inf070.service.sel.do",
+			param: {
+				_sqlName  : 'inf.inf070.getUsedCPU.sel,inf.inf070.getUsedMemory.sel,inf.inf070.getUsedDisk.sel',
+
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+
+
+function f_setting(ds) {
+	var v_cpu ="", v_mem="", v_disk="";
+	var lbl_name = ds.id.split('_');
+	lbl_name= lbl_name[1].toLowerCase();
+	for(var i = 0, len = ds.size(); i<len; i++){
+		eval('$lab_'+lbl_name+'_'+(i+1)+'.setValue(ds.getValue('+i+', "DESC"));');
+		v_cpu = ds.getValue(i, "CPU") + "%";
+		v_mem = ds.getValue(i, "MEMORY") + "%";
+		v_disk = ds.getValue(i, "DISK") + "%";
+		eval('$lbl_'+lbl_name+'_cpu_'+(i+1)+'.setValue("'+v_cpu+'");');
+		eval('$lbl_'+lbl_name+'_mem_'+(i+1)+'.setValue("'+v_mem+'");');
+		eval('$lbl_'+lbl_name+'_disk_'+(i+1)+'.setValue("'+v_disk+'");');
+		if(v_cpu == "100%" || v_mem == "100%" || v_disk == "100%"){
+			eval('$lab_'+lbl_name+'_'+(i+1)+'.setBgimage("../images/ico_server_red.gif")');
+			if(lbl_name == "smc" || lbl_name == "rec"){
+				$lbl_area_vr.setBgimage("../images/red_light.png");
+			}else{
+				$lbl_area_va.setBgimage("../images/red_light.png");
+			}
+		}
+	}
+}
+
+
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+
+		case "f_codebook_sel" :
+			$DS_COM001.setData(res.COM001.column, res.COM001.record);
+			timeInterval = $DS_COM001.getValue(0,"CODEID")*1000; //second*ms
+			g_system_time = setInterval("getSystem()", timeInterval);
+			getSystem();
+			break;
+			
+		case "System_Search":
+			$DS_DATALIST.setData(res.DS_DATALIST.column, res.DS_DATALIST.record);
+			getSystemMonitoring();
+			g_system_time2 = setInterval("getSystemMonitoring()", timeInterval);
+			
+		break;
+
+		case "getSystemMonitoring":
+			$DS_CPU.setData(res.DS_CPU.column, res.DS_CPU.record);
+			$DS_MEM.setData(res.DS_MEM.column, res.DS_MEM.record);
+			$DS_DISK.setData(res.DS_DISK.column, res.DS_DISK.record);
+			var device_id = ['VR_SMC','VR_REC','VA_STT','VA_TA','VA_DB','VA_WAS','VA_WEB'];
+			var ds_id = ['DS_SMC','DS_REC','DS_STT','DS_TA','DS_DB','DS_WAS','DS_WEB'];
+			var order_ds = ['DS_CPU','DS_MEM','DS_DISK'];
+			var setColumn = ['CPU','MEMORY','DISK'];
+			var getColumn = ['CPU_USED_RATE','MEMORY_USED_RATE','DISK_USED_RATE'];
+
+			//smc
+			$DS_SMC.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VR_SMC']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_SMC.addRow();
+				$DS_SMC.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_SMC.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VR_SMC']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_SMC.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VR_SMC']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_SMC.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+
+			//rec
+			$DS_REC.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			for(var i = 0, len = $DS_CPU.size(); i<len; i++){
+				if($DS_CPU.getValue(i,"DEVICE_ID").indexOf('VR_SMC') == -1 && $DS_CPU.getValue(i,"DEVICE_ID").indexOf('VA') == -1){
+					$DS_TMP.addRow($DS_CPU.getRow(i));
+				}
+			}
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_REC.addRow();
+				$DS_REC.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_REC.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			for(var i = 0, len = $DS_MEM.size(); i<len; i++){
+				if($DS_MEM.getValue(i,"DEVICE_ID").indexOf('VR_SMC') == -1 && $DS_MEM.getValue(i,"DEVICE_ID").indexOf('VA') == -1){
+					$DS_TMP.addRow($DS_MEM.getRow(i));
+				}
+			}
+			for(var i = 0; i< $DS_TMP.size(); i++){
+				$DS_REC.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			for(var i = 0, len = $DS_DISK.size(); i<len; i++){
+				if($DS_DISK.getValue(i,"DEVICE_ID").indexOf('VR_SMC') == -1 && $DS_DISK.getValue(i,"DEVICE_ID").indexOf('VA') == -1){
+					$DS_TMP.addRow($DS_DISK.getRow(i));
+				}
+			}
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_REC.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+			//stt
+			$DS_STT.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VA_STT']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_STT.addRow();
+				$DS_STT.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_STT.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+			
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VA_STT']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_STT.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+			
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VA_STT']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_STT.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+			//ta
+			$DS_TA.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VA_TA']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_TA.addRow();
+			//	$DS_TA.setValue(i,"CPU","100");
+				$DS_TA.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_TA.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VA_TA']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_TA.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VA_TA']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_TA.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+
+			//db
+			$DS_DB.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VA_DB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_DB.addRow();
+				$DS_DB.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_DB.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VA_DB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_DB.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VA_DB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_DB.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+			
+			//WAS
+			$DS_WAS.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VA_WAS']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WAS.addRow();
+				$DS_WAS.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_WAS.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VA_WAS']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WAS.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VA_WAS']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WAS.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+			//WEB
+			$DS_WEB.clearData();
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+			$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= 'VA_WEB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WEB.addRow();
+				$DS_WEB.setValue(i,"CPU",$DS_TMP.getValue(i,"CPU_USED_RATE"));
+				$DS_WEB.setValue(i,"DESC",$DS_TMP.getValue(i,"DEVICE_DESC"));
+			}
+
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+			$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= 'VA_WEB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WEB.setValue(i,"MEMORY",$DS_TMP.getValue(i,"MEMORY_USED_RATE"));
+			}
+
+			$DS_TMP.clear();
+			$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+			$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= 'VA_WEB']"));
+			for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+				$DS_WEB.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+			}
+			
+
+
+
+//	for(var k = 0, len = order_ds.length; k<len; k++){
+//		for(var d =0, len = device_id.length; d<len ; d++){
+//			$DS_TMP.clear();
+//			$DS_TMP.setColumnInfo(eval('$'+order_ds[k]+'.getColumnInfo()'));
+//			$DS_TMP.setData(eval('$'+order_ds[k]+'.getData("[DEVICE_ID *= \''+device_id[d]+'\']")'));
+//
+//			if($DS_TMP.size()>0){
+//				for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+//					if(setCoumn[k] == "CPU") eval('$'+ds_id[d]+'.addRow()');
+//					eval('$'+ds_id[d]+'.setValue(i,"'+setColumn[k]+'",$DS_TMP.getValue(i,"'+getColumn[K]+'"))');
+//			}
+//			}
+//		}
+//	}
+
+//			for(var d = 0, len=ds_id.length; d<len; d++){
+//
+//				eval('$'+ds_id[d]+'.clearData()');
+//				$DS_TMP.clear();
+//				$DS_TMP.setColumnInfo($DS_CPU.getColumnInfo());
+//				alert("a");
+//				eval('$DS_TMP.setData($DS_CPU.getData("[DEVICE_ID *= \'"'+device_id[d]+'"\']"))');
+
+//				if($DS_TMP.size()>0){
+//					for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+//						eval('$'+ds_id[d]+'.addRow()');
+//						eval('$'+ds_id[d]+'.setValue('+i+',"CPU",$DS_TMP.getValue('+i+',"CPU_USED_RATE")');
+//					}
+//				}
+//
+//				$DS_TMP.clear();
+//				$DS_TMP.setColumnInfo($DS_MEM.getColumnInfo());
+//				eval('$DS_TMP.setData($DS_MEM.getData("[DEVICE_ID *= \''+device_id[d]+'\']"))');
+//				for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+//					eval('$'+ds_id[d]+'.setValue('+i+',"MEMORY",$DS_TMP.getValue('+i+',"MEMORY_USED_RATE")');
+//				}
+//
+//				$DS_TMP.clear();
+//				$DS_TMP.setColumnInfo($DS_DISK.getColumnInfo());
+//				eval('$DS_TMP.setData($DS_DISK.getData("[DEVICE_ID *= \''+device_id[d]+'\']"))');
+//				for(var i = 0, len = $DS_TMP.size(); i<len; i++){
+//					eval('$'+ds_id[d]+'.setValue('+i+',"DISK",$DS_TMP.getValue('+i+',"DISK_USED_RATE")');
+//					//$DS_TA.setValue(i,"DISK",$DS_TMP.getValue(i,"DISK_USED_RATE"));
+//				}
+//
+//			}
+
+
+		var ds_id = ['DS_SMC','DS_REC','DS_STT','DS_TA','DS_DB','DS_WAS','DS_WEB'];
+		
+		for(var d = 0, len=ds_id.length; d<len; d++){
+			f_setting(Xwing.getDataset(ds_id[d]));
+		}
+		break;
+
+
+		case "System_Search2":
+			$DS_SYSTEMLIST.setData(res.DS_SYSTEMLIST.column, res.DS_SYSTEMLIST.record);
+			$DS_DATALIST.setData(res.DS_DATALIST.column, res.DS_DATALIST.record);
+			$DS_TIMELIST.setData(res.DS_TIMELIST.column, res.DS_TIMELIST.record);
+			$DS_TAHISTORY.setData(res.DS_TAHISTORY.column, res.DS_TAHISTORY.record);
+
+			var v_ta_totaldoc = 0;
+			var v_ta_doc = 0;
+			var v_ta_success_cnt = 0;
+			var v_ta_total_insert = 0;
+			//var v_ta_insert = 0;
+			//var v_ta_update = 0;
+			var v_ta_enddate = getNow().substr(8);
+			var v_ta_success = "n";
+
+			if($DS_TAHISTORY.size() > 0) {
+				var v_ta_enddate_temp = $DS_TAHISTORY.getValue(0, "ENDDATE");
+
+				if(v_ta_enddate_temp != "000000") {
+					v_ta_enddate = v_ta_enddate_temp;
+				}
+
+				v_ta_success = $DS_TAHISTORY.getValue(0, "SUCCESS");
+				v_ta_doc = $DS_TAHISTORY.getValue(0, "TOTALDOC");
+
+				for(var i=0; i<$DS_TAHISTORY.size(); i++) {
+					v_ta_totaldoc += Number($DS_TAHISTORY.getValue(i, "TOTALDOC"));
+					v_ta_total_insert += Number($DS_TAHISTORY.getValue(i, "INSERT"));
+					//v_ta_success_cnt += Number($DS_TAHISTORY.getValue(i, "SUCCESSDOC"));
+					//v_ta_update += Number($DS_TAHISTORY.getValue(i, "UPDATE"));
+				}
+
+			}
+
+			$lab_ta_enddate.setValue(v_ta_enddate);
+			$lab_ta_success.setValue(v_ta_success);
+			//$lab_ta_totaldoc.setValue(v_ta_totaldoc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			//$lab_ta_doc.setValue(v_ta_doc.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			//$lab_ta_total_insert.setValue(v_ta_total_insert.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			//$lab_ta_success_cnt.setValue(v_ta_success_cnt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			//$lab_ta_insert.setValue(v_ta_insert.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			//$lab_ta_update.setValue(v_ta_update.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			Xwing.getDataset("DS_STT").clearData();
+
+			for(var i=0; i<$DS_SYSTEMLIST.size(); i++) {
+				var v_server_gubun = $DS_SYSTEMLIST.getValue(i, "SERVER_GUBUN");
+
+				if(v_server_gubun == "RCD") {
+					Xwing.getDataset("DS_RCD").clearData();
+					Xwing.getDataset("DS_RCD").addRow();
+					Xwing.getDataset("DS_RCD").copyRowFrom(($DS_RCD.size()-1), $DS_SYSTEMLIST, i);
+				} else if(v_server_gubun == "STT") {
+					Xwing.getDataset("DS_STT").addRow();
+					Xwing.getDataset("DS_STT").copyRowFrom(($DS_STT.size()-1), $DS_SYSTEMLIST, i);
+				} else if(v_server_gubun == "TA") {
+					Xwing.getDataset("DS_TA").clearData();
+					Xwing.getDataset("DS_TA").addRow();
+					Xwing.getDataset("DS_TA").copyRowFrom(($DS_TA.size()-1), $DS_SYSTEMLIST, i);
+				} else if(v_server_gubun == "VSENS") {
+					Xwing.getDataset("DS_VSENS").clearData();
+					Xwing.getDataset("DS_VSENS").addRow();
+					Xwing.getDataset("DS_VSENS").copyRowFrom(($DS_VSENS.size()-1), $DS_SYSTEMLIST, i);
+				} else if(v_server_gubun == "REC") {
+					Xwing.getDataset("DS_REC").clearData();
+					Xwing.getDataset("DS_REC").addRow();
+					Xwing.getDataset("DS_REC").copyRowFrom(($DS_REC.size()-1), $DS_SYSTEMLIST, i);
+				}
+			}
+
+			f_settingSttqueue();
+			f_settingRcd();
+			f_settingTA();
+			f_settingVSENS();
+			f_settingREC();
+		//	f_getAlarm_search();
+		break;
+		case "AlarmSel":
+			$DS_ALARMLIST.setData(res.DS_ALARMLIST.column, res.DS_ALARMLIST.record);
+			f_settingBATCHColor();
+		break;
+		case "REC_BATCHTIME":
+			$DS_BATCHTIME.setData(res.DS_BATCHTIME.column, res.DS_BATCHTIME.record);
+		break;
+	}
+}
+
+
+function f_settingSttqueue() {
+	var v_stt_alarmgrade = 0;
+
+	for(var i=0; i<$DS_STT.size(); i++) {
+		var v_queue = $DS_STT.getValue(i, "ETC1");
+		var v_cpu = $DS_STT.getValue(i, "CPU") + "%";
+		var v_mem = $DS_STT.getValue(i, "MEMORY") + "%";
+		var v_disk = $DS_STT.getValue(i, "DISK") + "%";
+		var v_alarmgrade = $DS_STT.getValue(i, "ALARMGRADE");
+
+		eval("$lab_proce_" + (i + 1)).setValue(v_queue);
+		eval("$lbl_rate_cpu_" + (i + 1)).setValue(v_cpu);
+		eval("$lbl_rate_mem_" + (i + 1)).setValue(v_mem);
+		eval("$lbl_rate_disk_" + (i + 1)).setValue(v_disk);
+
+		if(v_alarmgrade == "MAJ") {
+			eval("$lab_stt_" + (i + 1)).setBgimage("../images/ico_server_red.gif");
+
+			if(v_stt_alarmgrade < 3) {
+				v_stt_alarmgrade = 3;
+			}
+
+		} else if(v_alarmgrade == "MIN") {
+			eval("$lab_stt_" + (i + 1)).setBgimage("../images/ico_server_orange.gif");
+
+			if(v_stt_alarmgrade < 2) {
+				v_stt_alarmgrade = 2;
+			}
+
+		} else if(v_alarmgrade == "WAR") {
+			eval("$lab_stt_" + (i + 1)).setBgimage("../images/ico_server_yellow.gif");
+
+			if(v_stt_alarmgrade < 1) {
+				v_stt_alarmgrade = 1;
+			}
+		} else {
+			eval("$lab_stt_" + (i + 1)).setBgimage("../images/ico_server_normal.gif");
+		}
+	}
+
+	if(v_stt_alarmgrade == 3) {
+		$lbl_area_stt.setBgimage("../images/img_area_n_r.png");
+	} else if(v_stt_alarmgrade == 2) {
+		$lbl_area_stt.setBgimage("../images/img_area_n_o.png");
+	} else if(v_stt_alarmgrade == 1) {
+		$lbl_area_stt.setBgimage("../images/img_area_n_y.png");
+	} else {
+		$lbl_area_stt.setBgimage("../images/img_area_n_b.png");
+	}
+}
+
+function f_settingRcd() {
+	var v_cpu = $DS_RCD.getValue(0, "CPU") + "%";
+	var v_mem = $DS_RCD.getValue(0, "MEMORY") + "%";
+	var v_disk = $DS_RCD.getValue(0, "DISK") + "%";
+	var v_alarmgrade = $DS_RCD.getValue(0, "ALARMGRADE");
+
+	$lbl_rate_cpu_cnt.setValue(v_cpu);
+	$lbl_rate_mem_cnt.setValue(v_mem);
+	$lbl_rate_disk_cnt.setValue(v_disk);
+
+	if(v_alarmgrade == "MAJ") {
+		$lab_rcd.setBgimage("../images/ico_server_red.gif");
+		$lbl_area_cnt.setBgimage("../images/img_area_n_r.png");
+	} else if(v_alarmgrade == "MIN") {
+		$lab_rcd.setBgimage("../images/ico_server_orange.gif");
+		$lbl_area_cnt.setBgimage("../images/img_area_n_o.png");
+	} else if(v_alarmgrade == "WAR") {
+		$lab_rcd.setBgimage("../images/ico_server_yellow.gif");
+		$lbl_area_cnt.setBgimage("../images/img_area_n_y.png");
+	} else {
+		$lab_rcd.setBgimage("../images/ico_server_normal.gif");
+		$lbl_area_cnt.setBgimage("../images/img_area_n_b.png");
+	}
+}
+
+
+function f_settingVSENS() {
+	var v_cpu = $DS_VSENS.getValue(0, "CPU") + "%";
+	var v_mem = $DS_VSENS.getValue(0, "MEMORY") + "%";
+	var v_disk = $DS_VSENS.getValue(0, "DISK") + "%";
+	var v_alarmgrade = $DS_VSENS.getValue(0, "ALARMGRADE");
+
+	$lbl_rate_cpu_vsens.setValue(v_cpu);
+	$lbl_rate_mem_vsens.setValue(v_mem);
+	$lbl_rate_disk_vsens.setValue(v_disk);
+
+	if(v_alarmgrade == "MAJ") {
+		$lab_vsens.setBgimage("../images/ico_server_red.gif");
+		$lbl_area_vsens.setBgimage("../images/img_area_n_r.png");
+	} else if(v_alarmgrade == "MIN") {
+		$lab_vsens.setBgimage("../images/ico_server_orange.gif");
+		$lbl_area_vsens.setBgimage("../images/img_area_n_o.png");
+	} else if(v_alarmgrade == "WAR") {
+		$lab_vsens.setBgimage("../images/ico_server_yellow.gif");
+		$lbl_area_vsens.setBgimage("../images/img_area_n_y.png");
+	} else {
+		$lab_vsens.setBgimage("../images/ico_server_normal.gif");
+		$lbl_area_vsens.setBgimage("../images/img_area_n_b.png");
+	}
+}
+
+function f_settingREC() {
+	var v_cpu = $DS_REC.getValue(0, "CPU") + "%";
+	var v_mem = $DS_REC.getValue(0, "MEMORY") + "%";
+	var v_disk = $DS_REC.getValue(0, "DISK") + "%";
+	var v_alarmgrade = $DS_REC.getValue(0, "ALARMGRADE");
+
+	$lbl_rate_cpu_rec.setValue(v_cpu);
+	$lbl_rate_mem_rec.setValue(v_mem);
+	$lbl_rate_disk_rec.setValue(v_disk);
+
+	if(v_alarmgrade == "MAJ") {
+		$lab_rec.setBgimage("../images/ico_server_red.gif");
+		$lbl_area_rec.setBgimage("../images/img_area_n_r.png");
+	} else if(v_alarmgrade == "MIN") {
+		$lab_rec.setBgimage("../images/ico_server_orange.gif");
+		$lbl_area_rec.setBgimage("../images/img_area_n_o.png");
+	} else if(v_alarmgrade == "WAR") {
+		$lab_rec.setBgimage("../images/ico_server_yellow.gif");
+		$lbl_area_rec.setBgimage("../images/img_area_n_y.png");
+	} else {
+		$lab_rec.setBgimage("../images/ico_server_normal.gif");
+		$lbl_area_rec.setBgimage("../images/img_area_n_b.png");
+	}
+
+	f_settingBatchRec();
+}
+
+function f_settingBatchRec() {
+	var param	= {
+			_sqlName: "cs.info.info070m.codebook.SYS020.recbatchtime.sel"
+	};
+
+	var opt 	= {
+			reqId: "REC_BATCHTIME",
+			url: "service::sens.cs.inf070.service.sel.do",
+			param: param,
+			indicator : false
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function f_getAlarm_search() {
+	var opt = {
+			reqId: "AlarmSel",
+			url: "service::sens.common.alarmmonitoringwebaction.sel.do",
+			param: {
+				reseult_name: "DS_ALARMLIST"
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function f_settingBATCHColor() {
+	var v_normal_color = "#ffffff";
+	var v_alarm_color = "#ff0000";
+
+	$lab_rec_latest_time.setFontcolor(v_normal_color);
+	$lab_meta_latest_time.setFontcolor(v_normal_color);
+	$lab_ta_n_time.setFontcolor(v_normal_color);
+	$lab_ta_y_time.setFontcolor(v_normal_color);
+
+	for(var i=0; i<$DS_ALARMLIST.size(); i++) {
+		var v_gubun = $DS_ALARMLIST.getValue(i, "ETC1");
+
+		if(v_gubun == "BATCH") {
+			var v_name = $DS_ALARMLIST.getValue(i, "ETC2").toLowerCase();
+			eval("$lab_" + v_name).setFontcolor(v_alarm_color);
+		}
+	}
+}
+
+function dgrd_service_list_dblclick(event) {
+	var opt = {
+			modal: false,
+			resizable: false,
+			id : 'INF070P1',
+			url : './INF070P1.xhtml',
+			width : 676,
+			height : 650,
+			title : "녹취데이터 확인",
+			draggable:true
+		};
+
+	var dialog = new xwing.Dialog(opt);
+	dialog.open();
+}
+
+
+function timeGo() {
+    setInterval("nowDate()", 1000);
+}
+
+function nowDate() {
+    var now = new Date();
+    var nowTime = now.getFullYear() + "년 " + LPAD((now.getMonth()+1), "0", 2) + "월 " + LPAD(now.getDate(), "0", 2) + "일 "
+    			+ LPAD(now.getHours(), "0", 2) + ":" + LPAD(now.getMinutes(), "0", 2) + ":" + LPAD(now.getSeconds(), "0", 2);
+    $lbl_time.setValue(nowTime);
+}
+
+function LPAD(s, c, n) {
+	s = s + "";
+    if (! s || ! c || s.length >= n) {
+        return s;
+    }
+
+    var max = (n - s.length)/c.length;
+    for (var i = 0; i < max; i++) {
+        s = c + s;
+    }
+
+    return s;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SYSTEMLIST">
+		<xwing:dataset-column id="SERVER_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="SERVER_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="SERVER_IP"></xwing:dataset-column>
+		<xwing:dataset-column id="SERVER_STATE"></xwing:dataset-column>
+		<xwing:dataset-column id="OS"></xwing:dataset-column>
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARMGRADE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SMC">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_REC">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_STT">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TA">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DB">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_WEB">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TIMELIST">
+		<xwing:dataset-column id="DATETIME"></xwing:dataset-column>
+		<xwing:dataset-column id="RSLT_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="META_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="MAP_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="INTEG_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TA_Y_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TA_N_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TAHISTORY">
+		<xwing:dataset-column id="MODE"></xwing:dataset-column>
+		<xwing:dataset-column id="SUCCESS"></xwing:dataset-column>
+		<xwing:dataset-column id="TARGET"></xwing:dataset-column>
+		<xwing:dataset-column id="STARTDATE"></xwing:dataset-column>
+		<xwing:dataset-column id="ENDDATE"></xwing:dataset-column>
+		<xwing:dataset-column id="INSERT"></xwing:dataset-column>
+		<xwing:dataset-column id="UPDATE"></xwing:dataset-column>
+		<xwing:dataset-column id="DELETE"></xwing:dataset-column>
+		<xwing:dataset-column id="REPLACE"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTALDOC"></xwing:dataset-column>
+		<xwing:dataset-column id="SUCCESSDOC"></xwing:dataset-column>
+		<xwing:dataset-column id="FAILUREDOC"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTALINSERT"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTALUPDATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTALDELETE"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTALREPLACE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SUCCESS">
+		<xwing:dataset-column id="CODECD"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>y</xwing:dataset-cell>
+			<xwing:dataset-cell>성공</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>n</xwing:dataset-cell>
+			<xwing:dataset-cell>처리중</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARMLIST">
+		<xwing:dataset-column id="ALARM_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_MSG"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC6"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_BATCHTIME">
+		<xwing:dataset-column id="BATCH_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="TA_BATCH_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DATALIST">
+		<xwing:dataset-column id="REC_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="STT_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="STT_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="META_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="META_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_N_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TA_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TA_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="SRC_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="SRC_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="GRD_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRD_LAST_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_Y_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_LAST_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TMP"></xwing:dataset>
+	<xwing:dataset id="DS_MEM"></xwing:dataset>
+	<xwing:dataset id="DS_CPU"></xwing:dataset>
+	<xwing:dataset id="DS_DISK"></xwing:dataset>
+	<xwing:dataset id="DS_COM001"></xwing:dataset>
+	<xwing:dataset id="DS_WAS">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="MEMORY"></xwing:dataset-column>
+		<xwing:dataset-column id="DISK"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="시스템모니터링" width="1050" height="768" scroll="false" left="0" top="-5" load="page_load" bgcolor="#fff">
+		<xwing:label id="lbl_subtitle2" value="시스템 모니터링" left="0" top="0" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left" bggradientdir="horizontal" bgimagealign="left center"></xwing:label>
+		<xwing:panel id="grp_list" left="10" top="159" width="1030" height="609" scroll="false" anchor="all" enabled="true" visible="true" borderwidth="0" bgcolor="#fff">
+			<xwing:panel id="pnl_server_group01_1" left="0" top="34" width="571" bgcolor="#ffffff" height="605" anchor="none" scroll="false">
+				<xwing:label id="lab_smc_1" value="VR-SMC-01" left="0" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" iconmargin="0 0 0 0" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_server_01_2" left="-3" top="5" halign="left" width="574" height="40" textpadding="0 0 0 8" bgcolor="#dcf2fd" bordercolor="#c4d1d8" borderstyle="solid" borderwidth="1"></xwing:label>
+				<xwing:label id="lbl_server_01_0_1" value="VR" left="15" top="13" halign="left" width="100" height="25" fontcolor="#117ab3" bgimage="../images/icon_texttitle_w.png" textpadding="0 0 0 8" bgimagealign="left center" fontsize="13" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_smc_2" value="VR-SMC-02" left="112" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_1" value="VR-REC-01" left="227" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_2" value="VR-REC-02" left="338" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_3" value="VR-REC-03" left="445" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_4" value="VR-REC-04" left="0" top="180" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_5" value="VR-REC-05" left="112" top="180" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_6" value="VR-REC-06" left="227" top="180" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_7" value="VR-REC-07" left="338" top="180" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_8" value="VR-REC-08" left="445" top="180" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_9" value="VR-REC-09" left="0" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_10" value="VR-REC-10" left="112" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_11" value="VR-REC-11" left="227" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_smc_pc_1" left="25" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_smc_pc_2" left="137" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_1" left="252" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_2" left="363" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_3" left="470" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_4" left="25" top="198" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_5" left="137" top="198" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_6" left="252" top="198" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_7" left="363" top="198" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_8" left="470" top="198" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_9" left="25" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_10" left="137" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_pc_11" left="252" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_smc_cpu_1" left="70" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_smc_mem_1" left="70" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_smc_disk_1" left="70" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_smc_cpu_2" left="181" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_smc_mem_2" left="181" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_smc_disk_2" left="181" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_1" left="296" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_1" left="296" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_1" left="296" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_2" left="406" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_2" left="406" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_2" left="406" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_3" left="514" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_3" left="514" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_3" left="514" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_4" left="70" top="214" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_4" left="70" top="194" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_4" left="70" top="174" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_5" left="181" top="174" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_5" left="181" top="194" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_5" left="181" top="214" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_6" left="296" top="214" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_6" left="296" top="194" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_6" left="296" top="174" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_7" left="406" top="174" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_7" left="406" top="194" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_7" left="406" top="214" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_8" left="514" top="214" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_8" left="514" top="194" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_8" left="514" top="174" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_9" left="70" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_9" left="70" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_9" left="70" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_10" left="181" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_10" left="181" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_10" left="181" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_11" left="296" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_11" left="296" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_11" left="296" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_gubun_line_0_1_0_0" left="5" top="560" bgcolor="#696969" height="3" width="570" anchor="top right left"></xwing:label>
+				<xwing:label id="lbl_area_vr" left="514" top="13" width="30" height="25" bgimage="../images/green_light.png" visible="true"></xwing:label>
+				<xwing:label id="lbl_gubun_line_0_1_0_0_0" left="0" top="5" bgcolor="#696969" height="3" width="570" anchor="top right left"></xwing:label>
+				<xwing:label id="lab_rec_12" value="VR-REC-12" left="337" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_12" left="406" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_12" left="406" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_12" left="406" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_rec_pc_12" left="362" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_13" value="VR-REC-13" left="442" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_13" left="511" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_13" left="511" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_13" left="511" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_rec_pc_13" left="467" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_rec_14" value="VR-REC-14" left="0" top="420" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_rec_pc_14" left="25" top="438" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_rec_cpu_14" left="70" top="414" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_mem_14" left="70" top="434" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_rec_disk_14" left="70" top="454" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_server_group01_1_0" left="583" top="35" width="449" bgcolor="#ffffff" height="604" anchor="all" scroll="false" bgimagealign="left top">
+				<xwing:label id="lab_stt_1" value="VA-STT-01" left="0" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" iconmargin="0 0 0 0" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_stt_2" value="VA-STT-02" left="112" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_stt_3" value="VA-STT-03" left="222" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_stt_pc_1" left="25" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_stt_pc_2" left="137" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_stt_pc_3" left="247" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_stt_cpu_1" left="70" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_mem_1" left="70" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_disk_1" left="70" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_cpu_2" left="181" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_mem_2" left="181" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_disk_2" left="181" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_disk_3" left="291" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_mem_3" left="291" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_cpu_3" left="291" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_server_01_2_0" left="-5" top="5" halign="left" width="479" height="40" textpadding="0 0 0 8" bgcolor="#dcf2fd" bordercolor="#c4d1d8" borderstyle="solid" borderwidth="1" anchor="right left"></xwing:label>
+				<xwing:label id="lbl_server_01_0_1_1" value="VA" left="15" top="13" halign="left" width="100" height="25" fontcolor="#117ab3" bgimage="../images/icon_texttitle_w.png" textpadding="0 0 0 8" bgimagealign="left center" fontsize="13" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_gubun_line_0_1_0_0_1" left="15" top="559" bgcolor="#696969" height="3" width="555" anchor="top right left"></xwing:label>
+				<xwing:label id="lbl_gubun_line_0_1_0_0_1_0" left="0" top="5" bgcolor="#696969" height="3" width="555" anchor="top right left"></xwing:label>
+				<xwing:label id="lbl_area_va" left="385" top="13" width="30" height="25" bgimage="../images/green_light.png" visible="true"></xwing:label>
+				<xwing:label id="lab_stt_4" value="VA-STT-04" left="327" top="60" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_stt_pc_4" left="352" top="78" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_stt_cpu_4" left="396" top="54" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_mem_4" left="396" top="74" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_stt_disk_4" left="396" top="94" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_was_1" value="VA-WAS-01" left="0" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" iconmargin="0 0 0 0" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_was_pc_1" left="25" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_was_cpu_1" left="70" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_was_mem_1" left="70" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_was_disk_1" left="70" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_was_2" value="VA-WAS-02" left="115" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" iconmargin="0 0 0 0" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_was_pc_2" left="140" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_was_cpu_2" left="185" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_was_mem_2" left="185" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_was_disk_2" left="185" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_ta_1" value="VA-TA-01" left="0" top="175" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" iconmargin="0 0 0 0" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_ta_pc_1" left="25" top="193" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_ta_cpu_1" left="70" top="169" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_ta_mem_1" left="70" top="189" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_ta_disk_1" left="70" top="209" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_ta_2" value="VA-TA-02" left="112" top="175" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_ta_pc_2" left="137" top="193" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_ta_cpu_2" left="181" top="169" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_ta_disk_2" left="181" top="209" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_ta_mem_2" left="181" top="189" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_db_1" value="VA-DB-01" left="222" top="175" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_db_pc_1" left="247" top="193" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_db_cpu_1" left="291" top="169" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_db_mem_1" left="291" top="189" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_db_disk_1" left="291" top="209" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_db_2" value="VA-DB-02" left="327" top="175" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_db_pc_2" left="352" top="193" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lbl_db_mem_2" left="396" top="189" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_db_cpu_2" left="396" top="169" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_db_disk_2" left="396" top="209" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_web_1" value="VA-WEB-01" left="222" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lab_web_pc_1" left="247" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+				<xwing:label id="lab_web_2" value="VA-WEB-02" left="327" top="300" height="90" halign="center" valign="bottom" fontcolor="#777777" fontweight="bold" bgimage="../images/ico_server_normal.gif" bgimagealign="center top" width="90" textpadding="0 0 11 0" fontsize="10"></xwing:label>
+				<xwing:label id="lbl_web_cpu_1" left="291" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_web_mem_1" left="291" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_web_disk_1" left="291" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_web_cpu_2" left="396" top="294" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#e4701f" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_web_mem_2" left="396" top="314" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_web_disk_2" left="396" top="334" value="0%" height="25" width="45" anchor="none" halign="right" fontfamily="WallBoardFond" fontsize="13" fontcolor="#c41130" fontweight="bold"></xwing:label>
+				<xwing:label id="lab_web_pc_2" left="352" top="318" width="40" value="0" bgcolor="#6F7A84" fontcolor="#fff" fontsize="16" fontweight="bold" height="36" halign="center" valign="middle" visible="false"></xwing:label>
+			</xwing:panel>
+			<xwing:label id="lbl_rate_cpu_0_0" left="423" top="8" value="CPU" height="25" width="35" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#e4701f" fontweight="bold" textwrap="none"></xwing:label>
+			<xwing:label id="lbl_rate_mem_0_0" left="457" top="8" value="MEMORY" height="25" width="70" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+			<xwing:label id="lbl_rate_disk_0_0" left="529" top="8" value="DISK" height="25" width="36" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#c41130" fontweight="bold"></xwing:label>
+			<xwing:label id="lbl_rate_cpu_0_0_1" left="883" top="8" value="CPU" height="25" width="35" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#e4701f" fontweight="bold" textwrap="none"></xwing:label>
+			<xwing:label id="lbl_rate_mem_0_0_1" left="917" top="8" value="MEMORY" height="25" width="70" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#79a22e" fontweight="bold"></xwing:label>
+			<xwing:label id="lbl_rate_disk_0_0_0" left="989" top="8" value="DISK" height="25" width="36" anchor="none" halign="left" fontfamily="WallBoardFond" fontsize="15" fontcolor="#c41130" fontweight="bold"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pnl_server_group01_2_0" left="12" top="42" width="1030" bgcolor="#ffffff" height="124" anchor="top right left" scroll="false">
+			<xwing:label id="lbl_server_01_0_2_0" value="데이터현황(당일-녹취생성시간)" left="15" top="8" halign="left" width="195" height="25" fontcolor="#ffffff" bgimage="../images/icon_texttitle_w.png" textpadding="0 0 0 8" bgimagealign="left center" fontsize="13" fontweight="bold"></xwing:label>
+			<xwing:label id="lbl_server_01_3_0" left="0" top="0" halign="left" width="1050" height="40" textpadding="0 0 0 8" anchor="top right left"></xwing:label>
+			<xwing:label id="lbl_box1" left="0" top="40" width="116" value="0" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="comma" binddataset="DS_DATALIST" bindcolumn="REC_CNT" bordercolor="#d9d9da" borderwidth="2" borderstyle="solid"></xwing:label>
+			<xwing:label id="lbl_sub_title1" value="녹취건수" left="2" top="40" halign="center" width="112" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_sub_title2" value="녹취최근시간" left="116" top="40" halign="center" width="114" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box2" left="114" top="40" width="116" value="000000" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="sec" binddataset="DS_DATALIST" bindcolumn="REC_LAST_TIME" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_gubun_line" left="0" top="73" bgcolor="#d9d9da" height="2" width="1028" anchor="none"></xwing:label>
+			<xwing:label id="lbl_sub_title3" value="STT건수" left="230" top="40" halign="center" width="116" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box3" left="228" top="40" width="116" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" binddataset="DS_DATALIST" bindcolumn="STT_CNT" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2" value="0" mask="comma"></xwing:label>
+			<xwing:label id="lbl_box4" left="342" top="40" width="118" value="000000" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="sec" binddataset="DS_DATALIST" bindcolumn="STT_LAST_TIME" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_sub_title4" value="STT최근시간" left="346" top="40" halign="center" width="112" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_sub_title5" value="메타건수" left="460" top="40" halign="center" width="116" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box5" left="458" top="40" width="116" value="0" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="comma" binddataset="DS_DATALIST" bindcolumn="META_CNT" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_box6" left="572" top="40" width="116" value="000000" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="sec" binddataset="DS_DATALIST" bindcolumn="META_LAST_TIME" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_sub_title6" value="메타최근시간" left="576" top="40" halign="center" width="112" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_sub_title7" value="분석건수" left="688" top="40" halign="center" width="114" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box7" left="686" top="40" width="116" value="0" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="comma" binddataset="DS_DATALIST" bindcolumn="ANL_Y_CNT" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_sub_title7_0" value="분석최근시간" left="802" top="40" halign="center" width="114" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box7_0" left="800" top="40" width="116" value="000000" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="sec" binddataset="DS_DATALIST" bindcolumn="ANL_LAST_TIME" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_sub_title7_0_0" value="미분석건수" left="916" top="40" halign="center" width="114" height="33" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" fontcolor="#3f3f3f" bgcolor="#f3f4f6"></xwing:label>
+			<xwing:label id="lbl_box7_0_0" left="914" top="40" width="116" value="0" fontcolor="#3f3f3f" fontsize="20" fontweight="bold" height="77" halign="center" valign="middle" textpadding="30 0 0 0" mask="comma" binddataset="DS_DATALIST" bindcolumn="ANL_N_CNT" bordercolor="#d9d9da" borderstyle="solid" borderwidth="2"></xwing:label>
+			<xwing:label id="lbl_gubun_line_0" left="0" top="38" bgcolor="#696969" height="3" width="1030" anchor="top left"></xwing:label>
+			<xwing:label id="lbl_time" value="미분석최근시간" left="806" top="8" halign="left" width="219" height="25" textpadding="0 0 0 0" bgimagealign="left center" fontsize="13" fontweight="bold" icon="../images/icon_time.png" iconmargin="4 5 0 5" anchor="top right"></xwing:label>
+			<xwing:label id="lbl_server_01_0_2_0_1" value="데이터현황(당일-녹취생성시간)" left="5" top="8" halign="left" width="269" height="25" textpadding="0 0 0 8" bgimagealign="left center" fontsize="13" fontweight="bold" style="titletext" styles="label_lititle"></xwing:label>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  	<link rel="stylesheet" type="text/css" href="./css/line-pie.css">
+  	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	<script>
+		var width, height;
+		var multiChart = "";
+
+		$( window ).bind("resize", function(){
+			width = parent.$pnl_chart.getAttribute("width");
+			height = parent.$pnl_chart.getAttribute("height");
+
+			$("#container").width( width );
+		    $("#container").height( height); // 60: padding-top
+
+		    if(multiChart != "") multiChart.resize();
+
+		});
+
+		var category = [];
+		var legendData = [];
+
+
+		$(document).ready(function(){
+			document.body.oncontextmenu = function(){return false;};
+
+			var obj = parent.dataset;
+
+			for(var i=0; i<obj.length; i++) {  //category 생성
+				category[i] = obj[i];
+			}
+		});
+
+		$(function () {
+			// 차트 series 생성
+			function getSeries() {
+				var seriesArray = [];
+		        var series;
+		        var res = [];
+		        var legendData=[];
+
+		        var total_data = parent.$DS_UD_VRS;
+		        	var vv_legend_cd = [];
+		        	 var sclf_nm_data = [];
+
+		        	for ( var i=0; i<total_data.size(); i++ ){
+		        		var v_cd =total_data.getValue(i,"SCLF_CD");
+		        		var v_name =total_data.getValue(i,"SCLF_NM");
+		        		var total_name = v_name+" ("+v_cd+")";
+
+		        	if(legendData.indexOf(total_name) == -1) legendData.push(total_name); //legend에 보여질 이름
+		        	if(vv_legend_cd.indexOf(v_cd) == -1) vv_legend_cd.push(v_cd); //전체 나온 legend_cd
+		        	}
+		        	var data = [];
+		        	var chart_data=[];
+		        	var the_sclf_data = [];
+		        	var sclf_data_dates = [];
+		        	 //소분류 차트 데이터 생성
+
+			      for(var i=0, len=vv_legend_cd.length; i<len; i++){
+			        	chart_data = [];
+			        	the_sclf_data = total_data.getData("[SCLF_CD == '"+vv_legend_cd[i]+"']");//그 소분류가 나온 데이터들
+			        	sclf_data_dates = [];
+			        	for(var j =0, len2 = the_sclf_data.length; j<len2; j++){
+			        		sclf_data_dates.push(the_sclf_data[j][1]);//그 소분류가 나온 날짜들
+		        		}
+			        for(var k =0, len3 = category.length; k<len3; k++){ //x축 순으로 있으면 1 없으면 0
+			        	var tmp = category[k];
+		        		if(sclf_data_dates.indexOf(tmp) != -1){
+		        			chart_data.push(1);
+		        		}else{
+		        			chart_data.push(0);
+		        		}
+			        }
+
+			        	 series = {
+				    		        name: legendData[i],
+					            	type : 'bar',
+					            	stack : 'sum',
+					            	barWidth: '55%',
+			    		            label: {
+			    		                normal: {
+			    		                    show: false,
+			    		                    position: 'inside',
+			    		                    formatter : function(param){
+			    		                    	return param.data == 0? '' : param.seriesName;
+			    		                    }
+			    		                }
+			    		            },
+					                data: chart_data
+					            };
+
+			      	 seriesArray.push(series);
+				}
+
+		       var total_data2 = parent.$DS_UD_BAN;
+		       var vv_legend_cd2 = [];
+		        for ( var i=0; i<total_data2.size(); i++ ){
+		        	var ban_cd = total_data2.getValue(i,"BAN_CD");
+		        	var ban_keyword = total_data2.getValue(i,"BAN_KEYWORD");
+	        		if(legendData.indexOf(ban_cd) == -1) legendData.push(ban_keyword); //legend에 보여질 이름
+	        		if(vv_legend_cd2.indexOf(ban_cd) == -1) vv_legend_cd2.push(ban_cd); //전체 나온 legend_cd
+	        	}
+
+
+
+	        	 var data = [];
+		        for(var i=0, len=vv_legend_cd2.length; i<len; i++){ //금칙어 차트 데이터 생성
+		        	var cahrt_data = [];
+		        	var the_ban_data = total_data2.getData("[BAN_CD == '"+vv_legend_cd2[i]+"']");//그 금칙어가 나온 데이터들
+		        	var ban_data_dates = [];
+		        	var ban_data_cnt = [];
+		        	for(var j =0, len = the_ban_data.length; j<len; j++){
+		        		ban_data_dates.push(the_ban_data[j][0]);//금칙어가 나온 날짜들
+
+	        		}
+		        for(var k =0, len2 = category.length; k<len2; k++){ //x축 순으로 있으면 1 없으면 0
+		        	var tmp = category[k];
+	        		if(ban_data_dates.indexOf(tmp) != -1){
+	        			var tmp2 = total_data2.getData("[BAN_CD == '"+vv_legend_cd2[i]+"'][DATE == '"+tmp+"']");
+	        			cahrt_data.push(tmp2[0][3]);
+	        		}else{
+	        			cahrt_data.push(0);
+		        }
+			        series = {
+			        		name: the_ban_data[0][2],
+				            type: 'line',
+				            yAxisIndex: 1,
+				            label: {
+	    		                normal: {
+	    		                    show: true,
+	    		                    position: 'top',
+	    		                    color :  '#FD9C3D'
+	    		                }
+	    		            },
+	    		            lineStyle:{
+	    		            	color : '#FD9C3D'
+	    		            },
+	    		            itemStyle:{
+	    		            	color :  '#FD9C3D'
+	    		            },
+				            data : cahrt_data
+			        }
+
+
+			        seriesArray.push(series);
+
+		        }
+		       }
+
+		       /* legendData.push("금칙어");
+		        series = {
+		        		name: '금칙어',
+			            type: 'line',
+			            yAxisIndex: 1,
+			            label: {
+    		                normal: {
+    		                    show: true,
+    		                    position: 'top',
+    		                    color :  '#FD9C3D'
+    		                }
+    		            },
+    		            lineStyle:{
+    		            	color : '#FD9C3D'
+    		            },
+    		            itemStyle:{
+    		            	color :  '#FD9C3D'
+    		            },
+			            data : []
+		        }
+
+		        for(var i =0; i< parent.$DS_UD_BAN.size();i++){
+		        	series.data.push(Number(parent.$DS_UD_BAN.getValue(i, "BAN_CNT")));
+		        }*/
+
+
+		        return seriesArray;
+		    }
+
+
+			setTimeout(function(){
+
+				var chart = document.getElementById('container');
+	    		multiChart = echarts.init(chart);
+	    		var option = {
+	    			title: { text: '' },
+	    			color: ['#3b61a1','#06425a','#055f82','#0a79a4','#1598cb','#cb7c0b','#e2911d','#80a850','#638b33','#517723','#42641a'],
+	    				//['#FE7785','#FEC641','#D04159','#94B558','#E98D4C','#337B9D','#338FBE','#33B6E9','#70D3ED','#BDE6F3','#ACE174','#FAD16F','#FC6E51','#9D81E1','#809FC3','#A288E5','#949494','#909085','#F0F0F0','#FF9E7E'],
+	    				//['#4E94EC','#5799ED','#609FEE','#69A5EE','#73A9F1','#7CAFF1','#84B4F2','#8DBAF3','#96BFF3','#9EC4F5','#A8CAF7'],
+	    			tooltip: {
+	    				trigger: 'axis',
+	    				axisPointer : {
+	    		            type : 'shadow'
+	    		        },
+	    		        position: function (point, params, dom, rect, size) { //tooltip 위치 지정
+	    		            return [point[0], '10%'];
+	    		        },
+	    		        padding : [5,10,5,10],
+	    		        textStyle:{
+	    		        	fontSize : 12
+	    		        },
+	    		        formatter: function (params, ticket, callback) {
+	    		        	var res = params[0].name;
+	    		            for (var i = 0, l = params.length; i < l; i++) {
+	    		            	if(params[i].componentSubType == "bar")
+	    		            		res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "건";
+	    		            	else if(params[i].componentSubType == "line")
+	    		            		res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "회";
+	    		            }
+	    		            return res;
+	    		        }
+	    			},
+	    			toolbox: {
+	    			        feature: {
+	    			            restore: {show: true, title:"새로고침"}
+	    			        }
+	    			 },
+	    			legend: {
+	    				type : "scroll", //만약에 legend가 짤리면 scroll로 변경
+	    				data: legendData,
+	    				itemGap : 3,
+	    				itemWdith : 10,
+	    				itemHeight : 8,
+	    				top : "90%"
+	    			},
+	    			xAxis:  {
+	    		        type: 'category',
+	    		        data: category,
+	    		        axisLabel : {
+	    		        	formatter: function (value, index) {
+	    		        	    return value.substring(4,6) + "." + value.substring(6,8) + " " + value.substring(8,10) + ":" + value.substring(10,12)+ ":" + value.substring(12,14);
+	    		        	}
+	    		        }
+	    		    },
+	    		    yAxis: [
+	    		        {
+	    		            type: 'value',
+	    		            name: '소분류',
+	    		            min: 0,
+	    		            interval : 1
+	    		        },
+	    		        {
+	    		            type: 'value',
+	    		            name: '금칙어',
+	    		            min: 0
+	    		        }
+	    		    ],
+	    		    series: getSeries()
+	    		};
+
+	    		multiChart.setOption(option);
+
+			}, 500);
+		});
+
+
+		</script>
+
+		<style>
+
+		</style>
+		</head>
+
+		<body>
+		  	<script src="./lib/echarts.min.js"></script>
+
+			<div id="container" style="padding-top:0px;"></div>
+		</body>
+
+</html>

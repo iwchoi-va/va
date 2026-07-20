@@ -1,0 +1,852 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<style>
+	/*.grd_manage_list .xw-datagrid-area-body td{
+		padding :4px 0px !important;
+	}*/
+
+
+</style>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var result = null;
+var svcId;
+var v_url = "service::msa.msa010.sqlservice.do";
+var v_flag = "UPDATE";
+var prod_id_ins = "";
+var _auth_saveUser = "";			//신규버튼 볼수있는 권한
+
+function page_load(event) {
+	try {
+		XwingObject();
+
+		// g_createproduct("pan_product", 2, "msa070", "", "전체");
+		combo_setting();
+	//	if(_auth_saveUser.indexOf(global("G_USER_GRADE")) != -1){
+			$btn_save.setVisible(true);
+	//	}
+
+	} catch (e) {
+		xwing.Dialog.alert(e);
+	}
+}
+
+function combo_setting(){
+
+	var param = {
+			_sqlName	: "cs.msa.get.scmanage,cs.msa.get.cntr,cs.msa.get.product"
+		};
+	var opt = {
+		reqId : 'getCombo',
+		url : v_url,
+		param : param
+	};
+	Xwing.request(opt, function(sReqId, oRes, oErr, oXhr) {
+
+		$DS_SCMNG.setData(oRes.DS_SCMNG.column, oRes.DS_SCMNG.record);
+		$DS_LCLF.setData($DS_SCMNG.getColumnInfo(),$DS_SCMNG.getData("[TYPE_CD=='L']"));
+		//$DS_LCLF.insertRow(0,["","전체"]);
+		$cmb_lclf.setValue($DS_LCLF.getValue(9,"CODE_ID"));
+		cmb_lclf_change();
+
+		$DS_CNTR.setData(oRes.DS_CNTR.column, oRes.DS_CNTR.record);
+		$DS_CNTR.insertRow(0,["00000","공통"]);
+		$cmb_cntr.setValue($DS_CNTR.getValue(2,"CODE_ID"));
+
+		$DS_PRODUCT.setData(oRes.DS_PRODUCT.column, oRes.DS_PRODUCT.record);
+		$DS_PRODUCT.insertRow(0,["","전체"]);
+
+		btn_search_click();
+
+
+	});
+}
+
+
+function btn_search_click() {
+	$DS_LIST.clearData();
+	$DS_MANAGE_LIST.clearData();
+
+	var lclf_cd,sclf_cd,cntr_cd,prod_cd;
+	lclf_cd=$cmb_lclf.getValue();
+	sclf_cd=$cmb_sclf.getValue()
+	cntr_cd=$cmb_cntr.getValue();
+	prod_cd=$cmb_product.getValue();
+
+	if(lclf_cd == "" && cntr_cd == ""){
+		alert("대분류와 센터의 값이 필요합니다.");
+		return;
+	}
+
+	var param = {
+		_sqlName : "msa.msa010T1.getVrsList.sel"
+		,sc_lclf_cd:lclf_cd
+		,sc_sclf_cd:sclf_cd
+		,cntr_cd:cntr_cd
+		,prod_cd:prod_cd
+	};
+
+	var opt = {
+		reqId : "btn_search_click",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+
+
+function grd_list_click(event) {
+
+	v_flag = "UPDATE";
+
+	var idx = $grd_list.getSelection();
+
+	var sc_sno = $DS_LIST.getValue(idx, "SC_SNO");
+	var lclf_cd = $DS_LIST.getValue(idx, "LCLF_CD");
+	var sclf_cd = $DS_LIST.getValue(idx, "SCLF_CD");
+	var cntr_cd = $DS_LIST.getValue(idx, "CNTR_CD");
+	var prod_cd = $DS_LIST.getValue(idx, "PROD_CD");
+
+	var param = {
+			_sqlName	: "msa.msa010T1.cmbQstcd.sel"
+			,sc_sno : sc_sno
+			,sc_lclf_cd:lclf_cd
+			,sc_sclf_cd:sclf_cd
+			,cntr_cd:cntr_cd
+
+		};
+	var opt = {
+		reqId : 'getCombo_2',
+		url : v_url,
+		param : param
+	};
+	Xwing.request(opt, function(sReqId, oRes, oErr, oXhr) {
+
+		$DS_QST.setData(oRes.DS_QST.column, oRes.DS_QST.record);
+		$DS_QST.insertRow(0,['',"전체"]);
+		$cmb_qst.setValue("");
+		//$cmb_qst.setValue($DS_QST.getValue(0,"CODE_ID"));
+		getScriptItems(sc_sno,lclf_cd, sclf_cd,cntr_cd,prod_cd);
+	});
+
+
+}
+
+/*******************************************************************************
+ * 등록된 목록들의 상세 사항을 조회하는 함수
+ ******************************************************************************/
+function getScriptItems(sc_sno,lclf_cd, sclf_cd,cntr_cd,prod_cd) {
+	var param = {
+		_sqlName : "msa.msa010T1.getVrsManageList.sel"
+		,sc_sno:sc_sno
+		,sc_lclf_cd:lclf_cd
+		,sc_sclf_cd:sclf_cd
+		,cntr_cd:cntr_cd
+		,prod_cd:prod_cd
+	};
+
+	var opt = {
+		reqId : "getScriptItems",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+// *********************************************************************************************************
+// Call Back Action
+// ********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n'
+				+ 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+	case 'btn_search_click':
+
+		$DS_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+		//grd_list_click();
+		break;
+	case 'getScriptItems':
+		$DS_MANAGE_ALL_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+		if($cmb_qst.getValue()==''){
+			$DS_MANAGE_LIST.copyFrom($DS_MANAGE_ALL_LIST);
+		}else{
+			$DS_MANAGE_LIST.setData($DS_MANAGE_ALL_LIST.getColumnInfo(), $DS_MANAGE_ALL_LIST.getData("[QST_CD=='"+$cmb_qst.getValue()+"']"));
+
+		}
+		cmb_qst_change();
+		break;
+	case 'getSeq':
+		$DS_SEQ.setData(res.DS_LIST.column, res.DS_LIST.record);
+		$DS_LIST_INS.clearData();
+		$DS_LIST_INS.addRow();
+		$DS_LIST_INS.setValue(0, 'CONCEPT_ID', $DS_SEQ.getValue(0, 'SEQ_VAL'));
+		$DS_LIST_INS.setValue(0, 'USE_YN', 'Y');
+		$DS_LIST_INS.setValue(0, 'REG_ID', global("G_USER_ID"));
+
+		$rdo_use_yn.setValue('Y');
+
+		break;
+	case 'delete_all':
+		alert("삭제 되었습니다.");
+		btn_search_click();
+		break;
+	case 'delete_sent':
+		update_sent();
+		break;
+	case 'insert_sent':
+		alert("저장 되었습니다.");
+		btn_search_click();
+		break;
+	case 'insert_script':
+
+		for (var i = 0; i < $DS_MANAGE_LIST.size(); i++) {
+			$DS_MANAGE_LIST.setValue(i, "SCRIPT_ID", $DS_LIST_INS.getValue(0,
+					"SCRIPT_ID"));
+			$DS_MANAGE_LIST.setValue(i, "CONCEPT_ID", $DS_LIST_INS.getValue(0,
+					"CONCEPT_ID"));
+			$DS_MANAGE_LIST.setValue(i, "REG_ID", global("G_USER_ID"));
+			$DS_MANAGE_LIST.setValue(i, "CHG_ID", global("G_USER_ID"));
+			$DS_MANAGE_LIST.setValue(i, "PROD_ID", prod_id_ins);
+		}
+
+		insert_sent();
+		break;
+	case 'update_sent':
+		alert("저장 되었습니다.");
+		btn_search_click();
+		break;
+	case 'update_script':
+		delete_sent();
+		break;
+	case 'manage_list_upd':
+		alert("저장 되었습니다.");
+		btn_search_click();
+		break;
+	case 'manage_qst_rate_upd':
+		alert("적용 되었습니다.");
+		btn_search_click();
+		break;
+	}
+
+}
+
+
+function init_ins() {
+	$cmb_product1_ins.setEnabled(false);
+	// $cmb_product2_ins.setEnabled(false);
+
+	$btn_up.setEnabled(true);
+	$btn_down.setEnabled(true);
+}
+
+function btn_up_click(event) {
+
+	$DS_MANAGE_LIST.addRow();
+	$DS_MANAGE_LIST.setValue($DS_MANAGE_LIST.size() - 1, "SCRIPT_ID", $DS_LIST_INS
+			.getValue(0, 'SCRIPT_ID'));
+	$DS_MANAGE_LIST.setValue($DS_MANAGE_LIST.size() - 1, "CONCEPT_ID", $DS_LIST_INS
+			.getValue(0, 'CONCEPT_ID'));
+	$DS_MANAGE_LIST.setValue($DS_MANAGE_LIST.size() - 1, "KEYWORD", "");
+	$DS_MANAGE_LIST.setValue($DS_MANAGE_LIST.size() - 1, "SENTENCE", "");
+	$DS_MANAGE_LIST.setValue($DS_MANAGE_LIST.size() - 1, "REG_ID",
+			global("G_USER_ID"));
+}
+
+function btn_down_click(event) {
+	var nRow = $DS_MANAGE_LIST.getCursor();
+	$DS_MANAGE_LIST.removeRow(nRow);
+}
+
+/*
+ * function file_upload_click(event) { //$DS_UPLOAD.clearData();
+ * //$DS_UPLOAD_CP.clearData();
+ *
+ *  }
+ *
+ * //파일선택 후 실행되는 이벤트 function file_upload_select(event) {
+ *
+ * var MAX_SIZE = 1024 * 1024 * 100;
+ *
+ * if($DS_FILE.size() == 0) {
+ *
+ * xwing.Dialog.alert("업로드할 파일을 선택해 주세요."); return; }
+ *
+ * if(!/.xls$/.test($DS_FILE.getValue("FILE_NAME")) &&
+ * !/.xlsx$/.test($DS_FILE.getValue("FILE_NAME")) &&
+ * !/.csv$/.test($DS_FILE.getValue("FILE_NAME"))) {
+ *
+ * xwing.Dialog.alert("업로드할 파일의 확장자는 xls,xlsx,csv만 가능합니다."); return; }
+ *
+ * if(parseInt($DS_FILE.getValue("FILE_SIZE")) > MAX_SIZE) {
+ *
+ * xwing.Dialog.alert("업로드할 파일의 용량이 "+ MAX_SIZE/1024/1024 +"Mb 를 초과하였습니다.");
+ * return; }
+ *
+ * Xwing.getFile('file_upload').importData('DS_UPLOAD_CP', false); }
+ *
+ * function DS_UPLOAD_CP_reset(event) { setData(); }
+ *
+ * function setData() {
+ *
+ * if($DS_UPLOAD_CP.size() < 1) { return; }
+ *
+ * for(var i = 0; i < $DS_UPLOAD_CP.size(); i++) { var colNum = 0; //excel
+ * column seq
+ *
+ * $DS_MANAGE_LIST.addRow(); $DS_MANAGE_LIST.setValue(i, 'SCRIPT_ID',
+ * $DS_LIST_INS.getValue(0, 'SCRIPT_ID')); $DS_MANAGE_LIST.setValue(i,
+ * 'CONCEPT_ID', $DS_LIST_INS.getValue(0, 'CONCEPT_ID'));
+ * //$DS_MANAGE_LIST.setValue(i, 'SENT_ID', $DS_UPLOAD_CP.getValue(i, colNum++));
+ * $DS_MANAGE_LIST.setValue(i, 'KEYWORD', $DS_UPLOAD_CP.getValue(i, colNum++));
+ * $DS_MANAGE_LIST.setValue(i, 'SENTENCE', $DS_UPLOAD_CP.getValue(i, colNum++));
+ * $DS_MANAGE_LIST.setValue(i, 'REG_ID', global("G_USER_ID"));
+ *  }
+ *  }
+ */
+
+function btn_new_click(event) {
+	$cmb_product1_ins.setEnabled(true);
+	// $cmb_product2_ins.setEnabled(true);
+	$edt_script_id.setEnabled(true);
+	// $edt_prod_nm_ins.setEnabled(true);
+	// $btn_sel_0.setEnabled(true);
+
+	$DS_MANAGE_LIST.clearData();
+
+	v_flag = "INSERT";
+	getSeq('seq_concept_id');
+}
+
+function btn_del_click(event) {
+
+	if (v_flag == "INSERT")
+		return;
+
+	xwing.Dialog.confirm("삭제하시겠습니까?", $page.getTitle(), function(e) {
+		if (e) {
+			delete_all();
+		}
+	});
+
+}
+
+function btn_save_click(event) {
+//	$DS_LIST_INS.setValue(0, "PROD_ID", prod_id_ins);
+//
+//	if (v_flag == "UPDATE") { // update
+//		// delete_sent();
+//		update_script();
+//	} else { // insert
+//		insert_script();
+//	}
+	if ($DS_MANAGE_LIST.size() == 0){
+		xwing.Dialog.alert("저장할 데이터가 없습니다.");
+		return;
+	}
+
+
+	if(confirm("저장하시겠습니까?")){
+		manage_list_upd();
+	}else{
+		return;
+	}
+}
+
+function getSeq(seq_name) {
+	var param = {
+		_sqlName : "anl.obscriptManagement.seq.sel",
+		SEQ_NAME : seq_name
+	};
+
+	var opt = {
+		reqId : "getSeq",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function delete_all() {
+
+	if ($DS_LIST_INS.length == 0)
+		return;
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.sent.del,anl.obscriptManagement.item.del",
+		SCRIPT_ID : $DS_LIST_INS.getValue(0, "SCRIPT_ID"),
+		CONCEPT_ID : $DS_LIST_INS.getValue(0, "CONCEPT_ID")
+	};
+
+	var opt = {
+		reqId : "delete_all",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function delete_sent() {
+
+	if ($DS_LIST_INS.length == 0)
+		return;
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.sent.del",
+		SCRIPT_ID : $DS_LIST_INS.getValue(0, "SCRIPT_ID"),
+		CONCEPT_ID : $DS_LIST_INS.getValue(0, "CONCEPT_ID")
+	};
+
+	var opt = {
+		reqId : "delete_sent",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function insert_sent() {
+
+	if ($DS_MANAGE_LIST.length == 0)
+		return;
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.sent.ins",
+		DS_LIST : $DS_MANAGE_LIST
+	};
+
+	var opt = {
+		reqId : "insert_sent",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function insert_script() {
+
+	if ($DS_LIST_INS.length == 0)
+		return;
+	if ($DS_LIST_INS.getValue(0, "SCRIPT_ID") == "") {
+		alert("등록할 상품을 선택해주세요.");
+		return;
+	}
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.item.ins",
+		SCRIPT_ID : $DS_LIST_INS.getValue(0, "SCRIPT_ID"),
+		SCRIPT_NAME : $DS_LIST_INS.getValue(0, "SCRIPT_NAME"),
+		CONCEPT_ID : $DS_LIST_INS.getValue(0, "CONCEPT_ID"),
+		CONCEPT_NAME : $DS_LIST_INS.getValue(0, "CONCEPT_NAME"),
+		PROD_ID : $DS_LIST_INS.getValue(0, "PROD_ID"),
+		USE_YN : $DS_LIST_INS.getValue(0, "USE_YN"),
+		REG_ID : global("G_USER_ID")
+	};
+
+	var opt = {
+		reqId : "insert_script",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function update_sent() {
+
+	if ($DS_MANAGE_LIST.length == 0)
+		return;
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.sent.upt",
+		DS_LIST : $DS_MANAGE_LIST,
+		CHG_ID : global("G_USER_ID")
+	};
+
+	var opt = {
+		reqId : "update_sent",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function update_script() {
+
+	if ($DS_LIST_INS.length == 0)
+		return;
+
+	var param = {
+		_sqlName : "anl.obscriptManagement.item.upt",
+		SCRIPT_ID : $DS_LIST_INS.getValue(0, "SCRIPT_ID"),
+		CONCEPT_ID : $DS_LIST_INS.getValue(0, "CONCEPT_ID"),
+		SCRIPT_NAME : $DS_LIST_INS.getValue(0, "SCRIPT_NAME"),
+		CONCEPT_NAME : $DS_LIST_INS.getValue(0, "CONCEPT_NAME"),
+		USE_YN : $DS_LIST_INS.getValue(0, "USE_YN"),
+		CHG_ID : global("G_USER_ID")
+	};
+
+	var opt = {
+		reqId : "update_script",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function btn_upload_click(event) {
+	var opt = {
+		id : 'script_upload',
+		url : "./MSA010P1.xhtml",
+		width : 615,
+		height : 428,
+		draggable : true,
+		resizable : false,
+		modal : true,
+		title : "스크립트 업로드",
+	};
+
+	var user_upload = new xwing.Dialog(opt);
+	user_upload.open();
+}
+
+function setScript(ds_script) {
+	$DS_MANAGE_LIST.clearData();
+	$DS_MANAGE_LIST.copyFrom(ds_script);
+
+}
+
+/*
+ * function btn_sel_click(event) { var opt = { id: 'MSA070P2', url:
+ * "./MSA070P2.xhtml", width: 650, height: 465, draggable:true, resizable :
+ * false, modal: true, title : "상품명검색", param : { type : "S" } };
+ *
+ * var search_prod = new xwing.Dialog(opt); search_prod.open(); }
+ */
+
+function btn_sel_0_click(event) {
+	var opt = {
+		id : 'MSA070P2',
+		url : "./MSA010P2.xhtml",
+		width : 650,
+		height : 465,
+		draggable : true,
+		resizable : false,
+		modal : true,
+		title : "상품명검색",
+		param : {
+			type : "I"
+		}
+	};
+
+	var search_prod = new xwing.Dialog(opt);
+	search_prod.open();
+}
+
+function manage_list_upd(event) {
+	if ($DS_MANAGE_LIST.size() == 0)
+		return;
+
+	var qst_cd="", qst_focus="", qst_secret="";
+	//chg_id set, suppress 된 체크박스 값 넣어주기.
+	for (var i = 0; i < $DS_MANAGE_LIST.size(); i++) {
+		$DS_MANAGE_LIST.setValue(i, 'CHG_ID', global("G_USER_ID"));
+		if(qst_cd != ""){
+			if( qst_cd ==  $DS_MANAGE_LIST.getValue(i,'QST_CD')){
+		//		$DS_MANAGE_LIST.setValue(i, 'QST_FOCUS', qst_focus);
+				$DS_MANAGE_LIST.setValue(i, 'QST_SECRET', qst_secret);
+			}
+		}
+		qst_cd = $DS_MANAGE_LIST.getValue(i,'QST_CD');
+	//	qst_focus=$DS_MANAGE_LIST.getValue(i,'QST_FOCUS');
+		qst_secret=$DS_MANAGE_LIST.getValue(i,'QST_SECRET');
+
+	}
+
+	var param = {
+		_sqlName : "msa.msa010T1.VrsManageList.upd",
+		DS_LIST : $DS_MANAGE_LIST
+	};
+
+	var opt = {
+		reqId : "manage_list_upd",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+
+function cmb_lclf_change(event) {
+	$DS_SCLF.clearData();
+	var upper_cd = $cmb_lclf.getValue();
+	$DS_SCLF.setData($DS_SCMNG.getColumnInfo(), $DS_SCMNG.getData("[UPR_SC_CD=='"+upper_cd+"']"));
+	$DS_SCLF.insertRow(0,["","전체"]);
+	$cmb_sclf.setValue("");
+}
+
+function cmb_qst_change(event) {
+	if($cmb_qst.getValue()==""){
+			$DS_MANAGE_LIST.copyFrom($DS_MANAGE_ALL_LIST);
+	}else{
+		$DS_MANAGE_LIST.setData($DS_MANAGE_ALL_LIST.getColumnInfo(), $DS_MANAGE_ALL_LIST.getData("[QST_CD=='"+$cmb_qst.getValue()+"']"));
+	}
+}
+
+function btn_qst_rate_click(event) {
+	var lclf = $cmb_lclf.getValue();
+	var sclf = $cmb_sclf.getValue();
+	var cntr = $cmb_cntr.getValue();
+	var prod = $cmb_product.getValue();
+	var qst_rate = $edt_qst_rate.getValue();
+
+	if(lclf == ""){
+		alert('대분류는 반드시 선택되어야 합니다.');
+		return;
+	}
+
+	if(cntr == ""){
+		alert('센터는 반드시 선택되어야 합니다.');
+		return;
+	}
+
+	if(qst_rate == "") {
+		alert('일괄 적용할 임계치가 없습니다.');
+		return;
+	}
+	if(qst_rate > 100) {
+		alert('임계치는 100 이하만 가능합니다.');
+		return;
+	}
+
+	var param = {
+		_sqlName : "msa.msa010T1.VrsManageQstRate.upd,msa.msa010T1.VrsMng.upd",
+		LCLF_CD : lclf,
+		SCLF_CD : sclf,
+		CNTR_CD : cntr,
+		PROD_CD : prod,
+		CHG_ID : global("G_USER_ID"),
+		QST_RATE : qst_rate
+	};
+
+	var opt = {
+		reqId : "manage_qst_rate_upd",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT1_ins">
+		<xwing:dataset-column id="PROD_CD1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM1"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT2_ins">
+		<xwing:dataset-column id="PROD_CD1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD2"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM2"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="LCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="UP_USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="UP_USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ALTR_DT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_CP">
+		<xwing:dataset-column id="SCRIPT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CONCEPT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CONCEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SENTENCE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SEQ">
+		<xwing:dataset-column id="SEQ_VAL"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FILE">
+		<xwing:dataset-column id="FILE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_SIZE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_PATH"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MANAGE_LIST">
+		<xwing:dataset-column id="QST_SECRET"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_FOCUS"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_CDNM"></xwing:dataset-column>
+		<xwing:dataset-column id="EXCEPT_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SENT"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_SNO"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LCLF">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCLF">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CNTR">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCMNG"></xwing:dataset>
+	<xwing:dataset id="DS_QST">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MANAGE_ALL_LIST"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="스크립트관리" width="1050" height="768" load="page_load" scroll="false">
+		<xwing:datagrid id="grd_list" left="15" top="130" width="1020" height="278" anchor="all" binddataset="DS_LIST" rownum="true" resizable="true" autofit="true" virtual="true" groupable="false" borderwidth="1" cursor="pointer" click="grd_list_click" sortable="true" styles="table_border" textwrap="prewrap">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="150"></xwing:datagrid-column>
+				<xwing:datagrid-column width="250"></xwing:datagrid-column>
+				<xwing:datagrid-column width="90"></xwing:datagrid-column>
+				<xwing:datagrid-column width="250"></xwing:datagrid-column>
+				<xwing:datagrid-column width="130"></xwing:datagrid-column>
+				<xwing:datagrid-column width="150"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="대분류"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="소분류"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상품명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="최종수정자"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="최종수정일"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="LCLF_NM" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SCLF_NM"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CNTR_NM"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PROD_NM" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="UP_USER_NM" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ALTR_DT" halign="center" mask="datetime"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:panel id="pan_multi_line" left="0" top="421" width="1050" height="345" anchor="right bottom left" visible="true" scroll="false" styles="pan_box_title">
+			<xwing:label id="lbl_subtitle1_0" value="VRS 관리" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:label id="lbl_qst" value="질의유형" left="105" top="7" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_qst" left="170" top="7" width="300" height="25" enabled="true" visible="true" domaindataset="DS_QST" domaintextcolumn="CODE_NAME" domaincodecolumn="CODE_ID" size="15" change="cmb_qst_change"></xwing:combo>
+			<xwing:datagrid id="grd_manage_list" left="10" top="47" width="1020" height="260" anchor="all" binddataset="DS_MANAGE_LIST" rownum="true" resizable="true" autofit="true" virtual="true" groupable="false" borderwidth="1" cursor="default" checkbox="false" sortable="true" textwrap="prewrap" editsuppress="false" styles="table_border" selectedrange="row" click="grd_manage_list_click" editwhen="dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="200"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="60"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="300"></xwing:datagrid-column>
+					<xwing:datagrid-column width="60"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="질의유형명"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="개인정보처리&#10;항목여부"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="제외여부"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="필수검출어"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="문장"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="임계치"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row height="25">
+						<xwing:datagrid-cell bindcolumn="QST_CDNM" suppress="true" groupable="false" groupkey="false" groupsum="false"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="QST_SECRET" halign="center" suppress="true" displaytype="checkbox" groupable="false" truevalue="Y" falsevalue="N"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="EXCEPT_YN" displaytype="checkbox" suppress="false" truevalue="Y" falsevalue="N"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="QST_KEYWORD" edittype="edit"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="SCRIPT_SENT"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="QST_RATE" halign="center" edittype="edit"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_reguset" value="규정문장조회" left="15" top="509" anchor="none" styles="btn_search" width="100" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="1 1 2 0 #d0d0d0" click="btn_reguset_click" visible="false"></xwing:button>
+			<xwing:button id="btn_new" value="신 규" left="903" top="315" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_new_click" visible="false"></xwing:button>
+			<xwing:button id="btn_save" value="저 장" left="968" top="315" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click" visible="false"></xwing:button>
+			<xwing:button id="btn_up" left="983" top="61" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_add.png" bgimagealign="center center" enabled="false" click="btn_up_click" visible="false"></xwing:button>
+			<xwing:button id="btn_down" left="1010" top="61" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_del.png" bgimagealign="center center" enabled="false" click="btn_down_click" visible="false"></xwing:button>
+			<xwing:button id="btn_upload" value="엑셀업로드" left="900" top="60" anchor="top right" styles="btn_normal" width="80" tabindex="4" height="25" iconalign="left" borderwidth="1" shadow="0 0 0 " borderstyle="solid" click="btn_upload_click" bordercolor="#C6C6C6" visible="false"></xwing:button>
+		</xwing:panel>
+		<xwing:group id="search_box" left="0" top="0" width="1050" height="78" anchor="top right left" styles="div_search" borderwidth="0" scroll="false">
+			<xwing:label id="lbl_lclf" value="대분류" left="20" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_lclf" left="85" top="10" width="110" height="25" enabled="true" visible="true" domaindataset="DS_LCLF" domaintextcolumn="CODE_NAME" domaincodecolumn="CODE_ID" change="cmb_lclf_change"></xwing:combo>
+			<xwing:label id="lbl_sclf" value="소분류" left="205" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:label id="lbl_cntr" value="센터" left="470" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_cntr" left="535" top="10" width="100" height="25" enabled="true" visible="true" domaindataset="DS_CNTR" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NAME"></xwing:combo>
+			<xwing:combo id="cmb_sclf" left="270" top="10" width="200" height="25" enabled="true" visible="true" domaindataset="DS_SCLF" domaintextcolumn="CODE_NAME" domaincodecolumn="CODE_ID" size="15"></xwing:combo>
+			<xwing:label id="lbl_product" value="상품명" left="20" top="40" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_product" left="85" top="40" width="300" height="25" enabled="true" visible="true" domaindataset="DS_PRODUCT" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NAME" size="15"></xwing:combo>
+			<xwing:button id="btn_search" value="조 회" left="575" top="40" anchor="bottom" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+		</xwing:group>
+		<xwing:splitbar id="splitbar" left="0" top="415" height="5" borderwidth="0" width="1050" cursor="n-resize" bindwidget="r:pan_multi_line,r:grd_list" bartype="vertical" anchor="right bottom left" visible="true" shadow="#58728d 0 -3 0 0"></xwing:splitbar>
+		<xwing:label id="lbl_subtitle1_0_0" value="VRS 리스트" left="10" top="83" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:edit id="edt_qst_rate" left="904" top="90" height="25" width="60" anchor="right" halign="right"></xwing:edit>
+		<xwing:label id="lbl_qst_rate" value="임계치 일괄설정" left="782" top="90" height="25" halign="right" width="113" styles="label_subtitle" visible="true" anchor="right"></xwing:label>
+		<xwing:button id="btn_qst_rate" value="적 용" left="973" top="90" anchor="right" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_qst_rate_click"></xwing:button>
+	</xwing:page>
+	<xwing:button id="btn_del" value="삭 제" left="875" top="766" anchor="top left" styles="btn_del" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" cursor="pointer" click="btn_del_click" visible="false"></xwing:button>
+</body>
+</html>

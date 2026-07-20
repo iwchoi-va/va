@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service name='SHOW-VEC' ref='HANSOL-NGF' svc_id='SHOW-VEC'
+	resource='server' transaction='false'>
+	<description>정보 조회 (SHOW-VEC) </description>
+	<header>
+		<field name='SERVER' fld_id='SERVER' default='1' type='Number'
+			length='4' inout='INOUT' />
+		<field name='BODY_LENGTH' fld_id='BODY_LENGTH' default='0' type='Number'
+			length='4' inout='INOUT' />
+		<field name='OMC_DATA' fld_id='OMC_DATA' default='1' type='Number'
+			length='4' inout='INOUT' />
+	</header>
+	<request>
+		<field name='ID' fld_id='ID' default='cubex' type='string'
+			length='16' inout='' />
+		<field name='PASSWORD' fld_id='PASSWORD' default='cubex'
+			type='string' length='32' inout='' />
+		<field name='DIRECTORY' fld_id='DIRECTORY' default='cmd' type='string'
+			length='8' inout='' />
+		<field name='COMMAND' fld_id='COMMAND' default='SHOW-VEC' type='string'
+			length='32' inout='' />
+		<field name='PARAMETER' fld_id='PARAMETER' default='N=ALL' type='string'
+			length='0' inout='' />
+	</request>
+	<response>
+		<field name='RES_DATE' fld_id='RES_DATE' default='' type='line'
+			length='0' inout='' />
+		<field name='RES_TITLE' fld_id='RES_TITLE' default='' type='skip'
+			length='0' inout='' />
+		<field name='HOST_NAME' fld_id='HOST_NAME' default='' type='string'
+			length='0' inout=':' />
+		<field name='LINE1' fld_id='LINE1' default='' type='skip'
+			length='0' inout='' />
+		<field name='TITLE1' fld_id='TITLE1' default='' type='skip'
+			length='0' inout='' />
+		<field name='LINE2' fld_id='LINE2' default='' type='skip'
+			length='0' inout='' />
+		<list name='SHOW_VECTOR_LIST' occurs_fld=''>
+			<field name='VECTOR_NUM' fld_id='VEC_NUM' default='' type='string'
+				length='0' inout='' />
+			<field name='VECTOR_VDN' fld_id='VDN_NUM' default='' type='string'
+				length='0' inout='' />
+			<field name='VECTOR_NAME' fld_id='VEC_NAME' default='' type='string'
+				length='0' inout='' />
+			<field name='TENANT_ID' fld_id='TENANT_ID' default='' type='string'
+				length='0' inout='' />
+		</list>
+		<field name='LINE3' fld_id='LINE3' default='' type='skip'
+			length='0' inout='' />
+		<field name='COUNT' fld_id='COUNT' default='' type='string'
+			length='0' inout='=' />
+		<field name='RESULT' fld_id='RESULT' default='' type='string'
+			length='0' inout='=' />
+	</response>
+</service>

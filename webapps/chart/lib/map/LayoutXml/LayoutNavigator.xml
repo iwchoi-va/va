@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="true" scaleMode="manual">
+		<series>
+			<MapSeries id="mapseries" interactive="true" selectionMarking="line" color="0x777777" displayName="Map" labelPosition="inside">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+		<annotationElements>
+<!--
+mouseWheelEnabled 마우스 휠에 따른 축소, 확대 기능 사용여부 - 네비게이터의 버튼에 대해 적용됨 (true,false중 택일, 기본 true)
+showNavigateControls 맵이동 컨트롤 표시여부 (true,false중 택일, 기본 true)
+showZoomControls 축소, 확대 컨트롤 표시여부 (true,false중 택일, 기본 true)
+-->
+			<MapNavigator/>
+		</annotationElements>
+	</MapChart>
+</rMateMapChart>

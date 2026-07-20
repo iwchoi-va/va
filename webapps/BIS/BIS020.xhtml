@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/productutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/anlstatutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var type = "DEPT1";
+var sdate = "", edate = "", stime= "", etime = "";
+var ced_no = "";
+var grade = "", new_user = "",anl_yn = "";
+
+function page_load(event) {
+	XwingObject();
+
+	//g_createDate("pnl_date","Y","Y","Y", "설계일시"); //기간 샛성
+	$dpk_sdate.setValue(g_addDate("m", -1, g_toDate(), ""));
+	$dpk_edate.setValue(g_toDate());
+	f_codebook_sel();
+
+	g_createOrg("pan_dept", 3, "Y", "Y", "Y", "", "전체",false,true);
+	g_createproduct("pnl_product", 2, "", "", "전체", "N");
+	g_createAnlStat("pnl_anlstat");
+
+	if(parent._load_val){
+		reciever(parent._parameter);
+	}
+
+}
+
+function init_search(){
+	$dpk_sdate.setValue(g_addDate("m", -1, g_toDate(), ""));
+	//$dpk_sdate.setValue("20180102");
+	$dpk_edate.setValue(g_toDate());
+	$edt_stime.setValue($ds_time.getValue($ds_time.indexOfRow('CODEID',$DS_SYS101.getValue(0,'ETC3')), 'ETC1') + '00');
+	$edt_etime.setValue($ds_time.getValue($ds_time.indexOfRow('CODEID',$DS_SYS101.getValue(0,'ETC4')), 'ETC2') + '59');
+	$edt_ced_no.setValue("");
+	/*var authLevel = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC1");
+	var authExcept = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC2");
+	g_setAuthObj(authLevel, authExcept, global("G_ORG1_CD"),global("G_ORG2_CD"),global("G_ORG3_CD"),global("G_USER_ID"));*/
+	$cmb_istp_cd.setValue('');
+	$cmb_prod_cd.setValue('');
+	$cmb_grade.setValue('');
+	$cmb_anl_stat.setValue('');
+	$chk_new_user.setValue(false);
+}
+
+
+function reciever(param){
+	init_search();
+	setTimeout(function(){
+		param = param.gubun == undefined? parent._parameter: param;
+		ced_no=param.ced_no != undefined? param.ced_no:'';
+		var p_gubun = param.gubun != undefined? param.gubun:'';
+		var user_id = param.user_id != undefined? param.user_id:'';
+		var org1_cd = param.org1_cd != undefined? param.org1_cd:$cmb_org1.getValue();
+		var org2_cd =param.org2_cd != undefined? param.org2_cd:'';
+		var org3_cd =param.org3_cd != undefined? param.org3_cd:'';
+		sdate =param.sdate != undefined? param.sdate:'';
+		edate =param.edate != undefined? param.edate:'';
+		stime =param.stime != undefined? param.stime:'';
+		etime =param.etime != undefined? param.etime:'';
+
+		if(p_gubun == 'A'){
+			$edt_ced_no.setValue(ced_no);
+			g_setOrg(org1_cd,org2_cd,org3_cd,user_id);
+		}
+		if(p_gubun == 'C')g_setOrg(org1_cd,org2_cd);
+		if(p_gubun == 'T')g_setOrg(org1_cd,org2_cd,org3_cd,user_id);
+		if(sdate != "") $dpk_sdate.setValue(sdate);
+		if(edate != "") $dpk_edate.setValue(edate)
+		if(stime != "") $edt_stime.setValue(stime)
+		if(edate != "") $edt_etime.setValue(etime);
+
+		setTimeout(function(){btn_search_click();},400); //원래 코드유틸이었는데... 왜 때문이었지.
+	},300);
+}
+
+function f_codebook_sel() {
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "RPT200,SYS101,VSS160",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+function lbl_sub1_click(event) {
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('normal');
+	Xwing.getLabel('lbl_sub3').setBgcolor('');
+	Xwing.getLabel('lbl_sub3').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub1').setFontweight('bold');
+	Xwing.getLabel('lbl_sub1').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub1').setFontcolor('#fff');
+
+	Xwing.getPanel('pan_tab1').setVisible('true');
+
+	if(Xwing.children['pan_tab1'].selected_dept != ''){
+		Xwing.children['pan_tab1'].initPage(1);
+	}
+
+}
+
+function lbl_sub2_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('normal');
+	Xwing.getLabel('lbl_sub3').setBgcolor('');
+	Xwing.getLabel('lbl_sub3').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub2').setFontweight('bold');
+	Xwing.getLabel('lbl_sub2').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub2').setFontcolor('#fff');
+
+	if(Xwing.children['pan_tab1'].selected_dept != ''){
+		Xwing.children['pan_tab1'].initPage(2);
+	}
+
+	/*Xwing.getPanel('pan_tab1').setVisible('false');
+	Xwing.getPanel('pan_tab2').setVisible('true');
+	Xwing.getPanel('pan_tab3').setVisible('false');
+
+	type = "ORG2";
+	$pan_tab2.setUrl("./BIS020T1.xhtml");*/
+}
+
+
+function lbl_sub3_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('bold');
+	Xwing.getLabel('lbl_sub3').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub3').setFontcolor('#fff');
+
+	if(Xwing.children['pan_tab1'].selected_dept != ''){
+		Xwing.children['pan_tab1'].initPage(3);
+	}
+
+	/*Xwing.getPanel('pan_tab1').setVisible('false');
+	Xwing.getPanel('pan_tab2').setVisible('false');
+	Xwing.getPanel('pan_tab3').setVisible('true');
+
+	type = "ORG3";
+	$pan_tab3.setUrl("./BIS020T1.xhtml");*/
+
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+	case 'f_codebook_sel' :
+		$DS_RPT200.setData(res.RPT200.column, res.RPT200.record);
+		$DS_SYS101.setData(res.SYS101.column, res.SYS101.record);
+		$ds_time.copyFrom($DS_RPT200);
+		$DS_VSS160.setData(res.VSS160.column, res.VSS160.record);
+		$DS_VSS160.insertRow(0,["VSS160", "", "전체", "", "", "", "", "", "", "", "", ""]);
+
+
+		if(!parent._load_val){
+			setTimeout(function(){
+				init_search();
+				setTimeout(function(){
+					btn_search_click();
+				}, 500);
+			},400);
+		}
+		break;
+
+	}
+}
+
+function btn_search_click(event) {
+	if(checkDate($dpk_sdate,$dpk_edate,$edt_stime,$edt_etime)) return;
+	sdate = $dpk_sdate.getValue();
+	edate = $dpk_edate.getValue();
+	stime = $edt_stime.getValue();
+	etime = $edt_etime.getValue();
+	ced_no = $edt_ced_no.getValue();
+	grade = $cmb_grade.getValue();
+	new_user = $chk_new_user.getValue();
+	anl_yn = $cmb_anl_stat.getValue();
+
+	$lbl_sub1.setValue("센터별");
+	$lbl_sub2.setVisible(true);
+	$lbl_sub3.setVisible(true);
+
+	if($cmb_user.getValue() == ""){
+		type = "DEPT1";
+		$pan_tab1.setUrl("./BIS020T1.xhtml");
+		lbl_sub1_click();
+	}else{
+		type = "USER";
+		$pan_tab1.setUrl("./BIS020T1.xhtml");
+		lbl_sub3_click();
+	}
+
+
+
+
+
+}
+/* ***********************************************************
+ * 키워드 엔터 이벤트 함수
+ *************************************************************/
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_search_click();
+	}
+}
+
+
+function page_unload(event) {
+	top._load_val = false; // child load 완료여부
+	top._menuId = ""; // child ID
+	top._parameter = null; // 검색할 키워드
+	top._hidden_val = false; // 숨김화면 여부
+	top._label = ""; // 숨김화면 타이틀
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_GUBUN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>S</xwing:dataset-cell>
+			<xwing:dataset-cell>설계번호별</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>U</xwing:dataset-cell>
+			<xwing:dataset-cell>소속별</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_VSS160" description="평가항목"></xwing:dataset>
+	<xwing:dataset description="시간세팅" id="DS_RPT200"></xwing:dataset>
+	<xwing:dataset description="근무시간" id="DS_SYS101">
+	</xwing:dataset>
+	<xwing:dataset description="DS_RPT200 근무시간" id="ds_time">
+		<xwing:dataset-column id="CODETYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENTTYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENTID"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="메뉴관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load" unload="page_unload">
+		<xwing:panel id="pan_subtitle" left="0" top="110" width="1050" height="35" anchor="top right left" scroll="false" bgcolor="#fff" bggradientcolor="#f1f1f1" shadow="#58728d 0 5 0 0">
+			<xwing:label id="lbl_sub1" value="센터별" left="0" top="0" fontsize="14" fontweight="bold" visible="true" halign="center" height="35" shadow="0 0 0 0" cursor="pointer" click="lbl_sub1_click" fontfamily="WallBoardFond" bgcolor="#58728d" fontcolor="#ffffff"></xwing:label>
+			<xwing:label id="lbl_sub2" value="팀별" left="100" top="0" fontsize="14" visible="true" height="35" halign="center" cursor="pointer" click="lbl_sub2_click" fontfamily="WallBoardFond"></xwing:label>
+			<xwing:label id="lbl_sub3" value="상담사별" left="200" top="0" fontsize="14" visible="true" height="35" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub3_click"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pan_tab1" left="0" top="150" width="1050" height="627" anchor="all" visible="true">
+		</xwing:panel>
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="110" anchor="right left" borderstyle="solid" scroll="false" styles="div_search">
+			<xwing:checkbox id="chk_new_user" label="신규상담사" left="367" top="77" styles="label_subtitle" halign="right" width="90" height="22" value="false"></xwing:checkbox>
+			<xwing:button id="btn_search" value="조 회" left="939" top="75" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			<xwing:label id="lbl12" left="15" top="45" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:panel id="pan_dept" left="80" top="45" width="420" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="lbl10" left="460" top="15" value="가입설계번호" height="25" width="83" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_ced_no" left="545" top="15" height="25" keyup="edt_sch_keyup" width="210" fontsize="11" maxlength="30"></xwing:edit>
+			<xwing:label id="lbl_grade" value="Grade" left="15" top="75" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:panel id="pnl_anlstat" left="194" top="75" width="144" height="25" scroll="false">
+			</xwing:panel>
+			<xwing:combo id="cmb_grade" left="80" top="75" width="100" height="25" enabled="true" visible="true" domaindataset="DS_VSS160" domaincodecolumn="CODEID" domaintextcolumn="CODENAME"></xwing:combo>
+			<xwing:label id="lbl1" left="15" top="15" value="설계일자" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:datepicker id="dpk_sdate" left="80" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_1" left="260" top="15" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:datepicker id="dpk_edate" left="275" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:edit id="edt_stime" left="185" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="090000" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:edit id="edt_etime" left="378" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="235959" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:panel id="pnl_product" left="528" top="45" width="481" height="25"></xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

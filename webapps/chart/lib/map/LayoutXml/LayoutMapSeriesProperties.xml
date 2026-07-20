@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="false" showDataTips="true" dataTipMode="single" scaleMode="auto">
+		<series>
+<!--
+alpha 투명도 (기본 1)
+areaCodeField dataProvider에서 지역 코드를 나타내는 필드명 (기본 code)
+enabledField 지역 이미지의 선택가능여부를 지정하는 data provider의 필드명
+filters 시리즈에 적용할 필터
+hideDataEffect 지역 이미지가 사라질때 적용할 이펙트
+hideOverSizeLabel 라벨의 크기가 맵이미지보다 큰 경우 라벨을 숨길지 여부 (true,false중 택일, 기본 true)
+interactive 사용자 마우스 조작에 반응할지 여부 (true,false중 택일, 기본 true)
+labelFilters 시리즈의 라벨에 적용할 필터
+labelField 지역이미지의 라벨을 지정하는 data provider의 필드명
+labelJsFunction 자바스크립트를 이용한 라벨 변경기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+legendEnabled 범례에 표시될지 여부 (true,false중 택일, 기본 false)
+localFillJsFunction 자바스크립트를 이용한 지역 색상 변경기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+selectionMarking 클릭시 해당 지역 표시 방법 설정 (color, line, blink, none중 택일, 기본 color)
+showDataEffect 지역 이미지가 표시될때 적용할 이펙트
+useHandCursor 시리즈에 마우스가 올 경우 커서를 손모양으로 바꿀지 여부 (true,false중 택일, 기본 false)
+-->
+			<MapSeries id="mapseries" selectionMarking="line" color="0xFFFFFF" labelPosition="inside" displayName="Map Series" fontWeight="bold">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<labelFilters>
+					<GlowFilter blurX="5" blurY="5" color="0x111111"/>
+				</labelFilters>
+				<showDataEffect>
+					<SeriesSlide duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

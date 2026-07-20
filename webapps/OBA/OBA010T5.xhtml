@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+
+<link href="data:image/gif;" rel="icon" type="image/x-icon" />
+<link rel="shortcut icon" href="../msens_icon.ico" />
+
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var rec_key = "", call_time="", file_path="";
+var v_url = "service::oba.oba010t4.getDetail.sel.do";
+var duplicateIdx=[];
+var dmbo_cd ="";
+
+function page_load(event) {
+	try{
+		XwingObject();
+		
+		$lbl_prod.setValue(parent.prod_nm);
+		//vrs select 초기화
+		/*if(parent.ban_cd == ""){
+			$lbl_subtitle2.setValue("금칙어검출결과(전체)");
+			$pnl_ment_keyword.setVisible(false);
+			$DS_MENT_RES.clearData();
+			$DS_MENT_ANS.clearData();
+		}else{
+			$lbl_subtitle2.setValue("금칙어검출결과");
+			$pnl_ment_keyword.setVisible(true);
+		}*/
+		
+		getMentDetailRes();
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+
+function getMentDetailRes(){
+	var opt = {
+			reqId: "getMentRes",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t5.getDmboRes.sel',
+				PROD_CD : parent.prod_cd,
+				CED_NO : parent.ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+function getMentDetailStt(){	
+	var opt = {
+			reqId: "getDetailStt",
+			url: "service::msens.xcron.hansol.sttEncryptWebaction.do",
+			param: {
+				_sqlName  : 'oba.oba010t5.getMentDetailRes.sel'
+				,TYPE : 'D'
+				,PROD_CD : parent.prod_cd
+				,CED_NO : parent.ced_no
+				,DMBO_CD : dmbo_cd
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getMentRes":
+			$DS_MENT_RES.setData(res.DS_MENT_RES.column, res.DS_MENT_RES.record);
+			
+			if($DS_MENT_RES.size() > 0){
+				grd_dmbo_list_dblclick();
+			}else{
+				$DS_MENT_RES.addRow();
+				$DS_MENT_RES.setValue(0,"DMBO_NM","담보에 등록된 필수멘트가 없습니다.");
+				$DS_MENT_RES.setValue(0,"MENT_CNT","X");
+				
+			}
+			
+		break;
+		
+		case "getDetailStt" :
+			$DS_MENT_ANS.setData(res.DS_RES.column, res.DS_RES.record);
+			/*var idxs = $DS_MENT_ANS.searchRow("[DMBO_CD =='"+dmbo_cd+"']");
+			
+			for(var i =0; i< idxs.length; i++){
+				$("#grd_ment_stt .xw-datagrid-area-body table tbody tr[cy='"+idxs[i]+"']").addClass("select");
+			}
+			
+			$DS_MENT_ANS.setCursor(idxs[0]);*/
+			
+		break;
+	}
+}
+
+//*********************************************************************************************************
+//* 클릭이벤트
+//*********************************************************************************************************/
+
+function grd_dmbo_list_click(event) {
+	var res_dmbo_cd = $DS_MENT_RES.getValue(event.rowIdx,'DMBO_CD');
+	var stt_ment_cd="";
+	duplicateIdx=[];
+	var res_key = res_dmbo_cd;
+	var stt_key ="";
+	
+	var selected = document.querySelectorAll("#grd_ment_stt .select");
+	for(var i=0, len=selected.length; i<len; i ++){
+		selected[i].classList.remove("select");
+	}
+	
+	duplicateIdx = $DS_MENT_ANS.searchRow("[BAN_CD =='"+res_dmbo_cd+"']");
+	
+	for(var i =0; i< duplicateIdx.length; i++){
+		$("#grd_ment_stt .xw-datagrid-area-body table tbody tr[cy='"+duplicateIdx[i]+"']").addClass("select");
+	}
+	
+	$DS_MENT_ANS.setCursor(duplicateIdx[0]);
+	
+	/*for(var i=0, len=$DS_MENT_ANS.size(); i<len; i ++){
+		stt_ment_cd=$DS_MENT_ANS.getValue(i,'BAN_CD');
+		
+		$("#grd_ment_stt .xw-datagrid-area-body table tbody tr[cy='"+i+"']").removeClass("select");
+		stt_key=stt_ment_cd;
+		if(res_key == stt_key){
+			duplicateIdx.push(i);
+			//$("#grd_script_stt .xw-datagrid-area-body table tbody tr[cy='"+i+"']").addClass("select");
+		}
+	}
+	
+	for(var i=0; i< duplicateIdx.length; i++){
+		$("#grd_ment_stt .xw-datagrid-area-body table tbody tr[cy='"+duplicateIdx[i]+"']").addClass("select");
+	}*/
+	
+	
+	
+	//expr 적용위해- 해당 데이터 색깔 칠하기
+	/*var dg = Xwing.getDataGrid("grd_ment_stt");
+	dg.setBinddataset("");
+	dg.setBinddataset("DS_BAN_ANS");*/
+}
+
+
+
+function grd_dmbo_list_dblclick(event) {
+	if(event != null){
+		dmbo_cd = $DS_MENT_RES.getValue(event.rowIdx, "DMBO_CD");
+	}else{
+		dmbo_cd = $DS_MENT_RES.getValue(0, "DMBO_CD");
+	}	
+	getMentDetailStt();
+}
+
+function grd_ment_stt_click(event) {
+	var nCell = event.cell._getColIndex();
+	
+	var selected = document.querySelectorAll("#grd_ment_stt .select");
+	for(var i=0, len=selected.length; i<len; i ++){
+		selected[i].classList.remove("select");
+	}
+	
+	$("#grd_ment_stt .xw-datagrid-area-body table tbody tr[cy='"+event.rowIdx+"']").addClass("select");
+	
+	if(nCell == 0){
+		var selectedRec = $DS_MENT_ANS.getValue(event.rowIdx,'UCID');
+		if(selectedRec == ''){
+			//xwing.Dialog.alert("준수문장이 없습니다.");
+			return;
+		}			
+		
+		rec_key =  $DS_MENT_ANS.getValue(event.rowIdx,'UCID');
+		call_time = $DS_MENT_ANS.getValue(event.rowIdx,'UCID_DATE');
+		file_path = $DS_MENT_ANS.getValue(event.rowIdx,'FILE_FULL_PATH');
+		if(parent.selected_ucid != rec_key){
+			parent.load_player(rec_key,call_time,'L', file_path);
+			parent.selected_ucid = rec_key;
+			parent.cmb_ucid_date_change2(rec_key);
+		}
+		
+	}else if(nCell == 2){
+		var selectedRec = $DS_MENT_ANS.getValue(event.rowIdx,'UCID');
+		var selectedTime = $DS_MENT_ANS.getValue(event.rowIdx,'UCID_DATE');
+		var selectedFile = $DS_MENT_ANS.getValue(event.rowIdx,'FILE_FULL_PATH');
+		
+		
+		if(selectedRec == ''){
+			return;
+					
+		}else if(parent.selected_ucid != '' && parent.selected_ucid != selectedRec){
+			xwing.Dialog.alert("현재 청취하고 계시는 녹취 콜과 다른 콜입니다.\n 좌측의 청취 버튼을 클릭해주세요.");
+			return;
+		}else{
+			var start_point = $DS_MENT_ANS.getValue(event.rowIdx,'START_TIME');
+			parent.seekToSTT(start_point);
+		}
+		
+		/*if(selectedRec != rec_key && selectedTime != call_time){
+			rec_key = selectedRec;
+			call_time = selectedTime;
+			file_path = selectedFile;
+			parent.load_player(rec_key,call_time,'L', file_path);
+		}else{
+			var start_point = $DS_MENT_ANS.getValue(event.rowIdx,'START_TIME');
+			
+			parent.seekToSTT(start_point);
+		}*/
+	}
+}
+/* ***********************************************************
+ * 	expr
+ *************************************************************/
+function stt_del_alpha_num_expr(cellObj,rowIdx) {
+	var opt = {};
+	var sent = $DS_MENT_ANS.getValue(rowIdx, "STT_SENT");
+	//sent.replace('\|',''); --이건 쿼리에서 제거
+	sent = sent.replace(/[A-Za-z0-9]/gi,""); //한글만
+	opt['value'] = sent.replace(/(^\s*)|(\s*$)/gi, ""); //앞 공백제거
+	
+	if(duplicateIdx.length > 0){
+		for(var i=0, len=duplicateIdx.length; i<len; i++){
+			
+			if(duplicateIdx[i]==rowIdx){
+				opt['bgcolor'] = "#d8e9ee";
+			}else{
+				opt['bgcolor'] = "#fff";
+			}
+		}
+	}
+	
+	return opt;
+}
+
+function setColor2(cellObj,rowIdx) {
+	var val={};
+	
+	if($DS_MENT_ANS.getValue(rowIdx,"UCID") != ""){
+		if($DS_MENT_ANS.getValue(rowIdx-1,"UCID") != $DS_MENT_ANS.getValue(rowIdx,"UCID")){
+			val['bgimage'] = "../images/icon_notice.png";
+			val['bgimagerepeat'] = "no-repeat";
+			val['bgimagealign'] = "center center";
+		}
+	}else{
+		$DS_MENT_ANS.setValue(rowIdx,"UCID_DATE","X");
+	}
+
+	return val;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_MENT_RES" description="필수멘트 결과">
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="SRC_FLAG"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MENT_ANS" description="검출된 문장">
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="STT_SENT"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MNG_MENT"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="START_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="콜청취" width="752" height="667" load="page_load" scroll="false">
+		<xwing:datagrid id="grd_dmbo_list" left="5" top="53" width="251" height="614" rownum="true" checkbox="false" binddataset="DS_MENT_RES" anchor="top bottom left" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap" dblclick="grd_dmbo_list_dblclick">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="150"></xwing:datagrid-column>
+				<xwing:datagrid-column width="60"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="담보" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="DMBO_NM" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="MENT_CNT" halign="right"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle2" value="담보별필수멘트결과" left="0" top="0" width="752" height="40" styles="label_boxtitle" halign="left" anchor="top right left" bggradientdir="horizontal" bgimagealign="left center"></xwing:label>
+		<xwing:datagrid id="grd_ment_stt" left="272" top="53" width="475" height="614" rownum="true" checkbox="false" binddataset="DS_MENT_ANS" anchor="all" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap" click="grd_ment_stt_click">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="50"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="320"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="녹취"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="필수멘트"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="검출문장" halign="center" fontweight="bold"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="UCID_DATE" expr="setColor2" cursor="pointer" suppress="true" groupable="false" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="MNG_MENT" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="left" bindcolumn="STT_SENT" cursor="pointer"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_src_flag" left="660" top="8" value="분석정보" height="25" width="86" anchor="right left" styles="label_subtitle" binddataset="DS_MENT_RES" bindcolumn="SRC_FLAG" fontcolor="#555"></xwing:label>
+		<xwing:panel id="pnl_ment_keyword" left="175" top="8" width="496" height="26" scroll="false">
+			<xwing:label id="lbl_prod" left="61" top="0" height="25" width="383" anchor="none" value="상품"></xwing:label>
+			<xwing:label id="lbl4_0_0" left="35" top="0" value=":" height="25" width="20" anchor="none" styles="label_subtitle"></xwing:label>
+			<xwing:label id="lbl4_0_1" left="-40" top="0" value="상품" height="25" width="86" anchor="none" styles="label_subtitle"></xwing:label>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar0" left="260" top="52" width="5" visible="true" bindwidget="r:grd_dmbo_list,r:grd_ment_stt" height="614" anchor="top bottom" cursor="w-resize" styles="split_h"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

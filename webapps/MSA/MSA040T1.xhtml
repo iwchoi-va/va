@@ -1,0 +1,397 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<style>
+/*.grd_manage_list .xw-datagrid-area-body td{
+		padding :4px 0px !important;
+	}*/
+</style>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var result = null;
+var svcId;
+var v_flag = "UPDATE";
+
+
+function page_load(event) {
+		XwingObject();
+		$dpk_sdate.setValue(g_addDate("d", -1, g_toDate(), ""));
+		$dpk_edate.setValue(g_toDate());
+		
+		$dpk_del_sdate.setValue(g_addDate("d", -1, g_toDate(), ""));
+		$dpk_del_edate.setValue(g_toDate());
+}
+
+function btn_search_click(event) {
+	var sdate = $dpk_sdate.getValue()+$edt_stime.getValue();
+	var edate = $dpk_edate.getValue()+$edt_etime.getValue();
+	if(!g_checkDate(sdate,edate)) return;
+	//var sdate = $dpk_sdate.getValue()+'000000';
+	//var edate = $dpk_edate.getValue()+'235959';
+	$dpk_sdate2.setValue($dpk_sdate.getValue());
+	$edt_stime2.setValue($edt_stime.getValue());
+	$dpk_edate2.setValue($dpk_edate.getValue());
+	$edt_etime2.setValue($edt_etime.getValue());
+	
+	$dpk_del_sdate.setValue($dpk_sdate.getValue());
+	$edt_del_stime.setValue($edt_stime.getValue());
+	$dpk_del_edate.setValue($dpk_edate.getValue());
+	$edt_del_etime.setValue($edt_etime.getValue());
+	
+	var param = {
+			_sqlName	: "msa.msa040T1.getMngCount.sel,msa.msa040T1.getSentCount.sel,msa.msa040T1.getDelMngCount.sel,msa.msa040T1.getDelSentCount.sel"
+			, sdate: sdate
+			, edate: edate 
+		};
+	var opt = {
+		reqId : 'getDelCnt',
+		url : parent.v_url,
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+function btn_del_click(event) {
+	xwing.Dialog.confirm("기존 VRS를 삭제하시겠습니까? (필수검출어 및 제외여부가 초기화됩니다.)", $page.getTitle(), function(e){
+	if(!e) return;	
+	var sdate = $dpk_sdate.getValue()+$edt_stime.getValue();
+	var edate = $dpk_edate.getValue()+$edt_etime.getValue();
+	//var sdate = $dpk_sdate.getValue();
+	//var edate = $dpk_edate.getValue();
+
+	
+	var param = {
+			_sqlName	: "msa.msa040T1.delVRS.del"
+			, sdate: sdate
+			, edate: edate 
+		};
+	var opt = {
+		reqId : 'delVRS',
+		url : parent.v_url,
+		param : param
+	};
+	Xwing.request(opt, callback);
+	});
+}
+
+
+
+function btn_all_del_click(event) {
+	var sdate = $dpk_sdate.getValue()+$edt_stime.getValue();
+	var edate = $dpk_edate.getValue()+$edt_etime.getValue();
+	//var sdate = $dpk_sdate.getValue();
+	//var edate = $dpk_edate.getValue();
+
+	
+	var param = {
+			_sqlName	: "msa.msa040T1.delVRSupdFlag.del"
+			, sdate: sdate
+			, edate: edate 
+		};
+	var opt = {
+		reqId : 'delVRS',
+		url : parent.v_url,
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+
+function btn_del_search_click(event) {
+	var sdate = $dpk_del_sdate.getValue()+$edt_del_stime.getValue();
+	var edate = $dpk_del_edate.getValue()+$edt_del_etime.getValue();
+	//var sdate = $dpk_sdate.getValue();
+	//var edate = $dpk_edate.getValue();
+
+	
+	var param = {
+			_sqlName	: "msa.msa040T1.getDelSyncTMCount.sel,msa.msa040T1.getDelSyncCount.sel"
+			, sdate: sdate
+			, edate: edate 
+		};
+	var opt = {
+		reqId : 'delSyncCntVRS',
+		url : parent.v_url,
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+function btn_del_sync_click(event) {
+	var sdate = $dpk_del_sdate.getValue()+$edt_del_stime.getValue();
+	var edate = $dpk_del_edate.getValue()+$edt_del_etime.getValue();
+	if(!g_checkDate($dpk_del_sdate.getValue(),$dpk_del_edate.getValue())) return;
+	
+//	var sdate = $dpk_sdate2.getValue()+'000000';
+//	var edate = $dpk_edate2.getValue()+'235959';
+	var param = {
+			 sdate: sdate
+			, edate: edate 
+			,server_gb : "UAT"
+		};
+	var opt = {
+		reqId : 'delSync',
+		url : "service::msa.msa040t1.delYnUpdateWebAction.do",//delYnUpdateWebAction
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function btn_search2_click(event) {
+	var sdate = $dpk_sdate2.getValue()+$edt_stime2.getValue();
+	var edate = $dpk_edate2.getValue()+$edt_etime2.getValue();
+	//var sdate = $dpk_sdate2.getValue();
+	//var edate = $dpk_edate2.getValue();
+
+	if(sdate == '' || edate == ''){
+		xwing.Dialog.alert('1번을 먼저 실행해 주세요.');
+		return;
+	}
+	var param = {
+			_sqlName	: "msa.msa040T1.getRemainingCnt.sel,msa.msa040T1.getTaggingYCnt.sel,msa.msa040T1.getSplitYCnt.sel"
+			, sdate: sdate
+			, edate: edate 
+		};
+	var opt = {
+		reqId : 'getResultCnt',
+		url : parent.v_url,
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+///////////////////////////////////////////////
+// 반드시 MSENS.xml에 UAT DB로 연결되어 있어야 합니다. 
+////////////////////////////////////////////
+function btn_vrs_do_click(event) {
+	xwing.Dialog.confirm("동일한 작업(2번)은 기존 작업이 모두 완료된 후 실행해 주십시오. 실행 하시겠습니까?", $page.getTitle(), function(e){
+	if(!e) return;	
+	var sdate = $dpk_sdate2.getValue()+$edt_stime2.getValue();
+	var edate = $dpk_edate2.getValue()+$edt_etime2.getValue();
+	//var sdate = $dpk_sdate2.getValue();
+	//var edate = $dpk_edate2.getValue();
+	
+	if(sdate == '' || edate == ''){
+		xwing.Dialog.alert('1번을 먼저 실행해 주세요.');
+		return;
+	}
+	
+	
+	var ds = Xwing.createDataset('ds',[],[[]]);
+	ds.setData(parent.$DS_SYS020.getColumnInfo(), parent.$DS_SYS020.getData('[CODEID^="03"]'));
+	var v_ip = ds.getValue(0, "ETC1"); //첫번째 서버에만 전송
+	
+	
+	$DS_REQUEST_PARAM.setValue(0,"FROM_DATE",sdate);
+	$DS_REQUEST_PARAM.setValue(0,"TO_DATE",edate);
+	//test
+	//v_ip = "127.0.0.1";
+	
+	
+	
+	var param = {
+			cmd	: "exec"
+			,service : 'SVC_COM_007' //vrs parser , split작업
+			,SERVER_IP	: v_ip
+			,SERVER_PORT	: '5292'
+			,SERVER_TIMEOUT	: '300000'
+			,XCRON_REQUEST : Xwing.getDataset("DS_REQUEST_PARAM")
+			
+		};
+		
+	
+	
+		var opt = {
+			reqId		: "btn_exe_click"
+			,url		: "service::cs.xcron.control.exe.do"
+			,param		: param
+			,indicator	: null
+			,showError	: true
+		};
+		nowDate();
+		Xwing.request(opt, callback);
+	});
+	
+}
+
+
+function nowDate() {
+    var now = new Date();
+    var nowTime = now.getFullYear() + "년 " + LPAD((now.getMonth()+1), "0", 2) + "월 " + LPAD(now.getDate(), "0", 2) + "일 " 
+    			+ LPAD(now.getHours(), "0", 2) + ":" + LPAD(now.getMinutes(), "0", 2) + ":" + LPAD(now.getSeconds(), "0", 2);
+    $lbl_time.setValue(nowTime);
+}
+// *********************************************************************************************************
+// Call Back Action
+// ********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n'
+				+ 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+		
+		case 'getDelCnt':
+			$edt_mng_cnt_0.setValue(res.DS_MNG_CNT.record[0]);
+			$edt_sent_cnt_0.setValue(res.DS_SENT_CNT.record[0]);
+			$edt_mng_cnt.setValue(res.DS_DEL_MNG_CNT.record[0]);
+			$edt_sent_cnt.setValue(res.DS_DEL_SENT_CNT.record[0]);
+			//grd_list_click();
+			break;
+			
+		case 'delVRS' :
+			xwing.Dialog.alert('삭제되었습니다.');
+			btn_search_click();
+			break;
+		case 'btn_exe_click' :
+			xwing.Dialog.alert('완료되었습니다.');
+			break;
+		case 'getResultCnt':
+			$edt_result_cnt1.setValue(res.DS_REM_CNT.record[0]);
+			$edt_result_cnt2.setValue(res.DS_TAG_CNT.record[0]);
+			$edt_result_cnt3.setValue(res.DS_SPLIT_CNT.record[0]);
+			break;
+		case 'delSyncCntVRS':
+			$edt_tm_mng_cnt.setValue(res.DS_DEL_TM_CNT.record[0]);
+			$edt_va_mng_cnt.setValue(res.DS_DEL_VA_CNT.record[0]);
+			break;
+		case 'delSync' :
+			xwing.Dialog.alert('완료되었습니다.');
+			btn_del_search_click();
+			break;
+	}
+
+}
+
+
+function LPAD(s, c, n) {
+	s = s + "";
+    if (! s || ! c || s.length >= n) {
+        return s;
+    }
+ 
+    var max = (n - s.length)/c.length;
+    for (var i = 0; i < max; i++) {
+        s = c + s;
+    }
+ 
+    return s;
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SYS020"></xwing:dataset>
+	<xwing:dataset id="DS_REQUEST_PARAM">
+		<xwing:dataset-column id="FROM_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TO_DATE"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PARAM">
+		<xwing:dataset-column id="NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="LENGTH"></xwing:dataset-column>
+		<xwing:dataset-column id="VALUE"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>FROM_DATE</xwing:dataset-cell>
+			<xwing:dataset-cell>14</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>TO_DATE</xwing:dataset-cell>
+			<xwing:dataset-cell>14</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="스크립트관리" width="1055" height="705" load="page_load" scroll="false" left="24" top="20">
+		<xwing:panel id="pnl_first" left="15" top="106" width="1016" height="112" anchor="right left" styles="div_perform" visible="true" scroll="false">
+			<xwing:button id="btn_search" value="조 회" left="440" top="10" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_search_click"></xwing:button>
+			<xwing:datepicker id="dpk_sdate" left="60" top="10" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:datepicker id="dpk_edate" left="255" top="10" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1" left="18" top="10" value="기간" height="25" width="60" anchor="left" styles="label_lititle"></xwing:label>
+			<xwing:label id="lbl1_1" left="240" top="10" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:edit id="edt_stime" left="165" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="000000" keyup="edt_sch_keyup" enabled="true" visible="true"></xwing:edit>
+			<xwing:edit id="edt_etime" left="360" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="235959" keyup="edt_sch_keyup" enabled="true" visible="true"></xwing:edit>
+			<xwing:label id="lbl1_0" left="45" top="70" value="mng 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_mng_cnt" left="109" top="69" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:button id="btn_del" value="삭 제" left="410" top="70" anchor="none" styles="btn_del" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" cursor="pointer" click="btn_del_click" visible="true"></xwing:button>
+			<xwing:label id="lbl1_3" left="33" top="40" value="기존 작업에서 변경된 VRS 건수" height="25" width="200" anchor="left" styles="lbl_grid_title" fontcolor="#303030"></xwing:label>
+			<xwing:edit id="edt_sent_cnt" left="294" top="69" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:label id="lbl1_0_0" left="230" top="70" value="sent 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:button id="btn_all_del" value="전부 삭제" left="880" top="70" anchor="none" styles="btn_del" width="80" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" cursor="pointer" visible="true" click="btn_all_del_click"></xwing:button>
+			<xwing:label id="lbl1_3_0" left="498" top="40" value="기존 작업된 전체 VRS 건수" height="25" width="200" anchor="left" styles="lbl_grid_title" fontcolor="#303030"></xwing:label>
+			<xwing:label id="lbl1_0_1" left="515" top="70" value="mng 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_mng_cnt_0" left="579" top="69" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:label id="lbl1_0_0_0" left="700" top="70" value="sent 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_sent_cnt_0" left="764" top="69" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+		</xwing:panel>
+		<xwing:panel id="pnl_first_0" left="15" top="586" width="1017" height="108" anchor="right left" styles="div_perform" visible="true" scroll="false">
+			<xwing:button id="btn_search_0" value="조 회" left="465" top="10" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_del_search_click"></xwing:button>
+			<xwing:datepicker id="dpk_del_sdate" left="85" top="10" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:datepicker id="dpk_del_edate" left="280" top="10" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_4" left="18" top="10" value="삭제기간" height="25" width="65" anchor="left" styles="label_lititle"></xwing:label>
+			<xwing:label id="lbl1_1_1" left="265" top="10" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:edit id="edt_del_stime" left="190" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="000000" keyup="edt_sch_keyup" enabled="true" visible="true"></xwing:edit>
+			<xwing:edit id="edt_del_etime" left="385" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" value="235959" keyup="edt_sch_keyup" enabled="true" visible="true"></xwing:edit>
+			<xwing:label id="lbl1_0_2" left="45" top="78" value="TM 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_tm_mng_cnt" left="109" top="77" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:button id="btn_all_del_0" value="동기화" left="165" top="45" anchor="none" styles="btn_action" width="80" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" cursor="pointer" visible="true" click="btn_del_sync_click"></xwing:button>
+			<xwing:label id="lbl1_0_1_0" left="228" top="78" value="VA 건수" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_va_mng_cnt" left="294" top="77" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:label id="lbl1_3_1" left="18" top="45" value="삭제여부 'Y'인 VRS" height="25" width="165" anchor="left" styles="label_lititle" halign="left"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pnl_second" left="16" top="285" width="1014" height="84" anchor="right left" styles="div_perform" visible="true" scroll="false">
+			<xwing:label id="lbl1_2" left="18" top="15" value="기간" height="25" width="60" anchor="left" styles="label_lititle"></xwing:label>
+			<xwing:datepicker id="dpk_sdate2" left="60" top="15" anchor="none" width="100" height="25" enabled="false"></xwing:datepicker>
+			<xwing:edit id="edt_stime2" left="165" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup" enabled="false" visible="true" value="000000"></xwing:edit>
+			<xwing:label id="lbl1_1_0" left="240" top="15" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:datepicker id="dpk_edate2" left="255" top="15" anchor="none" width="100" height="25" enabled="false"></xwing:datepicker>
+			<xwing:edit id="edt_etime2" left="358" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup" enabled="false" visible="true" value="235959"></xwing:edit>
+			<xwing:button id="btn_vrs_do" value="실 행" left="440" top="15" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_vrs_do_click" visible="true"></xwing:button>
+			<xwing:label id="lbl1_2_0" left="18" top="45" value="마지막 작업 수행시간:" height="25" width="125" anchor="left" styles="label" halign="left"></xwing:label>
+			<xwing:label id="lbl_time" left="148" top="45" height="25" width="150" anchor="left" styles="label" halign="left" value="00시 00분 00초"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pnl_third" left="14" top="425" width="1016" height="91" anchor="right left" styles="div_perform" visible="true" scroll="false">
+			<xwing:label id="lbl1_0_0_2" left="27" top="55" value="태그제거 완료건수" height="25" width="130" anchor="left" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_result_cnt2" left="154" top="54" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:label id="lbl1_0_0_0_0" left="272" top="55" value="문장분리 완료건수" height="25" width="130" anchor="none" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_result_cnt3" left="399" top="54" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:label id="lbl1_0_0_1_0" left="85" top="15" value="남은건수" height="25" width="120" anchor="left" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_result_cnt1" left="154" top="14" width="100" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+			<xwing:button id="btn_search2" value="조 회" left="270" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_search2_click"></xwing:button>
+		</xwing:panel>
+		<xwing:label id="lbl_subtitle1_0" value="UAT 데이터 작업" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left" fontcolor="#000000"></xwing:label>
+		<xwing:label id="lbl_title1_0_0" value=" 1. 기존 VRS DELETE 작업실행" left="29" top="41" width="200" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_notice" value="※ VRS에 등록된 필수검출어 및 제외여부가 초기화 됩니다." left="41" top="57" width="300" height="22" anchor="none" fontsize="11" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_title1_0_0_0" value=" 2. 신규 VRS 재등록 작업" left="29" top="221" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_notice_0" value="※ 신규 VRS 태그제거 및 문장분리를 1500건씩 실행합니다." left="41" top="237" width="350" height="22" anchor="none" fontsize="11"></xwing:label>
+		<xwing:label id="lbl_title1_0_0_0_0" value=" 3. 결과" left="29" top="371" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_notice_0_0" left="41" top="387" width="500" height="22" anchor="none" fontsize="11" value="※ 작업완료 :  태그제거 완료건수 = 문장분리 완료건수" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_notice_1" value="※ TM DB에서 변경된 기간을 입력합니다." left="41" top="72" width="300" height="22" anchor="none" fontsize="11"></xwing:label>
+		<xwing:label id="lbl_notice_0_1" value="※ 실행도중 Timeout이 나더라도 작업이 진행되고 있습니다 " left="41" top="252" width="500" height="22" anchor="none" fontsize="11"></xwing:label>
+		<xwing:label id="lbl_notice_0_0_0" left="41" top="402" width="300" height="22" anchor="none" fontsize="11" value="※ 남은건수가 0이 될 때까지 2번을 수행합니다."></xwing:label>
+		<xwing:label id="lbl_notice_0_1_0" value="※ 작업은 최소 5분정도 진행됩니다. 반드시 3번으로 작업완료를 확인한 후 다음 작업을 진행하십시오." left="41" top="267" width="550" height="22" anchor="none" fontsize="11" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_notice_1_0" value="※ 삭제: VRS에서 변경이 생긴 문장만 삭제합니다." left="356" top="58" width="500" height="22" anchor="none" fontsize="11"></xwing:label>
+		<xwing:label id="lbl_title1_0_0_0_0_0" value=" 4. TM 삭제 여부 동기화 작업" left="29" top="521" width="220" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_notice_1_0_0" value="※ 전부 삭제: 기간 내 문장 데이터를 전부 삭제합니다." left="356" top="72" width="700" height="22" anchor="none" fontsize="11"></xwing:label>
+		<xwing:label id="lbl_notice_0_1" value="※ 삭제된 데이터만 2번에서 재등록 작업합니다." left="41" top="87" width="300" height="22" anchor="none" fontsize="11" fontcolor="#FF0000"></xwing:label>
+		<xwing:label id="lbl_notice_0_0_1" left="41" top="540" width="500" height="24" anchor="none" fontsize="11" value="※ 작업완료 :  TM 건수 &gt;= VA 건수 &#10;                  (VA 등록 전 삭제된 TM VRS가 있으면 건수가 상이할 수 있습니다)" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_notice_1_1" value="※ 4. 프로세스만 별도로 작업진행이 가능합니다. (UAT, PROD 삭제여부만 업데이트 가능)" left="41" top="562" width="500" height="22" anchor="none" fontsize="11"></xwing:label>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,11 @@
+html {overflow: hidden;resize: both;height: 100%;}
+body {font-family: 'Malgun Gothic';	overflow: hidden;height: 100%;width: 100%;margin: 0 auto;}
+#container{
+	height: 100%;
+	width: 100%;
+	margin: 0 auto;
+	padding: 15px 10px 0px 0px;
+}
+div#container #highcharts-0{overflow:visible !important;}
+div#container #highcharts-0 svg{overflow:visible !important;}
+.highcharts-legend rect{fill: rgba(256,256,256,0.0); height: 60px; }

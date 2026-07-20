@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+
+function page_load(event) {
+	XwingObject();
+	
+	f_sel_dept();	// 조직 조회
+}
+
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}	
+	
+	switch(reqId) {
+		case "f_dept_sel":
+			$DS_DEPT_LIST.setData( res.DS_DEPT_LIST.column, res.DS_DEPT_LIST.record);
+			$tree_dept.expandAll();
+		break;
+
+
+	}
+
+}
+
+function f_sel_dept() {
+	var v_param = {
+			_sqlName : "cs.hr.hrm110m10p.sel.dept"
+		};
+		var opt = {
+			reqId : "f_dept_sel",
+			url : 'service::cs.hr.hrm110m10p.sch.dept.do',
+			param : v_param,
+			indicator : null,
+			showError : true
+		};
+
+		Xwing.request(opt, callback);	
+}
+
+
+/*
+ * 펼치기 클릭
+ */
+function btn_expand_click(event) {
+	var value = $btn_expand.getValue();
+	if(value == "펼쳐보기"){
+		$tree_dept.expandAll();	
+		$btn_expand.setValue("접어보기");
+	}else if(value == "접어보기"){
+		$tree_dept.collapseAll();	
+		$btn_expand.setValue("펼쳐보기");
+	}	
+}
+
+/*
+ * 접기 클릭
+ */
+function btn_collapse_click(event) {
+	$tree_dept.collapseAll();
+}
+
+
+function btn_select_click(event) {
+	var curr = $DS_DEPT_LIST.getCursor();
+
+	var dept_name = $DS_DEPT_LIST.getValue(curr, 'DEPT_NAME');
+	var dept_fullname = $DS_DEPT_LIST.getValue(curr, 'DEPT_FULLNAME');
+	var dept_cd = $DS_DEPT_LIST.getValue(curr, 'DEPT_CD');
+	
+	
+	parent.$ds_dept.addRow([dept_cd, dept_name, dept_fullname]);
+	
+	parent.f_setDept();
+	
+	Xwing.parent.Xwing.getDialog("dept").close();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_DEPT_LIST">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_FULLNAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="400" height="495" load="page_load">
+		<xwing:group id="group0" left="10" top="10" styles="div_perform" width="380" height="40">
+			<xwing:label id="label0" value="◈ 해당부서를 클릭 후 선택버튼을 클릭하세요." left="20" top="8" width="246" height="20"></xwing:label>
+			<xwing:button id="btn_expand_" left="191" top="8" width="22" height="20" icon="../images/icon_add.png" anchor="right" click="btn_expand_click" visible="false"></xwing:button>
+			<xwing:button id="btn_collapse" left="218" top="8" width="22" height="20" icon="../images/icon_del.png" anchor="right" click="btn_collapse_click" visible="false"></xwing:button>
+			<xwing:button id="btn_expand" value="접어보기" left="282" top="6" width="90" fontfamily="WallBoardFond" anchor="top right" styles="btn_normal" height="25" textpadding="0 0 0 5" icon="../images/ico_folder_close.png" iconmargin="-3 0 0 0" click="btn_expand_click"></xwing:button>
+		</xwing:group>
+		<xwing:group id="group1" left="10" top="85" styles="div_perform" width="380" height="402">
+			<xwing:tree id="tree_dept" left="0" top="0" width="378" height="400" binddataset="DS_DEPT_LIST" idcolumn="DEPT_CD" pidcolumn="UPPER_DEPT" leafyncolumn="LEAF_YN" textcolumn="DEPT_NAME"></xwing:tree>
+		</xwing:group>
+		<xwing:button id="btn_select" value="선 택" left="330" top="55" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_select_click" borderstyle="none"></xwing:button>
+	</xwing:page>
+</body>
+</html>

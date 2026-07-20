@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/function page_load(event) {
+	XwingObject();
+	f_selCodeBook();
+}
+
+function f_selCodeBook() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS070",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_selCodeBook",
+		url : "service::cs.com.codeutil.do",
+		param : param,
+		indicator : false
+	};
+	Xwing.request(opt, callback);
+}
+
+function cmb_server_ip_change(event) {
+	Xwing.getDataset("DS_SERVER_IP").setCursor(parseInt(Xwing.getCombo("cmb_server_ip").getItemindex()));
+}
+
+function btn_sel_click(event) {
+	if(g_isEmpty(Xwing.getEdit("edt_server_ip").getValue())) {
+		xwing.Dialog.alert("XCron 서버 정보에서 서버IP를 선택하십시오.");
+		return false;
+	}
+
+	var param = {
+		cmd	: "getinfo"
+		,type	: "Service"
+		,SERVER_IP	: Xwing.getEdit("edt_server_ip").getValue()
+		,SERVER_PORT	: Xwing.getEdit("edt_port").getValue()
+		,SERVER_TIMEOUT	: Xwing.getEdit("edt_timeout").getValue()
+	};
+
+	var opt = {
+		reqId		: "btn_sel_click"
+		,url		: "service::cs.xcron.control.exe.do"
+		,param		: param
+		,indicator	: null
+		,showError	: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function f_expr(cellObj,rowIdx) {
+	var bindcolumn = cellObj.getBindcolumn();
+	var opt = {};
+	
+	opt["bgcolor"] = ( Xwing.getDataset("DS_SERVICE_LIST").getValue(rowIdx, "RUNNING") == "true" ? "lightsalmon" : "" ) ;
+	if( bindcolumn == "RUNNING")
+		opt["value"] = ( Xwing.getDataset("DS_SERVICE_LIST").getValue(rowIdx, bindcolumn) == "true" ? "Y" : "N" );
+	
+	if (opt)
+		return opt;
+}
+
+function dgrd_service_list_dblclick(event) {
+	Xwing.getEdit("edt_service_id").setValue(Xwing.getDataset("DS_SERVICE_LIST").getValue("ID"));
+
+	if(g_isEmpty(Xwing.getEdit("edt_service_id").getValue()))
+		return false;
+	
+	var param = {
+		cmd	: "getinfo"
+		,type	: "Parameter"
+		,service : Xwing.getEdit("edt_service_id").getValue()
+		,SERVER_IP	: Xwing.getEdit("edt_server_ip").getValue()
+		,SERVER_PORT	: Xwing.getEdit("edt_port").getValue()
+		,SERVER_TIMEOUT	: Xwing.getEdit("edt_timeout").getValue()
+	};
+	
+	var opt = {
+		reqId		: "dgrd_service_list_dblclick"
+		,url		: "service::cs.xcron.control.exe.do"
+		,param		: param
+		,indicator	: null
+		,showError	: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function btn_exe_click(event) {
+	if(g_isEmpty( Xwing.getEdit("edt_server_ip").getValue())) {
+		xwing.Dialog.alert("XCron 서버 정보에서 서버IP를 선택하십시오.");
+		return false;
+	}
+	
+	if(g_isEmpty(Xwing.getEdit("edt_service_id").getValue())) {
+		xwing.Dialog.alert("서비스목록에서 서비스를 선택(더블클릭)하십시오.");
+		return false;
+	}
+	
+	Xwing.getDataset("DS_REQUEST_PARAM").clear();
+	
+	var strName = "";
+	var nLength = 0; 
+	var strValue = "";
+	var arrRow = [];
+
+	for( var i = 0; i < Xwing.getDataset("DS_PARAM").size(); i++ ) {	
+		strName = Xwing.getDataset("DS_PARAM").getValue(i, "NAME");
+		nLength = parseInt(Xwing.getDataset("DS_PARAM").getValue(i, "LENGTH"));
+		strValue = Xwing.getDataset("DS_PARAM").getValue(i, "VALUE");
+		
+		if( nLength < strValue.length )
+		{
+			xwing.Dialog.alert("입력한 [" + strName + "] 매개변수의 길이가 정의된 Length 를 초과했습니다.<br/>'"+nLength+"'이하로 입력하십시오.");
+			return false;
+		}
+		
+		Xwing.getDataset("DS_REQUEST_PARAM").setColumnInfo(Xwing.getDataset("DS_REQUEST_PARAM").getColumnInfo().concat(strName));
+		arrRow[i] = strValue;
+	}
+	
+	var param = null;
+	
+	if(Xwing.getDataset("DS_PARAM").size() != 0) {
+		Xwing.getDataset("DS_REQUEST_PARAM").addRow(arrRow);
+		
+		param = {
+				cmd	: "exec"
+				,service : Xwing.getEdit("edt_service_id").getValue()
+				,SERVER_IP	: Xwing.getEdit("edt_server_ip").getValue()
+				,SERVER_PORT	: Xwing.getEdit("edt_port").getValue()
+				,SERVER_TIMEOUT	: Xwing.getEdit("edt_timeout").getValue()
+				,XCRON_REQUEST : Xwing.getDataset("DS_REQUEST_PARAM")
+			};
+	} else {
+		
+		param = {
+				cmd	: "exec"
+				,service : Xwing.getEdit("edt_service_id").getValue()
+				,SERVER_IP	: Xwing.getEdit("edt_server_ip").getValue()
+				,SERVER_PORT	: Xwing.getEdit("edt_port").getValue()
+				,SERVER_TIMEOUT	: Xwing.getEdit("edt_timeout").getValue()
+			};
+		
+	}
+	
+	var opt = {
+		reqId		: "btn_exe_click"
+		,url		: "service::cs.xcron.control.exe.do"
+		,param		: param
+		,indicator	: null
+		,showError	: true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}	
+	
+	switch(reqId) {
+	
+	case "f_selCodeBook":
+
+		Xwing.getDataset("DS_SERVER_IP").setData(res.SYS070.column, res.SYS070.record);
+		Xwing.getCombo("cmb_server_ip").setItemindex("0");
+		
+		break;
+		
+	case "btn_sel_click":
+		Xwing.getDataset("DS_SERVICE_LIST").clear();
+		Xwing.getDataset("DS_SERVICE_LIST").setData(res.XCRON_RESULT.column, res.XCRON_RESULT.record);
+		
+		Xwing.getDataset("DS_SERVICE_LIST").sort("ID", false);
+		
+		for(var i=0; i<$DS_SERVICE_LIST.size(); i++) {
+			var v_lastruntime = $DS_SERVICE_LIST.getValue(i, "LASTRUNTIME");
+			var pattern = /\D{1}/g;
+			v_lastruntime = v_lastruntime.toString().replace(pattern, "");
+			
+			$DS_SERVICE_LIST.setValue(i, "LASTRUNTIME", v_lastruntime);
+		}
+		
+		Xwing.getDataset("DS_SERVICE").copyFrom("DS_SERVICE_LIST");
+		Xwing.getDataset("DS_SERVICE").insertRow(0);
+		Xwing.getDataset("DS_SERVICE").setValue(0, "ID", "전체");
+		Xwing.getCombo("cmb_service_id").setItemindex("0");
+		
+		break;
+		
+	case "dgrd_service_list_dblclick":
+		Xwing.getDataset("DS_PARAM").clear();
+		Xwing.getDataset("DS_PARAM").setData(res.XCRON_RESULT.column, res.XCRON_RESULT.record);
+		
+		break;
+		
+	case "btn_exe_click":
+		xwing.Dialog.alert('처리되었습니다.');
+		$edt_service_id.setValue("");
+		$DS_PARAM.clear();
+		$DS_REQUEST_PARAM.clear();
+		btn_sel_click();
+		break;
+		
+	case "f_test_sel":
+		Xwing.getDataset("DS_TEST").clear();
+		Xwing.getDataset("DS_TEST").setData(res.DS_TEST.column, res.DS_TEST.record);
+		alert($DS_TEST);
+		break;
+	}
+}
+
+
+function button0_click(event) {
+	var param = {
+			_sqlName : 'vsens.xcron.kyobo.test_3'
+		};
+
+		var opt = {
+			reqId : "f_test_sel",
+			url : "service::wfm.info.inf200m.do",
+			param : param,
+			indicator : null,
+			showError : true
+		};
+		Xwing.request(opt, callback);
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SERVER_IP">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>01</xwing:dataset-cell>
+			<xwing:dataset-cell>테스트(Localhost)</xwing:dataset-cell>
+			<xwing:dataset-cell>127.0.0.1</xwing:dataset-cell>
+			<xwing:dataset-cell>2005</xwing:dataset-cell>
+			<xwing:dataset-cell>300000</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SERVICE_LIST">
+		<xwing:dataset-column id="ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SERVICE">
+		<xwing:dataset-column id="ID"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>전체</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PARAM"></xwing:dataset>
+	<xwing:dataset id="DS_REQUEST_PARAM"></xwing:dataset>
+	<xwing:dataset id="DS_TEST"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="780" load="page_load" scroll="false" top="-5">
+		<xwing:datagrid id="dgrd_param" left="15" top="669" width="1020" height="105" rownum="true" binddataset="DS_PARAM" anchor="right bottom left" editwhen="click" styles="table_border">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="변수명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="변수길이" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="변수값" halign="center" fontweight="bold"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="LENGTH" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="VALUE" halign="right" edittype="edit" bgcolor="#ffffb0"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:group id="group0" left="10" top="0" width="1030" height="55" anchor="top right left" styles="div_search" borderwidth="0">
+			<xwing:label id="label5" value="서버 PORT" left="320" top="15" fontweight="bold" halign="right" width="75" height="25" styles="label_subtitle" anchor="top left"></xwing:label>
+			<xwing:label id="label6" value="서버연결 TimeOut (1/1000초)" left="540" top="15" fontweight="bold" halign="right" width="205" height="25" styles="label_subtitle" anchor="top left"></xwing:label>
+			<xwing:edit id="edt_server_ip" left="186" top="15" width="100" height="25" anchor="top left" imemode="auto" styles="edit_readonly" readonly="true" binddataset="DS_SERVER_IP" bindcolumn="ETC1"></xwing:edit>
+			<xwing:edit id="edt_port" left="400" top="15" height="25" width="100" anchor="top left" styles="edit_readonly" readonly="true" binddataset="DS_SERVER_IP" bindcolumn="ETC2"></xwing:edit>
+			<xwing:combo id="cmb_server_ip" left="81" top="15" height="25" width="100" multiselectable="false" domaindataset="DS_SERVER_IP" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" itemall="true" anchor="top left" change="cmb_server_ip_change"></xwing:combo>
+			<xwing:button id="btn_sel" value="조 회" left="870" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" click="btn_sel_click" borderwidth="0" shadow="1 1 2 0 #d0d0d0"></xwing:button>
+			<xwing:label id="label5_0" value="서버 IP" left="15" top="15" fontweight="bold" halign="right" width="60" height="25" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_timeout" left="750" top="15" height="25" width="100" anchor="top left" styles="edit_readonly" readonly="true" binddataset="DS_SERVER_IP" bindcolumn="ETC3"></xwing:edit>
+		</xwing:group>
+		<xwing:datagrid id="dgrd_service_list" left="15" top="106" width="1020" height="443" rownum="true" binddataset="DS_SERVICE_LIST" anchor="all" emptymessage="조회된 데이터가 없습니다." dblclick="dgrd_service_list_dblclick" sortable="true" autofit="true" cursor="pointer" styles="table_border">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="250"></xwing:datagrid-column>
+				<xwing:datagrid-column width="0"></xwing:datagrid-column>
+				<xwing:datagrid-column width="60"></xwing:datagrid-column>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+				<xwing:datagrid-column width="400"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="서비스" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="실행중" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상태" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="최근실행일시" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="도움말" halign="center" fontweight="bold"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="ID" expr="f_expr"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="RUNNABLE" expr="f_expr" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="RUNNING" expr="f_expr" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="LASTRUNTIME" expr="f_expr" halign="center" mask="datetime"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="DESCRIPTION" expr="f_expr"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle1_0_0" value="서비스 목록" left="10" top="55" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:label id="lbl_subtitle1_0_0_0" value="서비스 실행" left="10" top="558" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="right bottom left"></xwing:label>
+		<xwing:group id="group0_0" left="15" top="610" width="1020" height="50" anchor="right bottom left" styles="div_search" borderwidth="0">
+			<xwing:label id="label5_1" value="서비스" left="15" top="10" fontweight="bold" halign="right" width="57" height="25" styles="label_subtitle" anchor="top left"></xwing:label>
+			<xwing:edit id="edt_service_id" left="78" top="10" height="25" width="192" anchor="top left" styles="edit_readonly" readonly="true" enabled="false"></xwing:edit>
+			<xwing:button id="btn_exe" value="실 행" left="290" top="10" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_exe_click" borderstyle="none"></xwing:button>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

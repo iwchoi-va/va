@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap">
+		<series>
+			<MapSeries id="mapseries">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<localFill>
+<!--
+angle 색의 진행 각도
+-->
+					<LinearGradient angle="-45">
+						<entries>
+<!--
+alpha 투명도 (기본 1)
+color 색상
+ratio 0.0에서 1.0까지일때 색상의 시작위치
+-->
+							<GradientEntry color="0xF3D3DB" ratio="0.0"/>
+							<GradientEntry color="0xB15C9B" ratio="0.5"/>
+							<GradientEntry color="0x6B6BB1"/>
+						</entries>
+					</LinearGradient>
+				</localFill>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/> 
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-config>
+
+    <request name="rec.rec010.get.agent" login="true">
+        <description>청취이력 저장 </description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="rec.rec010.get.cnsl" login="true">
+        <description>사용자정보 조회 </description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+	<request name="rec.rec010.getRecordList" login="true">
+		<description>녹취리스트조회</description>
+		<action-class>sens.service.webaction.ServiceCallWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="player.getSTT_srt" login="true">
+			<description>STT Get 방식으로  호출(return JSON) - WiseNut</description>
+			<action-class>sens.player.getSTT_srt</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="player.savePlayerLog" login="true">
+			<description>플레이 로그 </description>
+			<action-class>sens.player.savePlayerLog</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="player.getCall_Info" login="true">
+			<description>플레이어- 콜 메타데이터 조회</description>
+			<action-class>sens.player.getCallInfo</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="player.downloadFile" login="true">
+			<description>플레이어- 분배서버에서 음성파일 다운로드</description>
+			<action-class>sens.player.downloadFile</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	 <request name="rec.rec030.sel" login="true">
+        <description>청약거절 콜 화면 SQL </description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+     <request name="rec.rec020.sel" login="true">
+        <description>MRLS 콜 화면 SQL </description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+</request-config>

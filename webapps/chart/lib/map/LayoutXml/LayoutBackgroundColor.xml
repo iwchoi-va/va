@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap">
+		<series>
+			<MapSeries id="mapseries">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+		<fill>
+			<LinearGradient angle="90">
+				<entries>
+					<GradientEntry color="0xFFFFFF" ratio="0.125"/>
+					<GradientEntry color="0xFFFF99" ratio="0.8"/>
+					<GradientEntry color="0xFFFF00" ratio="1"/>
+				</entries>
+			</LinearGradient>
+		</fill>
+	</MapChart>
+</rMateMapChart>

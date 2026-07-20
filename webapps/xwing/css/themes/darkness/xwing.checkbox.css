@@ -1,0 +1,65 @@
+.xw-checkbox-shell {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+}
+
+.xw-checkbox {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: table;
+	table-layout: fixed;
+}
+.xw-checkbox-item-div {
+	display: table-cell;
+	vertical-align: top;
+	width: 14px;
+	
+	-moz-user-select : none;
+	-webkit-user-select : none;
+}
+.xw-checkbox-item {
+	background: url(img/checkbox.png) no-repeat;
+	height: 20px;
+	width: 100%;
+	cursor: pointer;
+	cursor: hand;
+}
+
+.xw-checkbox-label {
+	display: table-cell;
+	cursor: pointer;
+	cursor: hand;
+	line-height: 1em;
+	color:#373737;
+	overflow: hidden;
+}
+
+.xw-checkbox-focus {
+}
+
+.xw-checkbox-unchecked {
+	background-position: 0 0;
+}
+
+.xw-checkbox-unchecked-pressing {
+	background-position: 0 -20px;
+}
+
+.xw-checkbox-checked {
+	background-position: 0 -40px;
+}
+
+.xw-checkbox-checked-pressing {
+	background-position: 0 -60px;
+}
+
+.xw-checkbox-unchecked-disabled {
+	background-position: 0 -80px;
+}
+
+.xw-checkbox-checked-disabled {
+	background-position: 0 -100px;
+}

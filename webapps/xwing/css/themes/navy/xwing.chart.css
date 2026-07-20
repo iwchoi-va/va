@@ -1,0 +1,15 @@
+.xw-chart-shell {
+	position: absolute;
+	overflow: hidden;
+}
+
+.xw-chart {
+	position: absolute;	
+	border: 1px solid #a3a3a3;
+	background:#ffffff;
+	margin: 0;
+	padding: 0;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+}

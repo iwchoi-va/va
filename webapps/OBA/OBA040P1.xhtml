@@ -1,0 +1,441 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/servicemanager.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<link href="../css/msu.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//* ******************************************************************************************************
+ * 	공통 변수
+ ********************************************************************************************************/
+var ban_keyword ="", ban_cd = "";
+var v_url = "service::oba.oba040p1.getBankeywordDeptRank.sel.do";
+/*
+ * 소속별 랭킹화면 추가 구현사항
+ * 1. 팀별로 금칙어 건수 조회해온 다음 소속별, 센터별 sum해서 각각의 dataset에 넣어주는 작업 수행하면됨
+ * 2. 각각의 건수 별로 sorting 후 rank 부여
+ * 3. 엑셀다운로드 구현
+ */
+/* ******************************************************************************************************
+ * 	로딩
+ ********************************************************************************************************/
+function page_load(event) {
+	XwingObject();
+
+	ban_keyword = Xwing.param.ban_keyword;
+	ban_cd = Xwing.param.ban_cd;
+	
+	var authLevel = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC1");
+	if(authLevel == 1 || authLevel == 2){
+		$cbo_gubun.setValue("ORG2");
+	}else if(authLevel == 3){
+		$cbo_gubun.setValue("ORG3");
+	}else{
+		$cbo_gubun.setValue("USER");
+	}
+	$lbl_ban_nm.setValue(ban_keyword);
+	
+	//엑셀다운권한정의
+	excelDownAuth($btn_excel);
+	
+	
+	getBanDeptRank();
+	
+}
+
+function getBanDeptRank(){
+
+	var new_user_id = "";
+	var sql_search="";
+	var sql_groupby="";
+	new_user_id = parent.$chk_new_user.getValue()=="true"?"AND B.USER_ID IN (SELECT USER_ID FROM ms_usermaster WHERE WORK_MONTH <= (SELECT ETC1 FROM ms_codebook where code_type='SYS103' and code_id != 00))":"";
+	
+	var param	= {		
+			_sqlName: "oba.oba040p1.getBanKeywordDeptRank.sel",
+			ban_cd : ban_cd,
+			new_user_id : new_user_id,
+			sdate: parent.start,
+			edate: parent.end,
+			sql_groupby : sql_groupby,
+			sql_search:sql_search
+	};
+
+	parent.g_orgToParam("", param);
+	parent.g_productToParam("",param);
+	var opt 	= {
+			reqId: "getBanDeptRank",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);	
+	
+}
+
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getBanDeptRank" :
+			var org2_cd = "", org2_nm="", org2_nm="",org3_cd="", org3_nm="", user_id="", user_name="";
+			$DS_USER_RANK.setData(res.DS_BAN_CNT.column, res.DS_BAN_CNT.record);
+			for(var i =0; i<$DS_USER_RANK.size();i++){
+				 org2_cd = $DS_USER_RANK.getValue(i, "ORG2_CD");
+				 org2_nm = $DS_USER_RANK.getValue(i, "ORG2_NM");
+				 org3_cd = $DS_USER_RANK.getValue(i, "ORG3_CD");
+				 org3_nm = $DS_USER_RANK.getValue(i, "ORG3_NM");
+				 user_id = $DS_USER_RANK.getValue(i, "USER_ID");
+				 user_name = $DS_USER_RANK.getValue(i, "USER_NAME");
+				 
+				if(i== 0 || $DS_ORG3_RANK.indexOfRow("ORG3_CD" , org3_cd) == -1){
+					$DS_ORG3_RANK.addRow();
+					$DS_ORG3_RANK.setValue($DS_ORG3_RANK.size()-1, "ORG2_CD", org2_cd);
+					$DS_ORG3_RANK.setValue($DS_ORG3_RANK.size()-1, "ORG2_NM", org2_nm);
+					$DS_ORG3_RANK.setValue($DS_ORG3_RANK.size()-1, "ORG3_CD", org3_cd);
+					$DS_ORG3_RANK.setValue($DS_ORG3_RANK.size()-1, "ORG3_NM", org3_nm);
+					$DS_ORG3_RANK.setValue($DS_ORG3_RANK.size()-1, "BAN_CNT", $DS_USER_RANK.sum('BAN_CNT',"[ORG3_CD=='"+org3_cd+"']"));
+				}
+				if(i== 0 || $DS_ORG2_RANK.indexOfRow("ORG2_CD" , org2_cd) == -1){
+					$DS_ORG2_RANK.addRow();
+					$DS_ORG2_RANK.setValue($DS_ORG2_RANK.size()-1, "ORG2_CD", org2_cd);
+					$DS_ORG2_RANK.setValue($DS_ORG2_RANK.size()-1, "ORG2_NM", org2_nm);
+					$DS_ORG2_RANK.setValue($DS_ORG2_RANK.size()-1, "BAN_CNT", $DS_USER_RANK.sum('BAN_CNT',"[ORG2_CD=='"+org2_cd+"']"));
+
+				}
+			}
+			$DS_ORG3_RANK.sort("BAN_CNT", "desc");
+			$DS_ORG2_RANK.sort("BAN_CNT", "desc");
+
+			for(var i =0 ; i< $DS_ORG3_RANK.size();i++){
+				$DS_ORG3_RANK.setValue(i, "RANK", (i+1));
+			}
+			
+			for(var i =0 ; i< $DS_ORG2_RANK.size();i++){
+				$DS_ORG2_RANK.setValue(i, "RANK", (i+1));
+			}
+			$DS_ORG3_RANK.setCursor(0);
+			$DS_ORG2_RANK.setCursor(0);
+			$DS_USER_RANK.setCursor(0);
+			
+			$edt_listCnt.setValue($DS_ORG2_RANK.size());
+		break;
+		
+	}
+}
+
+
+function cbo_gubun_change(event) {
+	var gubun = $cbo_gubun.getValue();
+	
+	if(gubun == "ORG2"){
+		$grd_ban_list2.setVisible(true);
+		$grd_ban_list3.setVisible(false);
+		$grd_ban_list4.setVisible(false);
+		$edt_listCnt.setValue($DS_ORG2_RANK.size());
+	}else if(gubun == "ORG3"){
+		$grd_ban_list2.setVisible(false);
+		$grd_ban_list3.setVisible(true);
+		$grd_ban_list4.setVisible(false);
+		$edt_listCnt.setValue($DS_ORG3_RANK.size());
+	}else{
+		$grd_ban_list2.setVisible(false);
+		$grd_ban_list3.setVisible(false);
+		$grd_ban_list4.setVisible(true);
+		$edt_listCnt.setValue($DS_USER_RANK.size());
+	}
+}
+
+function btn_excel_click(event) {
+	var dsName = "";
+	var grdName = "";
+	var dataName="";
+	var gubun = $cbo_gubun.getValue();
+	$DS_ORG_EXCEL.clear();
+	
+	if(gubun == "ORG2") {
+		dsName = "DS_ORG2_RANK";
+		grdName = "grd_excel_list2";
+		
+	}else if(gubun == "ORG3") {
+		dsName = "DS_ORG3_RANK";
+		grdName = "grd_excel_list3";
+	}else if(gubun == "USER"){
+		dsName = "DS_USER_RANK";
+		grdName = "grd_excel_list4";
+	}
+	
+	$DS_ORG_EXCEL.copyFrom(dsName);
+	$DS_ORG_EXCEL.addColumn("BAN_NM");
+	for(var i=0, len=Xwing.getDataset(dsName).size();i<len;i++){
+		$DS_ORG_EXCEL.setValue(i,'BAN_NM',$lbl_ban_nm.getValue());
+	}
+	dataName=$DS_GUBUN.getData("[CODEID=='"+gubun+"']");
+	dataName=dataName[0];
+	dataName=dataName[1];
+	if($DS_ORG_EXCEL.size() > 0) {		
+		Xwing.getDataGrid(grdName).exportData('금칙어순위_소속기준('+dataName+')', '../jsp/export2.jsp', true); 
+		
+	} else {
+		xwing.Dialog.alert("출력할 데이터가 없습니다.");
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_BAN_RANK" description="소속별 금칙어 랭킹">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="COUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GUBUN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>ORG2</xwing:dataset-cell>
+			<xwing:dataset-cell>센터별</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>ORG3</xwing:dataset-cell>
+			<xwing:dataset-cell>팀별</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>USER</xwing:dataset-cell>
+			<xwing:dataset-cell>상담사별</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ORG2_RANK">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ORG3_RANK">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USER_RANK">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ORG_EXCEL">
+	</xwing:dataset>
+	<xwing:dataset id="DS_ORG_EXCEL_0">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" width="550" height="480" scroll="false" left="0" load="page_load" top="-5" bgimagerepeat="repeat" resize="page_resize" unload="page_unload">
+		<xwing:panel id="pan_rank_detail" left="0" top="0" width="550" height="480" enabled="true" visible="true" anchor="all" scroll="false" draggable="false" droppable="false" opacity="1" bgcolor="#fff">
+			<xwing:panel id="header" left="0" top="0" width="550" height="49" styles="div_search" anchor="top right left" borderwidth="0" borderstyle="solid" scroll="false">
+				<xwing:label id="lbl_subtitle1_1" left="59" top="10" width="130" height="32" anchor="none" bgimagealign="right bottom" value="소속별 랭킹" fontcolor="#0F1C27" fontweight="bold" fontsize="22" halign="left"></xwing:label>
+				<xwing:label id="lbl_img" left="10" top="7" bgimage="../images/icon_rank.png" width="44" height="32" anchor="none" bgimagealign="center center"></xwing:label>
+				<xwing:combo id="cbo_gubun" left="442" top="20" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" anchor="left" width="100" height="25" value="0" change="cbo_gubun_change"></xwing:combo>
+				<xwing:label id="lbl4_0_1_0" left="357" top="20" value="구분" height="25" width="80" anchor="none" styles="label_subtitle"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="pnl_rank" left="0" top="49" width="550" height="431" visible="true" scroll="false" anchor="all">
+				<xwing:label id="lbl4_0_1" left="-35" top="5" value="금칙어" height="25" width="80" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl4_0_0" left="35" top="5" value=":" height="25" width="20" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_ban_nm" left="61" top="5" height="25" width="293" anchor="none" value="가입설계번호"></xwing:label>
+				<xwing:edit id="edt_listCnt" left="462" top="4" height="25" width="50" halign="right" readonly="true" anchor="none"></xwing:edit>
+				<xwing:button id="btn_excel" left="517" top="4" height="25" width="25" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="none" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center" click="btn_excel_click"></xwing:button>
+				<xwing:datagrid id="grd_ban_list2" left="5" top="33" width="538" height="391" rownum="false" checkbox="false" binddataset="DS_ORG2_RANK" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="true">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:datagrid id="grd_ban_list3" left="5" top="33" width="538" height="391" rownum="false" checkbox="false" binddataset="DS_ORG3_RANK" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="팀" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG3_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:datagrid id="grd_ban_list4" left="5" top="33" width="538" height="391" rownum="false" checkbox="false" binddataset="DS_USER_RANK" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="팀" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상담사" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG3_NM" halign="left" fontsize="12" suppress="true"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:datagrid id="grd_excel_list4" left="66" top="235" width="417" height="103" rownum="false" checkbox="false" binddataset="DS_ORG_EXCEL" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="100"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="팀" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상담사" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="금칙어"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG3_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:datagrid id="grd_excel_list3" left="96" top="214" width="414" height="181" rownum="false" checkbox="false" binddataset="DS_ORG_EXCEL" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="팀" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="금칙어"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG3_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:datagrid id="grd_excel_list2" left="93" top="242" width="420" height="157" rownum="false" checkbox="false" binddataset="DS_ORG_EXCEL" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" click="grd_ban_list_click" visible="false">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="50"></xwing:datagrid-column>
+						<xwing:datagrid-column width="120"></xwing:datagrid-column>
+						<xwing:datagrid-column width="200"></xwing:datagrid-column>
+						<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="순위" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="금칙어"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="검출건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row height="25">
+							<xwing:datagrid-cell halign="center" bindcolumn="RANK" fontsize="12" fontcolor="#13AACA" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left" fontsize="12"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_NM"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="BAN_CNT" mask="comma" halign="right"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>
+
+
+
+
+
+
+

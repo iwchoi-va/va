@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" showDataTips="true" gutterTop="15" gutterBottom="15">
+		<series>
+			<MapSeries id="mapseries" selectionMarking="line" displayName="Map Series">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+<!--
+fillJsFunction 자바스크립트를 이용한 아이템 색상 변경기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+-->
+			<MapPanelSeries id="panel" titleField="label" bodyTextField="temperature" horizontalCenterGapField="h" verticalCenterGapField="v"
+				color="0x555555" horizontalAlign="right" fillJsFunction="fillFunction" displayName="날씨">
+				<showDataEffect>
+					<SeriesSlide duration="1000"/>
+				</showDataEffect>
+			</MapPanelSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

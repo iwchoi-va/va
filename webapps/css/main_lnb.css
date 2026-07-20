@@ -1,0 +1,133 @@
+@CHARSET "UTF-8";
+    
+body,html{ overflow-y: scroll; overflow-x: hidden; }
+/* scrollbar */
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);  -webkit-border-radius: 5px; border-radius: 5px; }
+::-webkit-scrollbar-thumb { -webkit-border-radius: 5px; border-radius: 5px; background: #1d637b; /* rgba(255,100,0,0.8); */ -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); }
+::-webkit-scrollbar-thumb:window-inactive { background: #1d637b; /* rgba(255,100,0,0.4); */ }
+
+
+div, ul, li, h2{margin:0;padding:0;list-style:none;}
+a{display: block;
+	position: relative; text-decoration:none;}
+section {
+	display: block;
+}
+.accordion {
+	width: 220px;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+.accordion section {
+	border-bottom: 1px solid #dfdfdf;	
+}
+.accordion h2, ul, li {
+	font: 16px/1 'Dotum';
+	text-indent:18px;
+	margin: 0;
+}
+.accordion h2 a {
+	text-indent:35px;
+	line-height:26px;
+	padding: 10px;
+	color: #009edd;
+	font-weight:bold;
+	-webkit-transition: background 0.3s;cursor: pointer;
+	-moz-transition: background 0.3s;
+	transition: background 0.3s;
+	/*background: url(../images/icon_lnb2.gif)-10px 0 no-repeat;*/
+}
+
+.accordion h2 .plus_m:after{
+	content: '+';
+	position: absolute;
+	right: 20px;color:#8D98A9;
+	top: 10px;font-size:8px;}
+.accordion ul {
+	display: block;
+}
+.accordion ul li:first-child{border-top: 1px solid #dfdfdf;}
+.accordion ul li{
+	color:#009edd;
+	font-size:12px;
+	font-weight:600;
+	padding:8px;
+	cursor: pointer;
+	-webkit-transition: background 0.3s;
+	-moz-transition: background 0.3s;
+	transition: background 0.3s;
+}
+.accordion ul li:hover{background-color: rgba(0,0,0,0.3);color: #fff;}
+.accordion ul li:before{
+	content: '';
+}
+.accordion section h2 a:hover {
+	background-color: #3e4148;
+	color: #50c8e8;
+	
+}
+.accordion div {
+	height: 0;
+	overflow: hidden;
+	-moz-transition: height 0.3s ease-in-out;
+	-webkit-transition: height 0.3s ease-in-out;
+	-o-transition: height 0.3s ease-in-out;
+	transition: height 0.3s ease-in-out;
+}
+.accordion :target ul {
+	background: #f8f8f8;
+}
+.accordion :target ul li :target {
+	background: rgba(47,66,86,0.6);}
+
+.accordion :target h2 a{color: #109bd2;}
+.accordion :target div {
+	height: auto;
+}
+
+/*메뉴 아이콘*/
+.accordion section:nth-child(1) h2 a{background: url(../images/ico_lnb_keyword_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(1) h2 a:hover{background: url(../images/ico_lnb_keyword_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(1):target h2 a{background: url(../images/ico_lnb_keyword_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(2) h2 a{background: url(../images/ico_lnb_src_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(2) h2 a:hover{background: url(../images/ico_lnb_src_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(2):target h2 a{background: url(../images/ico_lnb_src_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(3) h2 a{background: url(../images/ico_lnb_rsk_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(3) h2 a:hover{background: url(../images/ico_lnb_rsk_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(3):target h2 a{background: url(../images/ico_lnb_rsk_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(4) h2 a{background: url(../images/ico_lnb_anl_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(4) h2 a:hover{background: url(../images/ico_lnb_anl_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(4):target h2 a{background: url(../images/ico_lnb_anl_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(5) h2 a{background: url(../images/ico_lnb_msa_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(5) h2 a:hover{background: url(../images/ico_lnb_msa_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(5):target h2 a{background: url(../images/ico_lnb_msa_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(6) h2 a{background: url(../images/ico_lnb_taxonomy_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(6) h2 a:hover{background: url(../images/ico_lnb_taxonomy_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(6):target h2 a{background: url(../images/ico_lnb_taxonomy_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(7) h2 a{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(7) h2 a:hover{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(7):target h2 a{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(8) h2 a{background: url(../images/ico_lnb_rule_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(8) h2 a:hover{background: url(../images/ico_lnb_rule_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(8):target h2 a{background: url(../images/ico_lnb_rule_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+.accordion section:nth-child(9) h2 a{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;}
+.accordion section:nth-child(9) h2 a:hover{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}  
+.accordion section:nth-child(9):target h2 a{background: url(../images/ico_lnb_info_on.png) 8px 50%  no-repeat;background-color: #f8f8f8;}
+
+
+/*
+.accordion :target .ln03{height:52px;}
+.accordion :target .ln06{height:104px;}
+.accordion :target .ln07{height:78px;}
+.accordion :target .ln09{height:234px;}
+*/

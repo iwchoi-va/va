@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<enc-datas>
+
+	<data query-id="wfm.hr.HRM100M010P_update_org" 
+	      columns="TEL_NO1,TEL_NO2"
+	      initech-poly-columns="ENC_TEL_NO,ENC_TEL_NO" />
+	      
+	<data query-id="wfm.hr.hrm100m010p.dept.ins" 
+	      columns="TEL_NO1,TEL_NO2"
+	      initech-poly-columns="ENC_TEL_NO,ENC_TEL_NO" /> 
+	      
+	<data query-id="list.dataupload.ins" 
+	      columns="REGIST_NO"
+	      initech-poly-columns="ENC_REG_NO" />
+	      
+	<data query-id="rsk.rsk060.vs_stt_integ_info.regist_no.update" 
+	      columns="REGIST_NO"
+	      initech-poly-columns="ENC_REG_NO" />
+	      
+	<data query-id="rsk.rsk060.vs_stt_integ_info.incall_no.update" 
+	      columns="INCALL_NO"
+	      initech-poly-columns="ENC_TEL_NO" />                     
+	            
+</enc-datas>

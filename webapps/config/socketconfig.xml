@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<socket-config>
+	<descriptor-url>/resource/socketservice/header.xml</descriptor-url>
+	<init-threadpool-size>10</init-threadpool-size>
+	<localport>2030</localport>
+	<max-packet-size>5120</max-packet-size>
+	<max-threadpool-size>50</max-threadpool-size>
+	<targetip>127.0.0.1</targetip>
+	<targetport>8080</targetport>
+	<targetservlet>/socket.sck</targetservlet>
+	<socket-timeout>60000</socket-timeout>
+	<auto-start>false</auto-start>
+	<delay-time>10000</delay-time>
+	<retry-count>10</retry-count>
+	<header-length>20</header-length>
+	<body-size-field>8,4</body-size-field>
+	<size-type>total</size-type>
+	<!--fixed-body-length>40</fixed-body-length -->
+</socket-config> 
+

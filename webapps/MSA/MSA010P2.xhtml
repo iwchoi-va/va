@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/productutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var type = "";
+
+function page_load(event) {
+	try{
+		XwingObject();
+
+		type = Xwing.param.type;
+		g_createproduct("pan_product", 2, "msa070p2", "", "전체");
+	}catch(e){
+		alert(e);
+	}
+
+}
+
+
+function btn_search_click(event) {
+
+	var param = {
+			_sqlName	: "com.getProductList_sel",
+			prod_nm : $edt_product.getValue(),
+			product1_cd : $cmb_product1.getValue(),
+			product2_cd : $cmb_product2.getValue(),
+		};
+
+	var opt = {
+		reqId : 'getproduct',
+		url : 'service::msa.msa060.product.sel.do',
+		param : param
+	};
+
+	Xwing.request(opt, callback);
+}
+
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case 'getproduct' :
+			$DS_PRODUCT_LIST.setData(res.DS_PRODUCT_LIST.column, res.DS_PRODUCT_LIST.record);
+
+			break;
+
+
+	}
+
+}
+
+function grd_list_dblclick(event) {
+	var idx = event.rowIdx;
+
+	if(type == "S"){
+		parent.$edt_prod_nm.setValue($DS_PRODUCT_LIST.getValue(idx,"PROD_NAME"));
+		parent.$cmb_product1.setValue($DS_PRODUCT_LIST.getValue(idx, "PROD_CD1"));
+		parent._product_change0();
+		parent.$cmb_product2.setValue($DS_PRODUCT_LIST.getValue(idx, "PROD_CD2"));
+	}else{
+		parent.$edt_prod_nm_ins.setValue($DS_PRODUCT_LIST.getValue(idx,"PROD_NAME"));
+		parent.prod_id_ins = $DS_PRODUCT_LIST.getValue(idx,"PROD_ID");
+		parent.$cmb_product1_ins.setValue($DS_PRODUCT_LIST.getValue(idx, "PROD_CD1"));
+		parent.cmb_product1_ins_change();
+
+		setTimeout(function(){
+			parent.$cmb_product2_ins.setValue($DS_PRODUCT_LIST.getValue(idx, "PROD_CD2"));
+		}, 50);
+		//
+	}
+
+
+	parent.Xwing.getDialog("MSA070P2").close();
+
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_PRODUCT_LIST">
+		<xwing:dataset-column id="PROD_NM1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD2"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM2"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_ID"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="상담유형업로드" width="640" height="465" scroll="false" load="page_load" left="24" top="24">
+		<xwing:panel id="bg_btn" left="0" top="415" width="640" height="50" bgcolor="#E7EBEE" anchor="right bottom left" bgimagerepeat="no-repeat">
+		</xwing:panel>
+		<xwing:panel id="search_box" left="0" top="0" width="640" height="45" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false" styles="div_search">
+			<xwing:button id="btn_search" value="조 회" left="560" top="10" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_search_click"></xwing:button>
+			<xwing:edit id="edt_product" left="361" top="10" width="187" height="25" borderwidth="1" fontsize="11" imemode="active" keyup="edt_product_keyup" anchor="none"></xwing:edit>
+			<xwing:label id="lbl14_0" left="272" top="10" value="상품명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:label id="stc_product" value="상품군" left="5" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:panel id="pan_product" left="70" top="10" width="205" height="25" visible="true">
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:datagrid id="grd_list" left="3" top="84" width="630" height="326" autofit="true" anchor="all" binddataset="DS_PRODUCT_LIST" borderwidth="1" borderstyle="solid" emptymessage="조회된 데이터가 없습니다." editsuppress="false" rownum="true" virtual="true" checkbox="false" sortable="true" resizable="true" pageable="false" dblclick="grd_list_dblclick">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="380"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell text="상품군(대)"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상품군(소)"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상품명"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="25">
+					<xwing:datagrid-cell bindcolumn="PROD_NM1"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PROD_NM2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PROD_NAME"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+			<xwing:datagrid-summary>
+			</xwing:datagrid-summary>
+		</xwing:datagrid>
+		<xwing:button id="btn_save" value="선 택" left="570" top="428" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click"></xwing:button>
+		<xwing:edit id="edit_rowcnt_all" left="588" top="55" width="45" height="25" halign="right" anchor="top right" readonly="true" fontsize="12"></xwing:edit>
+	</xwing:page>
+</body>
+</html>

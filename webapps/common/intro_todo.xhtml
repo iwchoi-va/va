@@ -1,0 +1,524 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+	<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+	<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+	<script src='../js/ispro.js' type="text/javascript" charset="UTF-8"></script>
+	<script src='../js/message.js' type="text/javascript" charset="UTF-8"></script>
+	<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+
+	<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+ * FormID(명) : 
+ * Form 설명 : 
+ * 메인 화면 :
+ * 작성자 : YunKi
+ * 작성일 :
+ * =============================================================================
+ * 변경내역 : YYYYMMDD 담당자명 변경내용(Why?,What?)
+ * =============================================================================
+ ******************************************************************************/
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * Page Variable
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+
+var v_url = "service::wfm.info.intro_todo.do";
+var user_id= null;
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * Page Event
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function intro_todo_load(event) {
+	XwingObject();
+	user_id=parent.parent.global.G_USER_ID;
+	f_init();
+}
+
+function f_init() {
+
+	var v_yyyymm = ispro.substr(ispro.toDate(), 0, 4) + "."
+			+ ispro.substr(ispro.toDate(), 4, 2);
+	$lbl_01.setValue(v_yyyymm);	// 해당 월로 라벨 값 변경
+	f_month_todo_sel();		// 월 출력함수 호출
+}
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * UI Event
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function common_year_month_change(event) {
+	f_month_todo_sel();
+}
+
+
+// 해당 월의 달력 보기
+function f_month_todo_sel() {
+	
+	var v_yyyymm = $lbl_01.getValue().replace(".", "");	 //yyyy.mm을 yyyymm 형태로 가져옴
+	
+	Xwing.request({
+		reqId : "f_month_todo_sel",
+		url : v_url,
+		param : {
+			_sqlName : "wfm.info.intro_todo.month.sel,wfm.info.intro_todo.error_count.sel",
+			p_yyyymm : v_yyyymm,
+			p_yyyymm2 : v_yyyymm,
+			p_user_id : user_id
+		},
+		indicator : false
+	}, callback);
+	
+}
+
+
+//달력안의 내용 클릭시
+function common_lbl_cont_click(event) {
+	var v_obj = event.source;
+	var v_yyyymm = $lbl_01.getValue().replace(".", "");	// top- middle에 yyyy.mm형태로 년도, 월 표시
+	var lbl_str = v_obj.getId();			// 선택한 레이블의 id를 넘김
+	var v_idx = ispro.substr(lbl_str, 9, 2);	// 레이블 id 에서 날짜칸의 인덱스 정보만 빼옴
+	var v_dd = Xwing.getLabel('lbl_date_'+v_idx).getValue(); //날짜 정보 얻기
+	var v_yyyymmdd = v_yyyymm + v_dd;
+	
+	parent.v_yyyymmdd = v_yyyymmdd;	// 부모(slide.xhtml)에 날짜 정보 전달
+	
+	var v_date = v_yyyymmdd;
+	Xwing.request({
+		reqId : "common_lbl_cont_click",
+		url : v_url,
+		param : {
+			_sqlName : "wfm.info.intro_todo.todo_list.sel",
+			p_yyyymmdd : v_date
+		}
+	}, callback);
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * Button Event
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+
+
+// 이전 버튼 클릭
+function lbl_prev_click(event) {
+	var v_currdate = $lbl_01.getValue().replace(".", "") + "01";
+	var v_prevdate = ispro.addDate("m", -1, v_currdate);
+	var v_yyyymm = ispro.substr(v_prevdate, 0, 4) + "."
+			+ ispro.substr(v_prevdate, 4, 2);
+	$lbl_01.setValue(v_yyyymm);
+	f_month_todo_sel();
+}
+
+// 다음 버튼 클릭
+function lbl_next_click(event) {
+	var v_currdate = $lbl_01.getValue().replace(".", "") + "01";
+	var v_nextdate = ispro.addDate("m", 1, v_currdate);
+	var v_yyyymm = ispro.substr(v_nextdate, 0, 4) + "."
+			+ ispro.substr(v_nextdate, 4, 2);
+	$lbl_01.setValue(v_yyyymm);
+	f_month_todo_sel();
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * CallBack Event
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') {
+		
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n'
+				+ 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	switch (reqId) {
+
+	case "f_month_todo_sel":
+		$DS_HOLIDAY_INFO.setData(res.DS_HOLIDAY_INFO.column, res.DS_HOLIDAY_INFO.record);
+		
+		$DS_ERROR_COUNT.setData(res.DS_ERROR_COUNT.column, res.DS_ERROR_COUNT.record);
+
+		f_calender_init();
+		break;
+		
+	case "common_lbl_cont_click":		
+		$DS_TODO_LIST.setData(res.DS_TODO_LIST.column, res.DS_TODO_LIST.record);
+	
+		errorCount($DS_TODO_LIST);	//에러 개수 카운트 함수 호출
+		
+		break;
+	}
+}
+
+
+//달력 초기화 함수
+function f_calender_init() {
+	
+	//달력  초기화
+	for ( var x = 0; x < 6; x++) {
+		for ( var y = 0; y < 7; y++) {
+			var v_obj = eval("$lbl_date_" + x + "" + y);
+			var v_obj2 = eval("$lbl_cont_" + x + "" + y);
+			var v_obj3 = eval("$lbl_cont_" + x + "" + y+"_1");
+			
+			v_obj.setFontcolor("");
+			
+			v_obj.setValue("");
+			v_obj2.setValue("");
+			v_obj3.setValue("");
+			
+			v_obj2.setBgimage("");
+			v_obj3.setBgimage("");
+	
+		}
+	}
+	
+	// 달력 그리기
+	for ( var i = 0, x = 0, y = 0; i < $DS_HOLIDAY_INFO.size(); i++) {
+		
+		if ($DS_HOLIDAY_INFO.getValue(i, "WEEK1") == 0 && i > 0) {
+			x++;
+		}
+		
+		y = $DS_HOLIDAY_INFO.getValue(i, "WEEK1");
+		var v_date = $DS_HOLIDAY_INFO.getValue(i, "SOLAR");
+		var v_day = ispro.substr(v_date, 6, 2);
+		var v_week1 = $DS_HOLIDAY_INFO.getValue(i, "WEEK1");
+		var v_holiday1 = $DS_HOLIDAY_INFO.getValue(i, "HOLIDAY1");
+		var v_holiday2 = $DS_HOLIDAY_INFO.getValue(i, "HOLIDAY2");
+		var v_color = "";
+
+		if (v_week1 == "0") {
+			v_color = "#ff0000";	// 일요일이면 빨간색
+		} else if (v_week1 == "6") {
+			v_color = "#0000ff";	// 토요일이면 파란색
+		} else {
+			v_color = "";			// 평일이면 검은색
+		}
+		
+		if (!ispro.isEmpty(v_holiday1) || !ispro.isEmpty(v_holiday2)) {
+			v_color = "#ff0000";
+		}
+
+		var v_obj = eval("$lbl_date_" + x + "" + y);
+		v_obj.setValue(v_day);
+		v_obj.setFontcolor(v_color);
+		
+		var ds_error_count = $DS_ERROR_COUNT;	
+		var v_filter 	= "[evt_date == '"+v_date+"']";
+		var err_arr = ds_error_count.getData(v_filter);	// 해당 날짜를 가지고 있는 데이터 배열로 추출.
+		var critical_err_cnt = 0;
+		var warning_err_cnt = 0;
+		
+		if(err_arr.length > 0)
+		{			
+			for(var j=0; j < err_arr.length ; j++)
+			{
+				if(err_arr[j][2]== '1' || err_arr[j][2]== '2')	//장애 레벨이 critical 이나 major 인 경우
+					critical_err_cnt += err_arr[j][1]*1;
+				else if(err_arr[j][2] == '3' || err_arr[j][2] == '4' || err_arr[j][2] == '5')	//장애 레벨이 그 이외인 경우
+					warning_err_cnt += err_arr[j][1]*1;
+			}
+
+			if(critical_err_cnt > 100)	// 중요 장애가 100건 이상이면 건수를 99+로 변경
+				critical_err_cnt = '99+';
+
+			else if (warning_err_cnt > 100) // 중요 장애가 100건 이상이면 건수를 99+로 변경
+				warning_err_cnt = '99+';
+
+			
+			var v_obj2 = eval("$lbl_cont_" + x + "" + y);
+			var v_obj3 = eval("$lbl_cont_" + x + "" + y+"_1");
+			
+
+			if(critical_err_cnt > 0 || critical_err_cnt == '99+')	//중요 장애 건수가 1건이상 있을때
+			{
+				v_obj2.setValue(critical_err_cnt);
+				var imgUrl1="../images/icon_important.png";
+				v_obj2.setBgimage(imgUrl1);
+				v_obj2.setBgimagealign("center center");
+				v_obj2.setFontcolor('#ffffff');
+			}
+			
+			if(warning_err_cnt > 0 || warning_err_cnt == '99+')	// 일반 장애 건수가 1건이상 있을때
+			{
+				v_obj3.setValue(warning_err_cnt);
+				var imgUrl2="../images/icon_alram.png";
+				v_obj3.setBgimage(imgUrl2);
+				v_obj3.setBgimagealign("center center");
+			}
+		}
+	}
+}
+
+//레벨 컬럼의 expr
+function lv_cell_expr(cellObj, rowIdx) {
+	
+	var opt;
+	var v_status_cd = $DS_TODO_LIST.getValue(rowIdx, "evt_level");
+	opt = {};
+	opt['bgimage'] = g_decode(v_status_cd	//레벨에 따라서 배경 이미지 변경
+			, 1, "../cm_admin/images/radio_icon_red_16x16.png"
+			, 2, "../cm_admin/images/radio_icon_blue_16x16.png"
+			, 3, "../cm_admin/images/radio_icon_orange_16x16.png"
+			, 4, "../cm_admin/images/radio_icon_yellow_16x16.png"
+			, 5, "../cm_admin/images/radio_icon_green_16x16.png");
+	
+	opt['bgimagerepeat']='no-repeat';	// 배경 이미지 리핏 x 
+	opt['bgimagealign']='center center';	//배경 이미지 가운데로 정렬
+	
+	
+	if (opt) {
+		return opt;
+	}
+
+	$DS_TODO_LIST.getValue(rowIdx, "evt_level");
+}
+
+//공통 데이터 그리드 expr
+function datagrid_cell_expr(cellObj,rowIdx) {
+
+	var opt;
+	opt = {};
+	
+	
+	
+	//장애 해제 시간이 없는 경우 테이블 색을 회색으로 변경
+	if($DS_TODO_LIST.getValue(rowIdx, "evt_clear_time")==""){	
+		opt['bgcolor']='#c0c0c0';		
+	}
+
+	if (opt) {
+		return opt;
+	}
+}
+
+
+// 장애 개수 카운트
+function errorCount(cellObj){
+	
+	// 카운트 할 변수 선언
+	var critical_cnt = 0;
+	var major_cnt = 0;
+	var minor_cnt = 0;
+	var warning_cnt = 0;
+	var inform_cnt = 0;
+		
+	for(var i=0; i < cellObj.size(); i++)
+	{
+		if('1' == cellObj.getValue(i ,'evt_level'))	//매우 심각
+			critical_cnt++;
+		else if('2' == cellObj.getValue(i ,'evt_level'))	//심각
+			major_cnt++;
+		else if('3' == cellObj.getValue(i ,'evt_level'))	// 보통
+			minor_cnt++;
+		else if('4' == cellObj.getValue(i ,'evt_level'))	// 경고
+			warning_cnt++;
+		else if('5' == cellObj.getValue(i ,'evt_level'))	// 알림
+			inform_cnt++;
+	}	
+	
+	//--- 각각의 레벨별 집계 라벨을 count한 값으로 변경
+	Xwing.getLabel('lbl_critical_cnt').setAttribute('value',critical_cnt);
+	Xwing.getLabel('lbl_major_cnt').setAttribute('value',major_cnt);
+	Xwing.getLabel('lbl_minor_cnt').setAttribute('value',minor_cnt);
+	Xwing.getLabel('lbl_warning_cnt').setAttribute('value',warning_cnt);
+	Xwing.getLabel('lbl_inform_cnt').setAttribute('value',inform_cnt);
+	
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_HOLIDAY_INFO">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MONTH">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TODO_COUNT">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TODO_LIST">
+		<xwing:dataset-column id="evt_level"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_name"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_occur_time"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_clear_time"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_desc"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ERROR_COUNT">
+		<xwing:dataset-column id="evt_date"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_cnt"></xwing:dataset-column>
+		<xwing:dataset-column id="evt_level"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="intro_todo" title="TODO" width="436" height="524" scroll="false" load="intro_todo_load" bgimage="../images/bg_calendar.png" bgimagealign="left top" left="24" top="24">
+		<xwing:label id="lbl_prev" left="30" top="29" bgimage="../images/btn_premonth.png" width="20" height="20" click="lbl_prev_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_next" left="390" top="29" bgimage="../images/btn_nextmonth.png" width="20" height="20" click="lbl_next_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_date_00" value="" left="9" top="87" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_00" value="" left="5" top="107" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_01" value="" left="70" top="87" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_01" value="" left="66" top="107" width="30" height="20" halign="center" cursor="pointer" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_02" value="" left="131" top="87" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_02" value="" left="127" top="107" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_03" value="" left="193" top="87" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_03" value="" left="188" top="107" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click" valign="middle"></xwing:label>
+		<xwing:label id="lbl_date_04" value="" left="254" top="87" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_04" value="" left="249" top="107" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_05" value="" left="315" top="87" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_05" value="" left="310" top="107" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_06" value="" left="376" top="87" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_06" value="" left="371" top="107" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_10" value="" left="9" top="129" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_10" value="" left="5" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_11" value="" left="70" top="129" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_11" value="" left="66" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_12" value="" left="131" top="129" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_12" value="" left="127" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_13" value="" left="193" top="129" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_13" value="" left="188" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_14" value="" left="254" top="129" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_14" value="" left="249" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_15" value="" left="315" top="129" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_15" left="310" top="147" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click" anchor="none" bgimagealign="center center"></xwing:label>
+		<xwing:label id="lbl_date_16" value="" left="376" top="129" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_16" value="" left="371" top="147" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_20" value="" left="9" top="170" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_20" value="" left="5" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_21" value="" left="70" top="170" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_21" value="" left="66" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_22" value="" left="131" top="170" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_22" value="" left="127" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_23" value="" left="193" top="170" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_23" value="" left="188" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_24" value="" left="254" top="170" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_24" value="" left="249" top="188" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_25" value="" left="315" top="170" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_25" value="" left="310" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_26" value="" left="376" top="170" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_26" value="" left="371" top="188" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_30" value="" left="9" top="211" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_30" value="" left="5" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_31" value="" left="70" top="211" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_31" value="" left="66" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_32" value="" left="131" top="211" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_32" value="" left="127" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_33" value="" left="193" top="211" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_33" value="" left="188" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click" bgimagealign="center center"></xwing:label>
+		<xwing:label id="lbl_date_34" value="" left="254" top="211" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_34" value="" left="249" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_35" value="" left="315" top="211" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_35" value="" left="310" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_36" value="" left="376" top="211" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_36" value="" left="371" top="229" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_40" value="" left="9" top="252" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_40" value="" left="5" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_41" value="" left="70" top="252" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_41" value="" left="66" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_42" value="" left="131" top="252" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_42" value="" left="127" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_43" value="" left="193" top="252" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_43" value="" left="188" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_44" value="" left="254" top="252" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_44" value="" left="249" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_45" value="" left="315" top="252" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_45" value="" left="310" top="270" width="30" height="20" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_46" value="" left="376" top="252" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_46" value="" left="371" top="270" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_50" value="" left="9" top="293" width="52" height="20" fontweight="bold" fontcolor="#ff0000"></xwing:label>
+		<xwing:label id="lbl_cont_50" value="" left="5" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_51" value="" left="70" top="293" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_51" value="" left="66" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_52" value="" left="131" top="293" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_52" value="" left="127" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_53" value="" left="193" top="293" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_53" value="" left="188" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_54" value="" left="254" top="293" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_54" value="" left="249" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_55" value="" left="315" top="293" width="52" height="20" fontweight="bold"></xwing:label>
+		<xwing:label id="lbl_cont_55" value="" left="310" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:label id="lbl_date_56" value="" left="376" top="293" width="52" height="20" fontweight="bold" fontcolor="#0000ff"></xwing:label>
+		<xwing:label id="lbl_cont_56" value="" left="371" top="310" width="30" height="20" fontdecoration="none" cursor="pointer" halign="center" click="common_lbl_cont_click"></xwing:label>
+		<xwing:datagrid id="dgrd_todo_list" left="8" top="377" width="422" height="138" binddataset="DS_TODO_LIST" sortable="true" resizable="true" dblclick="grd_todo_list_dblclick">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="31"></xwing:datagrid-column>
+				<xwing:datagrid-column width="150"></xwing:datagrid-column>
+				<xwing:datagrid-column width="55"></xwing:datagrid-column>
+				<xwing:datagrid-column width="55"></xwing:datagrid-column>
+				<xwing:datagrid-column width="129"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell text="레벨" halign="left" fontsize="11"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="이벤트 이름" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="발생시간" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="해제시간" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="발생내용" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell halign="center" expr="lv_cell_expr" fontcolor="#000000" fontsize="11"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="center" bindcolumn="evt_name"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="evt_occur_time" fontsize="11" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="evt_clear_time" expr="datagrid_cell_expr" fontsize="11" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="evt_desc"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_01" left="125" top="25" width="200" height="30" fontcolor="#ffffff" fontsize="20" fontweight="bold" halign="center"></xwing:label>
+		<xwing:label id="label1" left="19" top="348" width="17" height="22" icon="../cm_admin/images/radio_icon_red_16x16.png"></xwing:label>
+		<xwing:label id="label3" left="100" top="348" icon="../cm_admin/images/radio_icon_blue_16x16.png" width="20" height="22"></xwing:label>
+		<xwing:label id="label7" left="174" top="348" icon="../cm_admin/images/radio_icon_orange_16x16.png" width="20" height="22"></xwing:label>
+		<xwing:label id="label9" left="252" top="348" icon="../cm_admin/images/radio_icon_yellow_16x16.png" width="18" height="22"></xwing:label>
+		<xwing:label id="label11" left="340" top="348" icon="../cm_admin/images/radio_icon_green_16x16.png" width="20" height="22"></xwing:label>
+		<xwing:label id="lbl_critical_cnt" left="51" top="348" width="43" height="22" value="0"></xwing:label>
+		<xwing:label id="lbl_major_cnt" value="0" left="133" top="348" width="36" height="22"></xwing:label>
+		<xwing:label id="lbl_minor_cnt" value="0" left="209" top="348" width="39" height="22"></xwing:label>
+		<xwing:label id="lbl_warning_cnt" value="0" left="289" top="348" width="46" height="22"></xwing:label>
+		<xwing:label id="lbl_inform_cnt" value="0" left="381" top="348" width="51" height="22"></xwing:label>
+		<xwing:label id="lbl_cont_15_1" left="339" top="147" width="30" height="20" halign="center" bgimagealign="center center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_00_1" left="34" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_01_1" left="95" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_02_1" left="156" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_03_1" left="217" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_04_1" left="278" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_05_1" left="339" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_06_1" left="400" top="107" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_10_1" left="34" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_11_1" left="95" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_12_1" left="156" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_13_1" left="217" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_14_1" left="278" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_16_1" left="400" top="147" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_20_1" left="34" top="187" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_21_1" left="95" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_22_1" left="156" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_23_1" left="217" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_24_1" left="278" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_25_1" left="339" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_26_1" left="400" top="188" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_30_1" left="34" top="229" halign="center" width="30" height="20" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_31_1" left="95" top="229" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_32_1" left="156" top="229" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_33_1" left="217" top="229" width="30" height="20" halign="center" valign="middle" bgimagealign="center center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_34_1" left="278" top="229" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_35_1" left="339" top="229" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_36_1" left="400" top="229" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_40_1" left="34" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_41_1" left="95" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_42_1" left="156" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_43_1" left="217" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_44_1" left="278" top="270" width="30" height="20" click="common_lbl_cont_click" halign="center" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_45_1" left="339" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_46_1" left="400" top="270" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_50_1" left="34" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_51_1" left="95" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_52_1" left="156" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_53_1" left="217" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_54_1" left="278" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_55_1" left="339" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+		<xwing:label id="lbl_cont_56_1" left="400" top="310" width="30" height="20" halign="center" click="common_lbl_cont_click" cursor="pointer"></xwing:label>
+	</xwing:page>
+</body>
+</html>

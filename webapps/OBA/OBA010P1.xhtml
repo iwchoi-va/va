@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba030p1.sel.do";
+var tab_idx="";
+var browser = "";
+var ced_no="";
+var vrsRowNum="0", banRowNum="0";
+var ban_cd="", ban_keyword="";
+var sclf_cd="", sclf_nm="", cic="";
+var user_grade="", user_id = "", user_group_cd="";
+var pop_yn=""; 
+var selected_ucid = "";
+var prod_cd = "", prod_nm="";
+var unloadFlag = true; //웹페이지 닫기버튼 클릭시 LOGOUT 정보 UPDATE하기 위한 FLAG 
+var workStatFunc = {
+		stat : ["업무","휴식","교육"],//업무 상태 >> 0: 업무/ 1: 휴식 / 2: 교육 
+		nowStat:'', 
+		preStat:'',
+		stat0_image: 'img_area_3.png',
+		stat1_image: 'img_area_1.png',
+		stat2_image: 'img_area_4.png',
+		non_image : 'img_area_5.png'
+}
+/***********************************************************************
+- 화면설계서를 위해 콜청취팝업에서 필요한 화면만 연동해둔것임
+- 녹취일시 부분 children panel에서 ucid 정보 갖고와서 매핑해줘야됨
+ * *********************************************************************/
+
+function page_load(event) {
+	try{
+		XwingObject();
+		var query = location.search.substring(1);
+		
+		var parameters = {};
+		var keyValues = query.split(/&/);
+		for (var prop in keyValues) {
+		    var keyValuePairs = keyValues[prop].split(/=/);
+		    var key = keyValuePairs[0];
+		    var value = keyValuePairs[1];
+		    parameters[key] = value;
+		}
+	
+		ced_no= parameters['ced_no'];
+		if(ced_no.indexOf('?') != -1){
+			ced_no = ced_no.slice(0,-1);	
+		}
+
+		$lbl_ced_no.setValue(ced_no);
+	
+		tab_idx= parameters['tab_idx'];
+		if(tab_idx === undefined) tab_idx = 0;
+
+		user_grade=parameters['user_grade']; //tm 연동
+		if(user_grade === undefined){
+			user_grade = opener.top.global.G_USER_GRADE;
+		}
+		//alert(user_grade);
+		
+		user_id = parameters['user_id'] ; //tm 연동
+		if(user_id === undefined){
+				user_id = opener.top.global.G_USER_ID;
+		}
+		pop_yn=parameters['pop_yn']; //tm 연동
+		if(pop_yn === undefined){
+			pop_yn = "Y";
+			dtTimeStamp('0',"Y");
+		}
+		
+		f_getGradeAuth();
+		getUserGroupCd();
+		getUcid();
+		init_player();
+		
+		
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+
+function f_getGradeAuth() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS001,SYS011",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_getGradeAuth",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function getUcid(){
+	var opt = {
+			reqId: "getUcid",
+			url: "service::oba.oba010p1.getUcidDuration.do",
+			param: {
+				_sqlName  : 'oba.oba010p1.getUcid.sel,oba.oba010p1.getMetaUcid.sel',
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function getUserGroupCd(){
+	var opt = {
+			reqId: "getUserGroupCd",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010p1.getUserGroupCd.sel,oba.oba010p1.getNowStat.sel',
+				USER_ID : user_id
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function getReAnlStat(){
+	var opt = {
+			reqId: "getReAnlStat",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010p1.getReAnlStat.sel',
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+function lbl_sub1_click(event) {
+	lbl_tab_action('lbl_sub1',"./OBA010T1.xhtml"); //청약정보
+}
+
+function lbl_sub2_click(event) {
+	lbl_tab_action('lbl_sub2',"./OBA010T2.xhtml"); //요약정보
+	sclf_cd=""; sclf_nm=""; cic="";
+}
+
+function lbl_sub3_click(event) {
+	lbl_tab_action('lbl_sub3',"./OBA010T3.xhtml"); //VRS
+}
+
+function lbl_sub4_click(event) {
+	lbl_tab_action('lbl_sub4',"./OBA010T4.xhtml"); //금칙어
+}
+
+function lbl_sub5_click(event) {
+	lbl_tab_action('lbl_sub5',"./OBA010T5.xhtml"); //필수멘트
+}
+
+function lbl_sub6_click(event) {
+	lbl_tab_action('lbl_sub6',"./OBA010T5.jsp"); //평가표
+}
+
+
+
+function lbl_tab_action(lbl,page){
+	for(var i = 1; i<7;i++){
+		//if(i==2) continue;
+		if(i==4) continue; //금칙어
+		if('lbl_sub'+i != lbl){
+			Xwing.getLabel('lbl_sub'+i).setFontweight('normal');
+			Xwing.getLabel('lbl_sub'+i).setBgcolor('');
+			Xwing.getLabel('lbl_sub'+i).setFontcolor('');
+		}else{
+			Xwing.getLabel(lbl).setFontweight('bold');
+			Xwing.getLabel(lbl).setBgcolor('#58728d');
+			Xwing.getLabel(lbl).setFontcolor('#fff');
+		}
+	}
+	
+	if(page.indexOf("jsp") == -1){
+		$pan_content.setUrl(page);
+	}else{
+		window.open(page,  "_blank", "width=975, height=700, left=100, top=10, location=no,resizable=yes, scrollbars=yes");
+	}
+}
+
+
+function cmb_ucid_date_change(event) {
+	var ucid=event.value;
+	var ced_no = $lbl_ced_no.getValue();
+	if(ucid == "") return;
+	selected_ucid=ucid;
+	
+	var file_path = $DS_UCID.getValue(event.source.selectidx,"FILE_FULL_PATH");
+	
+	load_player(ucid,0,'S',file_path,ced_no); //구분만 눌렀을때는 STT만 조회
+	
+}
+
+function cmb_ucid_date_change2(clicked_ucid) {
+	var ucid=clicked_ucid;
+	if(ucid == "") return;
+	selected_ucid=ucid;
+	$cmb_ucid_date.setValue(ucid);
+}
+
+//work gubun :: 0:VA 팝업 생성 
+function dtTimeStamp(wg,open){
+	var opt = {
+			reqId: "dtTimeStamp",
+			url: "service::oba.oba010p1.timestamp.upd.do",
+			param: {
+				_sqlName  : 'oba.oba010p1.timestamp.upd',
+				CED_NO : ced_no
+				,WORK_GUBUN: wg
+				,USER_ID : user_id
+				,START_YN : open
+				,LOG_GB : "T" //TIME STAMP
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+//*********************************************************************************************************
+//* PLAYER 초기화 및 PLAYER 호출
+//*********************************************************************************************************/
+function init_player(){
+	
+	browserCheck();
+	
+	if(browser == "ie") $pan_player.setUrl('../PLY_IE/init.html'); //player 초기화 상태로 set
+	else if(browser == "chrome") $pan_player.setUrl('../player_html5/init.html'); //player 초기화 상태로 set
+
+}
+
+function load_player(rec_key, start_time,log_gb, file_path,ced_no){
+	
+	log_gb = log_gb == undefined ? 'L' : log_gb;
+	ced_no = $lbl_ced_no.getValue();
+	
+	var param={
+			rec_key: rec_key,
+			start_time : start_time,
+			log_gb:log_gb,
+			file_path : file_path,
+			ced_no : ced_no
+			
+	};
+	play(param, 'pan_player', 'N');
+
+	//청약팝업에서만 플레이어영역 x축에 scroll만듬
+	$('iframe').load(function(){
+			$('iframe').contents().find("head").append($("<style type='text/css'> html { overflow-x:scroll !important;}</style>"));
+	});
+	
+}
+
+function seekToSTT(start_point){
+	var elem = document.getElementById("if::pan_player");
+	
+	if(typeof elem.contentWindow.sttJump == 'function'){
+		elem.contentWindow.sttJump(start_point);
+	}else{
+		elem.contentWindow.jump(start_point);
+	}
+}
+
+function unload_logout(){
+	var param = {
+			_sqlName : "cs.com.logout.logoutchk",
+			USER_ID : user_id
+	};
+
+	var opt = {
+			reqId : "LOGOUT_CHK",
+			url : "service::cs.com.logout.do", // "service::cs.com.logout.chk.do",
+			param : param
+	};
+
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+	case "f_getGradeAuth":
+		$DS_GRADEAUTH.setData(res.SYS001.column, res.SYS001.record);
+		$DS_GROUPAUTH.setData(res.SYS011.column, res.SYS011.record);
+		if(tab_idx == 0){
+			lbl_sub1_click();
+		}else if(tab_idx == 1){
+			lbl_sub2_click();
+		}
+
+		/************로그 쌓일 때****************
+		 * 화면 'X' 닫기
+		 * 화면 새로고침
+		 * 세션로그아웃 상태에서 서비스 호출 -> session_timeout.jsp
+		 * 세션 로그아웃 상태에서 팝업 Close 'X' 버튼 -> session_timeout.jsp
+		 *	Alt+F4로 화면 닫기 
+		 * ***************************/
+		$(window).on('beforeunload', function(e){	//팝업으로 들어오는 경우는 어차피 세션 로그아웃 되니까 새로고침 안막아도됨.
+				if(workStatFunc.nowStat == '0'){
+					setWorkStat("N");
+					alert("업무를 종료합니다."); //얘가 있어야 param null 오류가 안남... ㅇㅅㅇ;;..
+				}
+				if(pop_yn == "Y"){
+					dtTimeStamp('0',"N");
+					unload_logout();
+				}
+		});
+		break;	
+	case "getUcid":
+			$DS_META.setData(res.DS_META.column, res.DS_META.record);
+			$DS_UCID.setData(res.DS_UCID.column, res.DS_UCID.record);
+			$DS_DURA.setData(res.DS_DURA.column, res.DS_DURA.record);
+			if($DS_UCID.size() == 0){ // sponsor에도 없는 설계
+				xwing.Dialog.alert("해당 설계건이 존재하지 않습니다.");
+				return;
+			}else{
+				getReAnlStat(); 
+			}
+			break;
+	case "getUserGroupCd":
+		user_group_cd = res.DS_LIST.record[0]+"";
+		
+		if(res.DS_WORK_STAT.record[0] != undefined){
+			workStatFunc.nowStat = res.DS_WORK_STAT.record[0]+"";
+			btn_work_stat_click();
+		}
+		break;
+		
+	case "getReAnlStat":
+		$DS_INFO.setData(res.DS_LIST.column, res.DS_LIST.record);
+		if($DS_INFO.size()>0){
+			if($DS_INFO.getValue(0,"RE_ANL_YN") == "TRUE"){
+				xwing.Dialog.alert("추가 콜이 발생히여 재분석 중입니다.");
+			}
+		}
+		
+		break;		
+	case "LOGOUT_CHK":
+		unloadFlag = false;
+		window.self.close();
+		break;
+
+		default: break;	
+	}
+}
+
+function btn_work_stat_click(event) {
+	
+	if(event != null){
+		workStatFunc.preStat = workStatFunc.nowStat;
+		workStatFunc.nowStat = event.source._attr.id;
+		workStatFunc.nowStat =workStatFunc.nowStat.replace(/[^0-9]/gi,'');
+	}
+	
+	for(var i = 0, len = workStatFunc.stat.length, image="",statName=""; i< len; i++){
+		statName = eval("workStatFunc.stat["+i+"]");
+		if(i == workStatFunc.nowStat && workStatFunc.preStat != workStatFunc.nowStat){
+			image =eval("workStatFunc.stat"+i+"_image");
+			eval("$btn_work_stat"+i+".setValue('"+statName+"종료');");
+			eval("$btn_work_stat"+i+".setIcon('../images/"+image+"');");
+		}else{
+			eval("$btn_work_stat"+i+".setValue('"+statName+"시작');");
+			eval("$btn_work_stat"+i+".setIcon('../images/"+workStatFunc.non_image+"');");
+		}
+			
+	}
+
+	if(event != null) setWorkStat("Y");
+	if(workStatFunc.preStat == workStatFunc.nowStat) workStatFunc.nowStat = ''; //TOGGLE 스텟 초기화
+}
+
+function setWorkStat(open){
+	var opt = {
+			reqId: "setWorkStat",
+			url: "service::oba.oba010p1.timestamp.upd.do",
+			param: {
+				_sqlName  : 'oba.oba010p1.setWorkStat.upd',
+				USER_ID : user_id
+				,WORK_GUBUN : workStatFunc.nowStat
+				,LOG_GB : "B" //BUTTON
+				,START_YN : open
+			}
+	};
+	Xwing.request(opt, function(){
+		
+	});
+	
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_UCID">
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_FULL_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="DATETIME"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_STAT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DMBO">
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="APPY_PREM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1111</xwing:dataset-cell>
+			<xwing:dataset-cell>담보1</xwing:dataset-cell>
+			<xwing:dataset-cell>보장금액1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2222</xwing:dataset-cell>
+			<xwing:dataset-cell>담보2</xwing:dataset-cell>
+			<xwing:dataset-cell>보장금액2</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>3333</xwing:dataset-cell>
+			<xwing:dataset-cell>담보3</xwing:dataset-cell>
+			<xwing:dataset-cell>보장금액3</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GRADEAUTH"></xwing:dataset>
+	<xwing:dataset id="DS_META"></xwing:dataset>
+	<xwing:dataset id="DS_DURA"></xwing:dataset>
+	<xwing:dataset id="DS_TMP"></xwing:dataset>
+	<xwing:dataset id="DS_INFO"></xwing:dataset>
+	<xwing:dataset id="DS_GROUPAUTH"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="1280" height="900" load="page_load" scroll="false">
+		<xwing:panel id="pan_subtitle" left="0" top="0" width="779" height="35" anchor="top left" scroll="false" bgcolor="#fff" bggradientcolor="#f1f1f1" shadow="#58728d 0 5 0 0">
+			<xwing:label id="lbl_sub1" value="청약정보" left="0" top="0" fontsize="14" fontweight="bold" visible="true" halign="center" height="37" shadow="0 0 0 0" cursor="pointer" click="lbl_sub1_click" fontfamily="WallBoardFond" bgcolor="#58728d" fontcolor="#ffffff"></xwing:label>
+			<xwing:label id="lbl_sub2" value="요약" left="100" top="0" fontsize="14" visible="true" height="37" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub2_click"></xwing:label>
+			<xwing:label id="lbl_sub3" value="VRS" left="200" top="0" fontsize="14" visible="true" height="37" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub3_click"></xwing:label>
+			<xwing:label id="lbl_sub5" value="필수멘트" left="300" top="0" fontsize="14" visible="true" height="37" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub5_click" enabled="true"></xwing:label>
+			<xwing:label id="lbl_sub4" value="금칙어" left="500" top="0" fontsize="14" visible="false" height="37" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub4_click"></xwing:label>
+			<xwing:label id="lbl_sub6" value="평가표" left="400" top="0" fontsize="14" visible="false" height="37" halign="center" cursor="pointer" fontfamily="WallBoardFond" click="lbl_sub6_click"></xwing:label>
+			<xwing:button id="btn_work_stat0" value="업무시작" left="520" top="4" width="80" click="btn_work_stat_click" height="25" borderwidth="1" fontfamily="WallBoardFond" fontsize="11" iconalign="left" icon="../images/img_area_5.png" anchor="right"></xwing:button>
+			<xwing:button id="btn_work_stat1" value="휴식시작" left="605" top="4" width="80" click="btn_work_stat_click" height="25" borderwidth="1" fontfamily="WallBoardFond" fontsize="11" anchor="right" icon="../images/img_area_5.png"></xwing:button>
+			<xwing:button id="btn_work_stat2" value="교육시작" left="690" top="4" width="80" click="btn_work_stat_click" height="25" borderwidth="1" fontfamily="WallBoardFond" fontsize="11" anchor="right" icon="../images/img_area_5.png"></xwing:button>
+		</xwing:panel>
+		<xwing:panel id="pan_player" left="783" top="38" width="498" height="864" anchor="all" borderwidth="1" bordercolor="#202835" borderstyle="dotted" scroll="false">
+		</xwing:panel>
+		<xwing:panel id="pnl_subtitle2" left="786" top="-3" width="493" height="42" scroll="false" anchor="top right left">
+			<xwing:label id="lbl_subtitle1_0" left="0" top="0" width="497" height="40" styles="label_boxtitle" halign="left" anchor="right left"></xwing:label>
+			<xwing:panel id="pnl_ucid" left="191" top="9" width="313" height="26" scroll="false" anchor="none">
+				<xwing:label id="lbl4_0_0" left="45" top="1" value=":" height="25" width="20" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl4_0_1" left="-45" top="1" value="녹취일시" height="25" width="104" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:combo id="cmb_ucid_date" left="68" top="0" domaincodecolumn="UCID" width="230" height="25" change="cmb_ucid_date_change" domaintextcolumn="DATETIME" domaindataset="DS_UCID" size="15"></xwing:combo>
+			</xwing:panel>
+			<xwing:panel id="pnl_sclf_nm" left="25" top="9" width="170" height="26" scroll="false">
+				<xwing:label id="lbl_ced_no" left="71" top="1" height="25" width="143" anchor="none" value="가입설계번호"></xwing:label>
+				<xwing:label id="lbl4_0_0_0" left="45" top="1" value=":" height="25" width="20" anchor="none" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl4_0_1_0" left="0" top="1" value="설계번호" height="25" width="60" anchor="none" styles="label_subtitle"></xwing:label>
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pan_content" left="-3" top="41" width="783" height="861" scroll="false" anchor="top bottom left">
+		</xwing:panel>
+		<xwing:splitbar id="splitbar0" left="780" top="0" width="5" visible="true" bindwidget="r:pnl_subtitle2,r:pan_content,r:pan_player,r:pan_subtitle" height="900" anchor="top bottom" cursor="w-resize" styles="split_h"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

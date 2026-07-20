@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+<!--
+areaCodeField dataProvider에서 지역 코드를 나타내는 필드명 (기본 code)
+backImageX 서브 맵에서 뒤로가기 이미지가 나타날 x좌표 (기본 10)
+backImageY 서브 맵에서 뒤로가기 이미지가 나타날 y좌표 (기본 10)
+centerX 중앙지점의 x좌표 (기본 0)
+centerY 중앙지점의 y좌표 (기본 0)
+chartScaleX 0.1에서 25까지 X축에 적용할 스케일 (기본 1)
+chartScaleY 0.1에서 25까지 Y축에 적용할 스케일 (기본 1)
+drillDownEnabled 클릭시 하위맵(시,도 표시)표시 가능여부 조정 (true,false중 택일, 기본 true)
+dataTipJsFunction 자바스크립트를 이용한 지역 데이타팁 변경기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+mapChangeJsFunction 지역이미지 클릭시 불러질 자바스크립트 연동 기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+itemClickJsFunction 맵이외의 시리즈를 클릭시 불러질 자바스크립트 연동 기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+openCode 처음 표시할 지역 코드 (없을 경우 최상위(전국) 지역 표시)
+rootCode 기본 지역 코드 (없을 경우 최상위(전국) 지역 표시)
+scaleMode 차트에 적용할 스케일 모드. "auto", "manual"이 가능하며 "auto"의 경우에는 화면의 크기에 맞추어 변하고, "manual"의 경우 지정된 scale로 고정됩니다.(auto,manual중 택일, 기본 auto)
+selectedCode 사용자가 선택한 지역의 코드
+showAllDataTips 초기에 표시가능한 모든 데이타 툴팁 표시 여부 조정 (true,false중 택일, 기본 false)
+showDataTips 데이타 툴팁 표시 여부 조정 (true,false중 택일, 기본 false)
+percentCenterX 퍼센트로 표시 되는 중앙지점의 x좌표. 0이면 중심을 의미하며, 100%이면 맨 오른쪽, -100%이면 맨왼쪽으로 중심이 이동하게 됩니다 (기본 0)
+percentCenterY 퍼센트로 표시 되는 중앙지점의 y좌표. 0이면 중심을 의미하며, 100%이면 맨 아래, -100%이면 맨위로 중심이 이동하게 됩니다 (기본 0)
+-->
+	<MapChart id="mainMap" drillDownEnabled="false" showDataTips="true" scaleMode="auto">
+		<series>
+			<MapSeries id="mapseries" selectionMarking="line" color="0x777777" labelPosition="inside" displayName="Map Series">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

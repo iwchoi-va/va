@@ -1,0 +1,93 @@
+﻿<!doctype html>
+<head>
+<meta charset="UTF-8">
+<title>사이드메뉴</title>
+<link href="../css/main_lnb.css" type="text/css" rel="stylesheet" />
+<script type='text/javascript' src='../xwing/lib/jquery/js/jquery-1.6.1.js'></script>
+<script type='text/javascript' src='../js/common.js'></script>
+<style>
+html {overflow: hidden;resize: both;height: 100%;}
+body {overflow: hidden;height: 100%;width: 100%;margin: 0 auto;}
+#menu_div{ height: 100%; margin: 0 auto; overflow: auto; }
+
+</style>
+</head>
+
+<body>
+<script>
+
+//var main = parent.parent;
+var ds_menu = new Array(); 
+
+$( window ).bind("resize", function(){
+	width = parent.Xwing.getPanel('pnl_mask_bg').getAttribute("width");
+	height = parent.Xwing.getPanel('pnl_mask_bg').getAttribute("height");
+
+	$("#menu_div").width( width );
+    $("#menu_div").height( height ); 
+});
+
+window.onload = function(){
+	constContext();
+	
+	//parent.Xwing.getWidget("lbl_user").setValue(main.global.G_USER_NAME.trim() + "(" + main.global.G_EMP_NO.trim() + ")");
+	var size = parent.$DS_MENU.size();
+
+	for(var i=0; i<size; i++){ 
+		var sub = new Object();     
+		sub['id'] = parent.$DS_MENU.getValue(i,"ID"); 
+		sub['name'] = parent.$DS_MENU.getValue(i,"CAPTION");
+		sub['url'] = parent.$DS_MENU.getValue(i,"URL");
+		sub['parent_id'] = parent.$DS_MENU.getValue(i,"PARENT_ID");
+		sub['leaf_yn'] = parent.$DS_MENU.getValue(i,"LEAF_YN");
+
+		ds_menu[i] = sub;
+	}
+	setMenu();	
+}
+
+function setMenu(){
+	var menu_div = document.getElementById("menu_div");
+	var inner_html = "";
+	var cursor=1;
+	var index = "0";
+
+	for(var i in ds_menu){
+
+		if(ds_menu[i].leaf_yn == 'N'){ //부모
+			inner_html += "<section id='ln"+i+"'><h2><a href='#ln"+i+"' ";
+			//if((Number(i)+cursor != ds_menu.length) && (ds_menu[String(Number(i)+cursor)].url != '')){
+			if((Number(i)+cursor != ds_menu.length) && (ds_menu[String(Number(i)+cursor)].leaf_yn == 'Y')){
+				inner_html += "class='plus_m'"; //하위메뉴 있을 경우에만 '+' 이미지 삽입
+			}else{
+				inner_html += "onclick=openPage('"+ds_menu[i].id+"');"; //하위메뉴 없을 경우 클릭이벤트 대메뉴에 추가
+			}
+			inner_html += ">" + ds_menu[i].name + "</a></h2><div class='ln"+i+"'><ul class='sub_lnb'>";
+			
+			//while( ((Number(i)+cursor) < ds_menu.length) && (ds_menu[String(Number(i)+cursor)].url != '') ){ //자식     
+			while( ((Number(i)+cursor) < ds_menu.length) && (ds_menu[String(Number(i)+cursor)].leaf_yn == 'Y') ){ //자식     
+				inner_html += "<li onclick=openPage('"+ds_menu[String(Number(i)+cursor)].id+"');>" + ds_menu[String(Number(i)+cursor)].name + "</li>";
+				cursor++;
+			}
+
+			inner_html += "</ul></div></section>";
+		}
+
+		i = String(Number(i)+cursor+1);
+		cursor = 1;
+	}
+	
+	menu_div.innerHTML = inner_html;
+}
+
+function openPage(id){ //openPage(label,url)
+	//main.tab.addTab(label, "service::"+url);
+	parent.openPage(id);
+}
+
+
+</script>
+<div id="menu_div" class="accordion" >
+</div>
+</body>
+</html>

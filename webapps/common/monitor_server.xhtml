@@ -1,0 +1,629 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/monitor_server.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+
+function page_load(event) {
+	XwingObject();
+	f_getCpu();	// cpu, 온도 정보 가져오기
+	f_getNetwork();	// 네트워크 패킷정보 가져오기
+//	f_getTrunk();	// 트렁크 상태 가져오기
+}
+
+function callback(reqId, res, err, xhr){
+	//*------------------------ 이 부분은 공통으로 사용하세요 ----------------------------
+//	Xwing.log("================ [ Callback ] ================");
+//	Xwing.log("reqID : " + reqId);
+//	Xwing.log("res : " + res);
+//	Xwing.log("err : " + err);
+//	Xwing.log("xhr : " + xhr);
+	
+	//* Response 시 에러 발생한 경우
+	if(res.Error != '0'){
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	//*------------------------ 이 부분은 공통으로 사용하세요 ----------------------------
+
+	switch(reqId) {
+	case 'cpu' :
+		$ds_cpuTemp.setData(res.CPU_LIST.column, res.CPU_LIST.record);
+
+		// cpu 평균, 온도 최대값 구하기
+		f_arrangeCpu();
+
+		break;
+		
+	case 'memory' :
+		$ds_memoryInfo.setData(res.MEM_LIST.column, res.MEM_LIST.record);	
+
+		var total = nToken($ds_memoryInfo.getValue(0, 'TOTAL'), 'Kb', 0);
+		var used = nToken($ds_memoryInfo.getValue(0, 'USED'), 'Kb', 0);
+		var free = nToken($ds_memoryInfo.getValue(0, 'FREE'), 'Kb', 0);
+		
+		
+		$lbl_mem_total.setValue(f_kbToX(total, 'Mb') + 'Mb');
+		$lbl_mem_used.setValue(f_kbToX(used, 'Mb') + 'Mb');
+		$lbl_mem_free.setValue(f_kbToX(free, 'Mb') + 'Mb');
+		
+		// 디스크 사용량
+		f_getDisk();
+
+		break;
+		
+	case 'network' :
+		$ds_network.setData(res.NET_LIST.column, res.NET_LIST.record);
+		
+		var receive = 0;
+		var send = 0;
+
+		for(var i = 0; i < $ds_network.size(); i++) {
+			if($ds_network.getValue(i, 'IFACE') == 'eth0') {
+				receive = $ds_network.getValue(i, 'RX').split('Kb/s')[0] * 1;
+				send = $ds_network.getValue(i, 'TX').split('Kb/s')[0] * 1;
+				break;
+			}
+		}
+
+		$lbl_net_receive.setValue(round(receive, 2));
+		$lbl_net_send.setValue(round(send, 2));	
+		
+		break;
+
+	case 'disk' :
+		$ds_disk.setData(res.DISK_LIST.column, res.DISK_LIST.record);	
+		
+		for(var i = 0; i < $ds_disk.size(); i++) {
+			if($ds_disk.getValue(i, 'DISK') == '/data') {
+				var total = nToken($ds_disk.getValue(i, 'TOTAL'), 'Kb', 0);
+				var used = nToken($ds_disk.getValue(i, 'USED'), 'Kb', 0);
+				var free = nToken($ds_disk.getValue(i, 'FREE'), 'Kb', 0);
+				
+				$lbl_disk_total_data.setValue(f_kbToX(total, 'Gb') + 'Gb');
+				$lbl_disk_used_data.setValue(f_kbToX(used, 'Gb') + 'Gb');
+				$lbl_disk_free_data.setValue(f_kbToX(free, 'Gb') + 'Gb');
+				
+			}
+			
+			if($ds_disk.getValue(i, 'DISK') == '/inticube') {
+				var total = nToken($ds_disk.getValue(i, 'TOTAL'), 'Kb', 0);
+				var used = nToken($ds_disk.getValue(i, 'USED'), 'Kb', 0);
+				var free = nToken($ds_disk.getValue(i, 'FREE'), 'Kb', 0);
+		
+				$lbl_disk_total_data1.setValue(f_kbToX(total, 'Gb') + 'Gb');
+				$lbl_disk_used_data1.setValue(f_kbToX(used, 'Gb') + 'Gb');
+				$lbl_disk_free_data1.setValue(f_kbToX(free, 'Gb') + 'Gb');
+				
+			}
+		}
+		
+		// 차트 그리기
+		f_makeChart();	
+		
+		break;
+		
+		
+	case 'trunk' : 
+	
+	break;
+	
+	}
+}
+
+function f_getCpu() {
+	var param = '';
+
+	var opt = {
+			reqId: 'cpu',
+			url: 'service::admin.xwing.host.do',
+			param:{
+					_serviceName:'SHOW-CPU-STAT',
+					COMMAND:'SHOW-CPU-STAT',
+					PARAMETER:param
+				  },
+			indicator: null,
+			showError: true
+		};
+	
+   Xwing.request(opt, callback);
+   
+}
+
+/*
+ * cpu 평균, 온도 최대값 
+ */
+function f_arrangeCpu() {
+	var cpu = 0;
+	var temp = 0;
+
+	for(var i = 0; i < $ds_cpuTemp.size(); i++) {
+		cpu += nToken($ds_cpuTemp.getValue(i, 'USE'), '%', 0) * 1;
+		temp += nToken($ds_cpuTemp.getValue(i, 'TEMP'), '°C', 0) * 1;
+	}
+	
+	temp = temp / $ds_cpuTemp.size();
+	$lbl_temperature.setValue(round(temp, 0) + '°C');
+	
+	cpu = cpu / $ds_cpuTemp.size();
+	$ds_cpuInfo.addRow([cpu]);
+
+	// 메모리 정보 가져오기
+	f_getMemory();
+
+}
+
+/*
+ * 메모리 정보 가져오기
+ */
+function f_getMemory() {
+	var param = '';
+
+	var opt = {
+			reqId: 'memory',
+			url: 'service::admin.xwing.host.do',
+			param:{
+					_serviceName:'SHOW-MEM-STAT',
+					COMMAND:'SHOW-MEM-STAT',
+					PARAMETER:param
+				  },
+			indicator: null,
+			showError: true
+		};
+	
+   Xwing.request(opt, callback);	
+}
+
+function f_makeChart() {
+	/** CPU 사용율 **/
+	var value0 = $ds_cpuInfo.getValue(0, 'USE');
+	var value1 = 100;
+	
+	$ds_cpu_chart.addRow(['사용률', value0]);
+	$ds_cpu_chart.addRow(['Idle',value1-value0]);
+
+	var value2 = round(value0/value1*100, 1);
+
+	Xwing.getWidget('lbl_cpu_rate').setAttribute('value', (isNaN(value2)?0:value2)+'%');
+	
+	piechart = Xwing.getChart('chart1').draw({
+		background : {
+			color : ''
+
+		},
+		pointlabel : {
+			visible : false,
+			font : {
+				size : 13,
+				weight : 'normal'
+			}
+		},
+		series :[{
+			gallery :"pie",
+			bindcolumn :'value',
+			 style : {
+                 color : '{0}',
+                 width : 0
+             }	
+		}]
+		,legend : {
+			visible : false,
+	       	  color : [
+	       	           "#FF6783", ""
+	    	       	  ]
+	    	         } 
+	});	
+	
+	
+	
+	/**
+	 *  메모리 사용율
+	 */
+	var value0 = nToken($ds_memoryInfo.getValue(0, 'USED'), 'Kb', 0);
+	var value1 = nToken($ds_memoryInfo.getValue(0, 'TOTAL'), 'Kb', 0);
+
+	$ds_memory_chart.addRow(['사용률', value0]);
+	$ds_memory_chart.addRow(['Idle',value1-value0]);
+
+	var value2 = round(value0/value1*100, 1);
+
+	Xwing.getWidget('lbl_memory_rate').setAttribute('value', (isNaN(value2)?0:value2)+'%');
+	
+	piechart = Xwing.getChart('chart2').draw({
+		background : {
+			color : ''
+
+		},
+		pointlabel : {
+			visible : false,
+			font : {
+				size : 13,
+				weight : 'normal'
+			}
+		},
+		series :[{
+			gallery :"pie",
+			bindcolumn :'value',
+			 style : {
+                 color : '{0}',
+                 width : 0
+             }	
+		}]
+		,legend : {
+			visible : false,
+	       	  color : [
+	       	           "#E6E14C", ""
+	    	       	  ]
+	    	         } 
+	});		
+	
+	
+	/*
+	 * disk 사용율 - disk
+	 */
+
+	var value0 = 0;
+	var value1 = 0;
+	var value2 = 0;
+
+	for(var i = 0; i < $ds_disk.size(); i++) {
+		if($ds_disk.getValue(i, 'DISK') == '/data') {
+			value0 = nToken($ds_disk.getValue(i, 'USED'), 'Kb', 0);
+			value1 = nToken($ds_disk.getValue(i, 'TOTAL'), 'Kb', 0);
+			value2 = $ds_disk.getValue(i, 'RATE');
+			break;
+		}
+	}
+	
+	$ds_disk_chart.addRow(['사용률', value0]);
+	$ds_disk_chart.addRow(['Idle',value1-value0]);
+
+	Xwing.getWidget('lbl_disk_rate').setAttribute('value', value2);
+	
+	piechart = Xwing.getChart('chart1_0').draw({
+		background : {
+			color : ''
+
+		},
+		pointlabel : {
+			visible : false,
+			font : {
+				size : 13,
+				weight : 'normal'
+			}
+		},
+		series :[{
+			gallery :"pie",
+			bindcolumn :'value',
+			 style : {
+                 color : '{0}',
+                 width : 0
+             }	
+		}]
+		,legend : {
+			visible : false,
+	       	  color : [
+	       	           "#E6E14C", ""
+	    	       	  ]
+	    	         } 
+	});	
+	
+	
+	/*
+	 *  disk 사용율 - inticube 
+	 */
+
+	var value0 = 0;
+	var value1 = 0;
+	var value2 = 0;
+
+	for(var i = 0; i < $ds_disk.size(); i++) {
+		if($ds_disk.getValue(i, 'DISK') == '/inticube') {
+			value0 = nToken($ds_disk.getValue(i, 'USED'), 'Kb', 0);
+			value1 = nToken($ds_disk.getValue(i, 'TOTAL'), 'Kb', 0);
+			value2 = $ds_disk.getValue(i, 'RATE');
+			break;
+		}
+	}
+	
+	$ds_disk_chart1.addRow(['사용률', value0]);
+	$ds_disk_chart1.addRow(['Idle',value1-value0]);
+
+	Xwing.getWidget('lbl_disk_rate1').setAttribute('value', value2);
+	
+	piechart = Xwing.getChart('chart1_0_0').draw({
+		background : {
+			color : ''
+
+		},
+		pointlabel : {
+			visible : false,
+			font : {
+				size : 13,
+				weight : 'normal'
+			}
+		},
+		series :[{
+			gallery :"pie",
+			bindcolumn :'value',
+			 style : {
+                 color : '{0}',
+                 width : 0
+             }	
+		}]
+		,legend : {
+			visible : false,
+	       	  color : [
+	       	           "#E6E14C", ""
+	    	       	  ]
+	    	         } 
+	});	
+}
+
+/*
+ * 네트워크 패킷정보 가져오기
+ */
+function f_getNetwork() {
+	var param = '';
+
+	var opt = {
+			reqId: 'network',
+			url: 'service::admin.xwing.host.do',
+			param:{
+					_serviceName:'SHOW-NET-STAT',
+					COMMAND:'SHOW-NET-STAT',
+					PARAMETER:param
+				  },
+			indicator: null,
+			showError: true
+		};
+	
+   Xwing.request(opt, callback);	
+}
+
+/*
+ * 디스크 사용량
+ */
+function f_getDisk() {
+	var param = '';
+
+	var opt = {
+			reqId: 'disk',
+			url: 'service::admin.xwing.host.do',
+			param:{
+					_serviceName:'SHOW-DISK-STAT',
+					COMMAND:'SHOW-DISK-STAT',
+					PARAMETER:param
+				  },
+			indicator: null,
+			showError: true
+		};
+	
+   Xwing.request(opt, callback);		
+}
+
+
+/*
+ * 트렁크 연동 상태
+ */
+function f_getTrunk() {
+	var param = '';
+
+	var opt = {
+			reqId: 'trunk',
+			url: 'service::admin.xwing.host.do',
+			param:{
+					_serviceName:'SHOW-RTE-SIG',
+					COMMAND:'SHOW-RTE-SIG',
+					PARAMETER:param
+				  },
+			indicator: null,
+			showError: true
+		};
+	
+   Xwing.request(opt, callback);	
+}
+
+
+/*
+ * Kbyte 를 Mbyte 로 변환
+ */
+function f_kbToX(kbyte, unit) {
+	var value = 0;
+	var bytevalue = kbyte * 1024;
+
+	if(unit == 'Mb') {
+		value = round(bytevalue/1024/1024);
+	} else if(unit == 'Gb') {
+		value = round(bytevalue/1024/1024/1024, 1);
+	}
+
+	return value;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="ds_cpu_chart">
+		<xwing:dataset-column id="key"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_cpuInfo">
+		<xwing:dataset-column id="USE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_cpuTemp">
+		<xwing:dataset-column id="CPU"></xwing:dataset-column>
+		<xwing:dataset-column id="USE"></xwing:dataset-column>
+		<xwing:dataset-column id="TEMP"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_memory_chart">
+		<xwing:dataset-column id="key"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_memoryInfo">
+		<xwing:dataset-column id="TOTAL"></xwing:dataset-column>
+		<xwing:dataset-column id="FREE"></xwing:dataset-column>
+		<xwing:dataset-column id="USED"></xwing:dataset-column>
+		<xwing:dataset-column id="RATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_network">
+		<xwing:dataset-column id="RX"></xwing:dataset-column>
+		<xwing:dataset-column id="TX"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_trunk"></xwing:dataset>
+	<xwing:dataset id="ds_disk"></xwing:dataset>
+	<xwing:dataset id="ds_disk_chart">
+		<xwing:dataset-column id="key"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_disk_chart1">
+		<xwing:dataset-column id="key"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="680" load="page_load" scroll="false">
+		<xwing:panel id="group_monitoring" left="254" top="-1" width="788" height="670" anchor="all" scroll="false">
+			<xwing:panel id="back_0" left="19" top="234" width="767" height="433" scroll="false" anchor="all">
+				<img src="../images/test3.png" width="100%" height="100%" style="width: 763; height: 330; left: 0; top: 0;" left="364" />
+			</xwing:panel>
+			<xwing:panel id="back" left="20" top="177" width="765" height="58" scroll="false" anchor="top right left">
+				<img src="../../images/test2.png" width="100%" height="56" style="width: 899; height: 56; left: 0; top: 0;" left="364" />
+			</xwing:panel>
+			<xwing:panel id="panel2" left="20" top="52" bgimage="../images/bg_cpu.png" width="763" height="183" anchor="right left" bgimagealign="center center">
+			</xwing:panel>
+			<xwing:panel id="panel2_0" left="10" top="52" width="763" height="183" anchor="top" bgimagealign="center center">
+				<xwing:button id="button0_0_0" value="상세" left="321" top="109" width="28" height="16" fontcolor="#ffffff" bgcolor="#226CC6" bggradientcolor="#1D5FA9" bordercolor="#1A5094" anchor="top right"></xwing:button>
+				<xwing:label id="label4_1_0_2" value="Total:" left="556" top="46" width="43" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" halign="right" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="lbl_mem_total" value="00" left="602" top="46" width="60" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="lbl_mem_used" value="00" left="602" top="73" width="60" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="label4_1_0_2_0" value="Used:" left="556" top="73" width="43" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" halign="right" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="lbl_mem_free" value="00" left="602" top="102" width="60" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="label4_1_0_2_1" value="Free:" left="556" top="102" width="43" height="16" fontweight="bold" fontsize="16" fontcolor="#303030" halign="right" fontfamily="NanumGothic"></xwing:label>
+				<xwing:label id="lbl_temperature" value="65℃" left="299" top="63" fontcolor="#fff" fontfamily="NanumGothic" fontsize="18" fontweight="normal" width="47" height="22" anchor="none" halign="center"></xwing:label>
+				<xwing:panel id="chartbox1" left="74" top="-35" width="176" height="217" enabled="true" scroll="false">
+					<xwing:chart id="chart1" left="7" top="29" width="166" height="170" binddataset="ds_cpu_chart" categorycolumn="key" chartgutter="0 0 0 0" galleryshadow="false" borderstyle="none" borderwidth="1" fontsize="14" fontcolor="#474747" titlefontsize="14" titlemargin="0 0 0 0" enabled="true" visible="true" pointlabel="false" gridbgopacity="0" gridlineopacity="0" legendbgcolor="0" bgcolor="#364053"></xwing:chart>
+					<xwing:panel id="circle_0" left="29" top="53" width="133" height="125" enabled="true" scroll="false">
+						<svg version="1.1" id="Layer_1_0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="154px" height="154px" viewBox="0 0 154 154" enable-background="new 0 0 154 154" xml:space="preserve"> <circle fill="#364053" cx="61" cy="61" r="61" style="width:168;height:151;left:0;top:0.5;" /> </svg>
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:label id="lbl_cpu_title" value="CPU" left="127" top="49" fontcolor="#303030" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="73" height="22" anchor="none" halign="center"></xwing:label>
+				<xwing:label id="lbl_cpu_rate" value="38%" left="113" top="70" fontcolor="#941702" fontfamily="NanumGothicBold" fontsize="38" fontweight="bold" width="101" height="37" halign="center" anchor="none"></xwing:label>
+				<xwing:panel id="chartbox2" left="378" top="-30" width="176" height="217" enabled="true" scroll="false">
+					<xwing:chart id="chart2" left="14" top="29" width="166" height="170" binddataset="ds_memory_chart" categorycolumn="key" chartgutter="0 0 0 0" galleryshadow="false" borderstyle="none" borderwidth="1" fontsize="14" fontcolor="#474747" titlefontsize="14" titlemargin="0 0 0 0" enabled="true" visible="true" pointlabel="false"></xwing:chart>
+					<xwing:panel id="circle_1" left="36" top="53" width="133" height="125" enabled="true" scroll="false">
+						<svg version="1.1" id="Layer_1_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="154px" height="154px" viewBox="0 0 154 154" enable-background="new 0 0 154 154" xml:space="preserve"> <circle fill="#364053" cx="61" cy="61" r="61" style="width:168;height:151;left:0;top:0.5;" /> </svg>
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:label id="lbl_memory_rate" value="38%" left="423" top="70" fontcolor="#27457e" fontfamily="NanumGothicBold" fontsize="38" fontweight="bold" width="101" height="37" halign="center" anchor="none"></xwing:label>
+				<xwing:label id="lbl_memory_title" value="메모리" left="437" top="49" fontcolor="#303030" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="73" height="22" anchor="none" halign="center"></xwing:label>
+			</xwing:panel>
+			<xwing:label id="label3" left="271" top="117" bgimage="../images/img_temperature.png" width="40" height="59" bgimagealign="center bottom" anchor="right left"></xwing:label>
+			<xwing:group id="bg_network" left="32" top="246" bgcolor="#f2f2f2" bordercolor="#848484" shadow="#838383 0 2 2 0" anchor="all" width="400" height="269">
+				<xwing:panel id="panel0" left="0" top="171" width="400" height="96" scroll="false" anchor="right bottom left">
+					<img src="../images/bg_network.png" width="100%" height="96" style="width: 395; height: 96; left: 0; top: 0;" left="364" top="419" />
+				</xwing:panel>
+				<xwing:label id="label2" left="27" top="135" bgimage="../images/img_network.png" width="342" height="101" anchor="right bottom left" bgimagealign="center bottom"></xwing:label>
+				<xwing:group id="title01" left="-1" top="-1" bgcolor="#f2f2f2" bordercolor="#848484" width="400" height="36" bgimage="../images/bg_title.jpg" bgimagerepeat="repeat-x" anchor="top right left">
+					<xwing:label id="label_title01" value="네트워크" left="13" top="6" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="319" height="22"></xwing:label>
+					<xwing:button id="button0" value="상세" left="358" top="9" width="28" height="16" fontcolor="#ffffff" bgcolor="#226CC6" bggradientcolor="#1D5FA9" bordercolor="#1A5094" anchor="top right"></xwing:button>
+				</xwing:group>
+				<xwing:panel id="panel_p" left="0" top="66" width="396" height="85" anchor="bottom" scroll="false">
+					<xwing:label id="lbl_net_receive" value="7.67" left="3" top="20" fontcolor="#307900" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="115" height="53" halign="right" anchor="bottom left"></xwing:label>
+					<xwing:label id="label_title01_0_0_0_0" value="Kb/s" left="338" top="42" fontcolor="#c01c01" fontfamily="NanumGothicBold" fontsize="22" fontweight="bold" width="51" height="22" anchor="right bottom"></xwing:label>
+					<xwing:label id="label_title01_0_1" value="전송패킷" left="250" top="5" fontcolor="#626262" fontfamily="NanumGothicBold" fontsize="14" fontweight="bold" width="73" height="22" anchor="right bottom"></xwing:label>
+					<xwing:label id="lbl_net_send" value="3.39" left="218" top="20" fontcolor="#c01c01" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="115" height="53" halign="right" anchor="right bottom"></xwing:label>
+					<xwing:label id="label_title01_0_0_0" value="Kb/s" left="118" top="42" fontcolor="#307900" fontfamily="NanumGothicBold" fontsize="22" fontweight="bold" width="73" height="22" anchor="bottom left"></xwing:label>
+					<xwing:label id="label_title01_0" value="수신패킷" left="30" top="5" fontcolor="#626262" fontfamily="NanumGothicBold" fontsize="14" fontweight="bold" width="73" height="22" anchor="bottom left"></xwing:label>
+				</xwing:panel>
+			</xwing:group>
+			<xwing:group id="bg_group" left="32" top="524" bgcolor="#d4d4d6" bordercolor="#848484" shadow="#838383 0 2 2 0" anchor="right bottom left" width="740" height="130">
+				<xwing:panel id="panel_p2" left="0" top="0" width="739" height="130" anchor="bottom">
+					<xwing:panel id="panel1_0_0_0_0" left="590" top="8" width="146" height="95" scroll="false" anchor="right bottom left">
+						<xwing:label id="label_title01_0_0_2_0_0_0_0" left="38" top="0" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="72" height="74" halign="right" anchor="right bottom left" bgimage="../images/icon_normal.gif"></xwing:label>
+						<xwing:label id="label_title01_0_2_1_0_0_0" value="CNVu 실시간" left="7" top="70" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="center"></xwing:label>
+					</xwing:panel>
+					<xwing:panel id="panel1_0_0_0" left="443" top="8" width="146" height="95" scroll="false" shadow="1 0 0 0 #b9b9b9" anchor="right bottom left">
+						<xwing:label id="label_title01_0_0_2_0_0_0" left="38" top="0" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="72" height="74" halign="right" anchor="right bottom left" bgimage="../images/icon_normal.gif"></xwing:label>
+						<xwing:label id="label_title01_0_2_1_0_0" value="CTI" left="7" top="70" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="center"></xwing:label>
+					</xwing:panel>
+					<xwing:panel id="panel1_0_0" left="296" top="8" width="146" height="95" scroll="false" shadow="1 0 0 0 #b9b9b9" anchor="right bottom left">
+						<xwing:label id="label_title01_0_0_2_0_0" left="38" top="0" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="72" height="74" halign="right" anchor="right bottom left" bgimage="../images/icon_error.gif"></xwing:label>
+						<xwing:label id="label_title01_0_2_1_0" value="CNVu DB" left="7" top="70" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="center"></xwing:label>
+					</xwing:panel>
+					<xwing:panel id="panel1_0" left="149" top="8" width="146" height="95" scroll="false" shadow="1 0 0 0 #b9b9b9" anchor="right bottom left">
+						<xwing:label id="label_title01_0_0_2_0" left="38" top="0" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="72" height="74" halign="right" anchor="right bottom left" bgimage="../images/icon_normal.gif"></xwing:label>
+						<xwing:label id="label_title01_0_2_1" value="CM DB" left="7" top="70" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="center"></xwing:label>
+					</xwing:panel>
+					<xwing:panel id="panel1" left="2" top="8" width="146" height="95" scroll="false" shadow="1 0 0 0 #b9b9b9" anchor="right bottom left">
+						<xwing:label id="label_title01_0_0_2" left="38" top="0" fontfamily="NanumGothicBold" fontsize="42" fontweight="bold" width="72" height="74" halign="right" anchor="right bottom left" bgimage="../images/icon_normal.gif"></xwing:label>
+						<xwing:label id="label_title01_0_2" value="Trunk" left="7" top="70" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="center"></xwing:label>
+						<xwing:button id="button0_0" value="상세" left="111" top="4" width="28" height="16" fontcolor="#ffffff" bgcolor="#226CC6" bggradientcolor="#1D5FA9" bordercolor="#1A5094" anchor="top right"></xwing:button>
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:label id="line" left="0" top="105" width="738" height="1" borderstyle="solid" borderwidth="0" bgcolor="#b9b9b9" anchor="right bottom left"></xwing:label>
+				<xwing:label id="label_title01_0_2_0" left="298" top="105" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="12" fontweight="bold" width="135" height="22" anchor="right bottom left" halign="left" iconmargin="0 2 0 0" bgimage="../images/img_icon.png" bgimagealign="center bottom"></xwing:label>
+			</xwing:group>
+			<xwing:group id="bg_disk" left="442" top="246" bgcolor="#f2f2f2" bordercolor="#848484" shadow="#838383 0 2 2 0" anchor="top right bottom" width="330" height="269">
+				<xwing:group id="title01_0" left="-1" top="-1" bgcolor="#f2f2f2" bordercolor="#848484" width="330" height="36" bgimage="../images/bg_title.jpg" bgimagerepeat="repeat-x" anchor="top right left">
+					<xwing:label id="label_title01_1" value="디스크" left="13" top="6" fontcolor="#282828" fontfamily="NanumGothicBold" fontsize="16" fontweight="bold" width="214" height="22"></xwing:label>
+					<xwing:button id="button0_1" value="상세" left="288" top="9" width="28" height="16" fontcolor="#ffffff" bgcolor="#226CC6" bggradientcolor="#1D5FA9" bordercolor="#1A5094" anchor="top right"></xwing:button>
+				</xwing:group>
+				<xwing:panel id="chartbox1_0" left="5" top="0" width="176" height="217" enabled="true" scroll="false">
+					<xwing:chart id="chart1_0" left="7" top="29" width="166" height="170" binddataset="ds_disk_chart" categorycolumn="key" chartgutter="0 0 0 0" galleryshadow="false" borderstyle="none" borderwidth="1" fontsize="14" fontcolor="#474747" titlefontsize="14" titlemargin="0 0 0 0" enabled="true" visible="true" pointlabel="false" gridbgopacity="0" gridlineopacity="0" legendbgcolor="0" bgcolor="#364053"></xwing:chart>
+					<xwing:panel id="circle_0_0" left="29" top="53" width="133" height="125" enabled="true" scroll="false">
+						<svg version="1.1" id="Layer_1_0_0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="154px" height="154px" viewBox="0 0 154 154" enable-background="new 0 0 154 154" xml:space="preserve"> <circle fill="#364053" cx="61" cy="61" r="61" style="width:168;height:151;left:0;top:0.5;" /> </svg>
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:panel id="chartbox1_0_0" left="155" top="0" width="176" height="217" enabled="true" scroll="false">
+					<xwing:chart id="chart1_0_0" left="7" top="29" width="166" height="170" binddataset="ds_cpu" categorycolumn="key" chartgutter="0 0 0 0" galleryshadow="false" borderstyle="none" borderwidth="1" fontsize="14" fontcolor="#474747" titlefontsize="14" titlemargin="0 0 0 0" enabled="true" visible="true" pointlabel="false" gridbgopacity="0" gridlineopacity="0" legendbgcolor="0" bgcolor="#364053"></xwing:chart>
+					<xwing:panel id="circle_0_0_0" left="29" top="53" width="133" height="125" enabled="true" scroll="false">
+						<svg version="1.1" id="Layer_1_0_0_0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="154px" height="154px" viewBox="0 0 154 154" enable-background="new 0 0 154 154" xml:space="preserve"> <circle fill="#364053" cx="61" cy="61" r="61" style="width:168;height:151;left:0;top:0.5;" /> </svg>
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:panel id="panel_p_0" left="0" top="42" width="328" height="226" anchor="bottom" scroll="false">
+					<xwing:panel id="panel3" left="18" top="146" width="136" height="66" bordercolor="#b8b8b8" borderstyle="solid" borderwidth="1" bgcolor="#fff" scroll="false">
+						<xwing:label id="label4" left="9" top="5" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="label4_0" left="9" top="23" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="label4_0_0" left="9" top="41" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="lbl_disk_total_data" value="00" left="54" top="6" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+						<xwing:label id="label4_1_0" value="Total:" left="11" top="6" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="label4_1_0_0" value="Free:" left="11" top="24" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="label4_1_0_0_0" value="Used:" left="11" top="42" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="lbl_disk_free_data" value="00" left="54" top="24" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+						<xwing:label id="lbl_disk_used_data" value="00" left="54" top="42" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+					</xwing:panel>
+					<xwing:label id="lbl_disk_rate1" value="74%" left="196" top="51" fontcolor="#303030" fontfamily="NanumGothicBold" fontsize="35" fontweight="bold" width="101" height="37" halign="center" anchor="bottom left"></xwing:label>
+					<xwing:label id="label_title01_0_3_0" value="/inticube" left="210" top="30" fontcolor="#0859b5" fontfamily="NanumGothicBold" fontsize="14" fontweight="bold" width="73" height="22" anchor="bottom left" halign="center"></xwing:label>
+					<xwing:panel id="panel3_0" left="178" top="146" width="136" height="66" bordercolor="#b8b8b8" borderstyle="solid" borderwidth="1" bgcolor="#fff" scroll="false">
+						<xwing:label id="label4_2" left="9" top="5" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="label4_0_1" left="9" top="23" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="label4_0_0_0" left="9" top="41" width="117" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" shadow="0 1 0 0 #b9b9b9"></xwing:label>
+						<xwing:label id="lbl_disk_total_data1" value="00" left="54" top="6" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+						<xwing:label id="label4_1_0_1" value="Total:" left="11" top="6" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="label4_1_0_0_1" value="Free:" left="11" top="24" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="label4_1_0_0_0_0" value="Used:" left="11" top="42" width="40" height="16" fontweight="bold" fontsize="12" fontcolor="#696969" halign="right"></xwing:label>
+						<xwing:label id="lbl_disk_free_data1" value="00" left="54" top="24" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+						<xwing:label id="lbl_disk_used_data1" value="00" left="54" top="42" width="75" height="16" fontweight="bold" fontsize="12" fontcolor="#303030"></xwing:label>
+					</xwing:panel>
+					<xwing:label id="lbl_disk_rate" value="38%" left="36" top="51" fontcolor="#303030" fontfamily="NanumGothicBold" fontsize="35" fontweight="bold" width="101" height="37" halign="center" anchor="bottom left"></xwing:label>
+					<xwing:label id="label_title01_0_3" value="/data" left="50" top="30" fontcolor="#0859b5" fontfamily="NanumGothicBold" fontsize="14" fontweight="bold" width="73" height="22" anchor="bottom left" halign="center"></xwing:label>
+					<xwing:label id="label_title01_0_3_1_0" value="사용율" left="210" top="90" fontcolor="#777777" fontfamily="NanumGothicBold" fontsize="12" fontweight="bold" width="73" height="20" anchor="bottom left" halign="center"></xwing:label>
+					<xwing:label id="label_title01_0_3_1" value="사용율" left="50" top="90" fontcolor="#777777" fontfamily="NanumGothicBold" fontsize="12" fontweight="bold" width="73" height="20" anchor="bottom left" halign="center"></xwing:label>
+				</xwing:panel>
+			</xwing:group>
+		</xwing:panel>
+		<xwing:label id="lbl_time" left="904" top="207" width="96" height="24" anchor="top right" fontsize="14" icon="../images/img_clock.png" iconmargin="5 5 5 5" fontcolor="#000000" fontweight="bold" fontfamily="NanumGothicBold" value="17:33:34" bgimagealign="center bottom"></xwing:label>
+		<xwing:label id="bg_time" left="923" top="225" bgimage="../images/bg_time.png" width="83" height="13" anchor="top right"></xwing:label>
+		<xwing:group id="bg_center" left="0" top="0" bgcolor="#2e3d5c" width="255" height="38" shadow="1 1 5 0 #ababab" opacity="1" borderwidth="0">
+			<xwing:combo id="cmb_group" left="51" top="9" height="20" domaindataset="DS_SYS003" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" width="130" change="cmb_group_change" multiselectable="true" itemall="true"></xwing:combo>
+			<xwing:label id="label1" left="6" top="10" bgimage="../images/pin.png" width="20" height="20"></xwing:label>
+			<xwing:label id="label0" value="센터" left="24" top="9" height="20" width="26" fontstyle="normal" fontweight="bold" fontcolor="#ffffff"></xwing:label>
+			<xwing:button id="btn_search" value="조회" left="186" top="9" anchor="left" styles="btn_search" height="20" click="btn_search_click" shadow="1 1 2 0 #13215f"></xwing:button>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<style>
+	/*#grd_weight_list .xw-datagrid-area-body tbody tr.select,
+	#grd_score_list .xw-datagrid-area-body tbody tr.select {
+		background : none !important;
+	}*/
+</style>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+function page_load(event) {
+	try{
+		XwingObject();
+		f_codebook_sel();
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+
+function f_codebook_sel() {
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "VSS160,VSS170", //VSS160 : Grade등급, VSS170 : Grade평가항목
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case "f_codebook_sel" : 
+			$DS_VSS160.setData(res.VSS160.column, res.VSS160.record);
+			$DS_VSS170.setData(res.VSS170.column, res.VSS170.record);
+			$cmb_grade_gubun.setValue(1);
+			f_make_gradeInfo();
+			break;
+	}	
+}
+
+function f_make_gradeInfo(){
+	var lbl_top = 25, txt_top=15;
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		if(i != 0 ){
+			lbl_top += 65;
+			txt_top += 65;
+		}
+		
+		var lbl_grade1 = Xwing.createLabel({
+			id : 'lbl_grade'+(i+1),
+			width : 50,
+			height : 28,
+			top : lbl_top, 
+			left : 20,
+			styles : 'label_subtitle',
+			valign : 'middle',
+			halign : 'right',
+			value : 'Grade '+ (i+1)
+		});
+		
+		$grp_grade_info.appendChild(lbl_grade1);
+		
+		var txt_grade1 = Xwing.createTextArea({
+			id : 'txt_grade'+(i+1),
+			width : 910,
+			height : 50,
+			top : txt_top, 
+			left : 80,
+			styles : 'edit_readonly',
+			valign : 'middle',
+			halign : 'right',
+			readonly : true,
+			value : ''
+		});
+		
+		$grp_grade_info.appendChild(txt_grade1);
+	}
+	
+}
+
+
+function btn_history_click(event) {
+	
+	//var doc_id = $DS_BANNED_DETAIL.getValue(event.rowIdx, "REC_KEY");
+	//var start_time = $DS_BANNED_DETAIL.getValue(event.rowIdx, "START_TIME");
+	
+	//window.open('../MSA/MSA020P1.xhtml', "loadText", "width=800, height=400, left=170, top=50");
+	
+	var opt = {
+			modal: false,
+			resizable: true,
+			id : 'MSA020P1',
+			url : '../MSA/MSA020P1.xhtml',		
+			width : 800,
+			height : 425,
+			title : "Grade저장이력",
+			draggable:true,
+			param:{
+			}
+		};
+	
+	var dialog = new xwing.Dialog(opt);
+	dialog.open();
+	
+}
+
+var columns = [];
+function btn_save_script_click(event) {
+	var targetId =  event.source._attr.id;
+	var res = $edt_res.getValue();
+	
+	if(targetId.indexOf("script") > -1){	
+		res += " VRS준수율 " + $edt_script.getValue() +  " % " + $DS_GUBUN.getValue($DS_GUBUN.indexOfRow("CODEID", $cmb_gubun_script.getValue()), "CODENAME");
+		$edt_script.setValue("");
+	}else if(targetId.indexOf("ban") > -1){
+		res += " 금칙어 " + $edt_ban.getValue() +  " % " + $DS_GUBUN.getValue($DS_GUBUN.indexOfRow("CODEID", $cmb_gubun_ban.getValue()), "CODENAME");
+		$edt_ban.setValue("");
+	}else if(targetId.indexOf("cond1") > -1){
+		res += " 전월평가점수 " + $edt_ban.getValue() +  " % " + $DS_GUBUN.getValue($DS_GUBUN.indexOfRow("CODEID", $cmb_gubun_ban.getValue()), "CODENAME");
+		$edt_cond1.setValue("");
+	}else if(targetId.indexOf("and") > -1){
+		res += " AND ";
+	}else if(targetId.indexOf("or") > -1){
+		res += " OR ";
+	}else if(targetId.indexOf("open") > -1){
+		res += " ( ";
+	}else if(targetId.indexOf("close") > -1){
+		res += " ) ";
+	}
+	
+	$edt_res.setValue(res);
+}
+
+function btn_reset_click(event) {
+	$edt_res.setValue("");
+}
+
+function btn_register_click(event) {
+	
+	Xwing.getTextArea("txt_grade"+$cmb_grade_gubun.getValue()).setValue($edt_res.getValue());
+	$edt_res.setValue("");
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_GUBUN" description="기준값">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>M</xwing:dataset-cell>
+			<xwing:dataset-cell>이상</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>I</xwing:dataset-cell>
+			<xwing:dataset-cell>이하</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_VSS160"></xwing:dataset>
+	<xwing:dataset id="DS_VSS170"></xwing:dataset>
+	<xwing:dataset id="DS_GRADE"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="Grade관리" width="1050" height="768" load="page_load" scroll="false">
+		<xwing:panel id="pan_multi_res" left="0" top="251" width="1050" height="473" anchor="all" visible="true" scroll="false" styles="pan_box_title">
+			<xwing:group id="grp_grade_info" left="15" top="5" styles="div_search" width="1020" height="458" anchor="all" bgcolor="#ecf4fd" borderwidth="1" borderstyle="solid">
+			</xwing:group>
+		</xwing:panel>
+		<xwing:button id="btn_save" value="저 장" left="980" top="730" anchor="bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click"></xwing:button>
+		<xwing:button id="btn_history" value="저장이력" left="905" top="730" anchor="bottom" styles="btn_action" width="70" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_history_click" borderstyle="solid"></xwing:button>
+		<xwing:label id="lbl_subtitle1" value="Grade관리" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:panel id="pan_grade_mng" left="0" top="45" width="1050" height="204" anchor="top right left" visible="true" scroll="false">
+			<xwing:group id="grp_item_res" left="15" top="155" styles="div_search" width="1020" height="42" anchor="right left" bgcolor="#ecf4fd" borderwidth="1" borderstyle="solid">
+				<xwing:edit id="edt_res" left="113" top="8" height="25" width="765" halign="left" fontsize="11" maxlength="6" readonly="true" styles="edit_readonly"></xwing:edit>
+				<xwing:combo id="cmb_grade_gubun" left="15" top="8" domaindataset="DS_VSS160" domaincodecolumn="CODEID" width="90" height="25" value="1" change="cmb_gubun_change" domaintextcolumn="CODENAME"></xwing:combo>
+				<xwing:button id="btn_register" value="입 력" left="884" top="8" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" click="btn_register_click"></xwing:button>
+				<xwing:button id="btn_reset" value="초기화" left="950" top="8" width="60" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_reset_click"></xwing:button>
+			</xwing:group>
+			<xwing:group id="grp_menu_item" left="15" top="10" styles="div_search" width="1020" height="135" anchor="right left" bgcolor="#ecf4fd" borderwidth="1" borderstyle="solid">
+				<xwing:button id="btn_script" value="준수율" left="15" top="15" width="60" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_reset_click"></xwing:button>
+				<xwing:combo id="cmb_gubun_script" left="165" top="15" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" width="67" height="25" value="M" change="cmb_gubun_change" domaintextcolumn="CODENAME"></xwing:combo>
+				<xwing:edit id="edt_script" left="85" top="15" height="25" width="70" halign="center" fontsize="11" maxlength="6"></xwing:edit>
+				<xwing:button id="btn_save_script" value="적 용" left="239" top="15" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" click="btn_save_script_click"></xwing:button>
+				<xwing:button id="btn_open_parens" value="(" left="335" top="95" width="25" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_save_script_click"></xwing:button>
+				<xwing:button id="btn_close_parens" value=")" left="370" top="95" width="25" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_save_script_click"></xwing:button>
+				<xwing:button id="btn_and" value="AND" left="405" top="95" width="44" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_save_script_click"></xwing:button>
+				<xwing:button id="btn_or" value="OR" left="455" top="95" width="44" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_save_script_click"></xwing:button>
+				<xwing:button id="btn_ban" value="금칙어" left="15" top="55" width="60" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_reset_click"></xwing:button>
+				<xwing:edit id="edt_ban" left="85" top="55" height="25" width="70" halign="center" fontsize="11" maxlength="6"></xwing:edit>
+				<xwing:combo id="cmb_gubun_ban" left="165" top="55" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" width="67" height="25" value="M" change="cmb_gubun_change" domaintextcolumn="CODENAME"></xwing:combo>
+				<xwing:button id="btn_save_ban" value="적 용" left="239" top="55" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_save_script_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+				<xwing:button id="btn_cond1" value="전월평가점수" left="15" top="95" width="87" iconmargin="0 3 0 0" anchor="none" visible="true" height="25" fontweight="normal" tabindex="11" enabled="true" styles="btn_reset" click="btn_reset_click"></xwing:button>
+				<xwing:edit id="edt_cond1" left="112" top="95" height="25" width="70" halign="center" fontsize="11" maxlength="6"></xwing:edit>
+				<xwing:combo id="cmb_gubun_cond1" left="190" top="95" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" width="67" height="25" value="M" change="cmb_gubun_change" domaintextcolumn="CODENAME"></xwing:combo>
+				<xwing:button id="btn_save_cond1" value="적 용" left="264" top="95" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_save_script_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			</xwing:group>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

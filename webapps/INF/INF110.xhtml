@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var requestId	= "service::cs.com.help.do";	//request명
+var c_menuid;							// 메뉴 id
+
+// 페이지 오픈
+function help_load(event) {
+	XwingObject();
+
+	c_menuid = Xwing.param.menuId;
+
+	if(c_menuid == "default"){
+		c_menuid = "9999999";
+	}
+
+	var menuName = Xwing.param.menuName;
+
+	$lbl_subtitle.setValue(menuName);
+
+	/*
+	if(top.getGradeAuth(global("G_USER_GRADE")) == 'Y'){
+		$btn_del.setVisible(true);
+		$btn_save.setVisible(true);
+	} else {
+		$btn_del.setVisible(false);
+		$btn_save.setVisible(false);
+	}
+	*/
+	getHelp();
+}
+
+// 도움말조회
+function getHelp()
+{
+	$pnl_help.setUrl("./INF110P1.html");
+	var sqlName = "cs.main.help.sel";
+
+	var opt = {
+			reqId: 'getHelp',
+			url: requestId,
+			param:{ _sqlName : sqlName,
+				menuid : c_menuid
+		          },
+			indicator: null,
+			showError: true
+		};
+	Xwing.request(opt, callback);
+}
+
+// 수정키 클릭시
+function btn_save_click(event) {
+	if($btn_save.getValue() == "수 정") {
+		$pnl_help.setUrl("../SmartEditor/SmartEditor2.html");
+		setTimeout("f_saveHelp()", 500);
+	}else{
+		xwing.Dialog.confirm('도움말을 저장하시겠습니까?', '도움말 저장', 'f_saveHelpConfirm');
+	}
+
+}
+
+function f_saveHelpConfirm(event) {
+	if(event) {
+		f_saveHelp();
+	} else {
+		return;
+	}
+}
+
+function f_saveHelp() {
+	if($btn_save.getValue() == "수 정") {
+		$btn_save.setValue("저 장");
+
+		if($ds_help.size() > 0) {
+			var iframe = document.getElementById('if::pnl_help');
+			var docInit = $ds_help.getValue(0, "DOCUMENT");
+
+			if(iframe) {
+				var frm = iframe.contentWindow || iframe.contentDocument;
+				frm.oEditors.getById["ir1"].exec("PASTE_HTML", [docInit]);
+			}
+		}
+
+	} else {
+		var iframe = document.getElementById('if::pnl_help');
+
+		if(iframe) {
+			var frm = iframe.contentWindow || iframe.contentDocument;
+			var doc = frm.oEditors.getById["ir1"].getIR();
+
+			var sqlName = "cs.main.help.merge";
+			var menuid = c_menuid;
+
+			/*if($ds_help.getValue(0, "document").lentgh() > 0) {
+				sqlName = "cs.main.help.upd";
+			} else {
+				sqlName	= "cs.main.help.ins";
+			}
+			*/
+			var opt = {
+					reqId: "setHelp",
+					url: requestId,
+					param:{ _sqlName : sqlName,
+						doc : doc,
+						menuid : menuid,
+						user_id : global("G_USER_ID")
+				          },
+					indicator: null,
+					showError: true
+				};
+			Xwing.request(opt, callback);
+
+		}
+	}
+}
+
+//초기화 버튼클릭
+function btn_del_click(event) {
+	this.del = function(event) {
+		if(event) {
+			var opt = {
+					reqId: 'delHelp',
+					url: requestId,
+					param:{ _sqlName : 'cs.main.help.del',
+						menuid : c_menuid
+				          },
+					indicator: null,
+					showError: true
+				};
+			Xwing.request(opt, callback);
+		} else {
+			return;
+		}
+	};
+
+	new xwing.Dialog.confirm('도움말을 삭제하시겠습니까?', '도움말 삭제', 'del');
+}
+
+//도움말 조회 내용 표시
+function callbackgetHelp() {
+	var docInit = $ds_help.getValue(0, "DOCUMENT");
+	var iframe = document.getElementById("if::pnl_help");
+	var fDoc = null;
+
+	if(iframe) {
+		var frm = iframe.contentWindow || iframe.contentDocument;
+		frm.f_setContent_box(docInit);
+	}
+}
+
+// 트랜잭션 콜백
+function callback(reqId, res, err, xhr){
+	//* Response 시 에러 발생한 경우
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId)
+	{
+		case "getHelp" :
+			$ds_help.setData(res.CS_MAIN_HELP_SEL.column, res.CS_MAIN_HELP_SEL.record);
+
+			var v_menu_name = $ds_help.getValue(0, "CAPTION");
+
+			if(v_menu_name == null) {
+				v_menu_name = Xwing.param.menuName;
+			}
+			$lbl_subtitle.setValue(v_menu_name);
+
+			setTimeout("callbackgetHelp()", 500);
+		break;
+		case "setHelp" :
+			$btn_save.setValue("수 정");
+			xwing.Dialog.alert( '저장되었습니다.');
+			getHelp();
+		break;
+		case "delHelp" :
+			$btn_save.setValue("수 정");
+			xwing.Dialog.alert( '삭제되었습니다.');
+			getHelp();
+		break;
+		default :
+	}
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="ds_help">
+		<xwing:dataset-column id="menu_id"></xwing:dataset-column>
+		<xwing:dataset-column id="caption"></xwing:dataset-column>
+		<xwing:dataset-column id="document"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_helpins">
+		<xwing:dataset-column id="menuid"></xwing:dataset-column>
+		<xwing:dataset-column id="user_id"></xwing:dataset-column>
+		<xwing:dataset-column id="doc"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_SYS031">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_fileup_image"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="help" title="도움말" width="600" height="553" load="help_load" top="-1" scroll="false">
+		<xwing:group id="group0" left="6" top="50" styles="lbl_board_content" width="585" height="495" anchor="all">
+			<xwing:panel id="pnl_help" left="0" top="0" width="585" height="495" borderwidth="1" anchor="all" styles="lbl_board_content" visible="true" bgcolor="#e6f6fa" bordercolor="#d7eaef" borderstyle="solid">
+			</xwing:panel>
+		</xwing:group>
+		<xwing:label id="lbl_subtitle" value="조직관리" left="6" top="1" width="585" height="40" halign="left" anchor="top right left" visible="true" bgimage="../images/result.png" textpadding="0 0 0 40" fontfamily="WallBoardFond" fontsize="16" bgimagealign="left center" borderwidth="3" fontweight="bold" shadow="#009ddc 0 2 0 0"></xwing:label>
+		<xwing:button id="btn_del" value="삭 제" left="530" top="519" anchor="right bottom" styles="btn_del" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_del_click" visible="false"></xwing:button>
+		<xwing:button id="btn_save" value="수 정" left="464" top="518" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click" visible="false"></xwing:button>
+	</xwing:page>
+</body>
+</html>

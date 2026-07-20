@@ -1,0 +1,53 @@
+.xw-slider-shell {
+	margin: 0;
+	padding: 0;
+	border: 0;
+} 
+.xw-slider{
+	width:100%;
+	height:100%;
+	border:1px solid #798DA7;
+	display : inline-block;
+	float : left;
+	background-color : #FFFFFF;
+	
+	-moz-user-select : none;
+	-webkit-user-select : none;
+}
+.xw-slider-thumb-h{
+	width : 21px;
+	height : 15PX;
+	position : relative;
+	top : 0px;
+	left : 0%;
+	background-image : url(./img/thumb-e.gif);
+	cursor : pointer;
+	
+	-moz-user-select : none;
+	-webkit-user-select : none;
+}
+.xw-slider-thumb-v{
+	width : 17px;
+	height : 21PX;
+	position : relative;
+	top : 0%;
+	left : 0px;
+	background-image : url(./img/thumb-n.gif);
+	cursor : pointer;
+	
+	-moz-user-select : none;
+	-webkit-user-select : none;
+}
+.xw-slider-message{
+	position : absolute;
+}
+.xw-slider-text{
+	line-height : 25px;
+}
+.xw-slider-text-v{
+	position : absolute;
+	line-height : 1em;
+}
+.xw-slider-min{
+	top : 100%;
+}

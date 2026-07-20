@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<environment-config>
+<!-- <login-page>
+	Request 호출시 로그인 되어 있지 않는 경우 Foward 될 page URL
+ -->
+	<!-- <login-page>wfm.com.session_timout.do</login-page>-->
+	<login-page>cs.com.session_timout.do</login-page>
+	
+	
+<!-- <main-page>
+	 로그인을 정상처리하고 Foward될 메인화면 page  URL
+ -->
+	<main-page></main-page>
+
+
+<!-- <LOGOUT_ACTION>
+	 로그아웃 처리 요청에 따라 수행될 Action Class
+ -->
+	<LOGOUT_ACTION>wfm.com.login.LogoutCommand</LOGOUT_ACTION>
+
+
+<!-- <error-page>,
+       요청한 reqeust의 수행도중 Framework에서 오류가 발생할경우 서비스될 jsp페이지를 기술합니다. 
+		PageFlowProcessor.forwardError()에 사용됩니다.
+	 	{common/error.jsp,	common/MiPlatform_Error.jsp}
+-->	 
+	<error-page>common/error.jsp</error-page>
+
+
+<!-- <char-encoding>,
+	FrontServlet에서 Http Request와, Respose의 setCharacterEncoding()으로 사용됩니다.
+-->
+ 	<char-encoding>UTF-8</char-encoding> 
+
+	
+<!--
+	  <metadata_reloadable>,
+        각종 config 파일이 runtime시 수정될때  수정된 파일의 reload를 반영 할것 인가 여부를 설정  합니다.
+        {true, false(default)}
+-->
+	<metadata_reloadable>true</metadata_reloadable>	
+
+
+<!-- 
+  <DBMS_Type>
+  SQLHelper에서 COUNT Query, Pagin Query생성을 위해 사용됨. 
+  Supported={DB2,DERBY,MYSQL,ORACLE},
+  UnSupported={INFOMIX,SYBASE}
+ -->  	
+	<DBMS_Type>ORACLE</DBMS_Type>
+
+<!-- 
+  <DBMS_fetch_max>
+	JediResultSet의 최대 Fetch 행 갯수를 지정
+ -->  	
+	<DBMS_fetch_max>100000</DBMS_fetch_max>
+	
+<!-- 
+  <DBMS_encoding>
+	JediSQL에서 DBMS로 부터 Data를 가져오면서 사용할 Charactor Encoding
+	EUC-KR
+ -->  	
+	<!-- <DBMS_encoding>UTF-8</DBMS_encoding> -->  
+
+ <DBMS_encoding>EUC-KR</DBMS_encoding> 
+
+<!-- 
+  <datasource_name>
+	 DataSource를 지정하지 않았을때 Default로 사용되는 JDBC JNDI Name
+ -->	
+	<datasource_name>ds_sample</datasource_name>
+
+<!--  <field-check>
+	 JediSQL Service에서 사용하는 Field, 사용자 설정 필요 없음.
+	 false : Query XML에 정의된 Parameter가 Request로 전달되지 않아도 Exception 발생하지 않음.
+ -->	
+	<field-check>true</field-check>
+
+
+<!--<startup-action>
+	Jedi Framework의 기동시 동작될 Startup Class
+-->
+<!--    <startup-action></startup-action> -->
+<!--<startup-interval>
+	Startup Class가 동작되기 위해 지정할 Interval
+-->
+<!-- 	<startup-interval></startup-interval> -->
+
+	<!--<startup-action> Jedi Framework의 기동시 동작될 Startup Class -->
+	<!-- <startup-action></startup-action> -->
+	<!--<startup-interval> Startup Class가 동작되기 위해 지정할 Interval -->
+	<!-- <startup-interval></startup-interval> -->
+
+	<socket-timeout>20000</socket-timeout>
+	
+<!--  이하,  사용되지 않으나, 호환성을 위해 남겨둔 설정 -->
+	<LOGCONFIG_FILENAME>LogConfig.xml</LOGCONFIG_FILENAME>
+	<MESSAGE_CODE_FILENAME>MessageCode.properties</MESSAGE_CODE_FILENAME>
+	<MESSAGE_CODE_XML_FILENAME>MessageCode</MESSAGE_CODE_XML_FILENAME>
+	<WEBLog_FileName>weblogconfig.xml</WEBLog_FileName>
+	<CRYPTOFIG_FILENAME>CryptoConfig.xml</CRYPTOFIG_FILENAME>
+	<admin-id>admin</admin-id>
+	<admin-login-page>admin.login.admin</admin-login-page>
+	<admin-password>1111</admin-password>
+	<connection_pool_name>jediPool</connection_pool_name>
+	<front-login-page>login.form.page</front-login-page>
+	<initialize-biz-delegation>yes</initialize-biz-delegation>
+	<locale_country>KR</locale_country>
+	<locale_language>KO</locale_language>
+	<message_store_type>XML</message_store_type>
+	<session.timeout>-1</session.timeout>
+	<exception_messge_dao></exception_messge_dao>
+<!--  이상,  사용되지 않으나, 호환성을 위해 남겨둔 설정 -->
+
+        <!--<startup-action>telecaps.common.action.TeleCapsStartupAction</startup-action>-->
+	<startup-delay>20</startup-delay>
+	<interval>90</interval>
+	<intervalReal>30</intervalReal> <!-- 90 -->
+	<intervalAes>40</intervalAes>
+	<trap-port>162</trap-port>
+	<startup-type>trap</startup-type>
+	<ping-interval>60</ping-interval>
+	<port-interval>120</port-interval>
+	<ping-interval-delay>60</ping-interval-delay>
+	<port-interval-delay>60</port-interval-delay>
+	<cms-interval>60</cms-interval>
+	<icms-interval>60</icms-interval> <!-- 180 -->
+	<sms-interval>60</sms-interval>
+	<ivralarm-interval>60</ivralarm-interval>
+	<nrboard-interval>3</nrboard-interval>
+	<xcron-interval>60</xcron-interval>
+	<rec-interval>60</rec-interval>
+	<genesys-interval>60</genesys-interval>
+	<alarmBack-interval>60</alarmBack-interval>
+	<threadPoolCnt>30</threadPoolCnt>
+	<threadPoolDbCnt>40</threadPoolDbCnt>
+	
+	<minTimerStart>Y</minTimerStart>
+	<callTimerStart>Y</callTimerStart>
+	<pingTimerStart>Y</pingTimerStart>
+	<portTimerStart>N</portTimerStart>
+	<snmpTimerStart>Y</snmpTimerStart>
+	<processAlarmTimerStart>Y</processAlarmTimerStart>
+	<recfileTimerStart>N</recfileTimerStart>
+	<cmsTimerStart>Y</cmsTimerStart>
+	<icmsTimerStart>N</icmsTimerStart> 
+	<smsTimerStart>Y</smsTimerStart>
+	<aesTimerStart>N</aesTimerStart>
+	<batchTimerStart>Y</batchTimerStart>
+	<ivrTimerStart>N</ivrTimerStart> 
+	<ivrAlarmTimerStart>N</ivrAlarmTimerStart>
+	<nrboardTimerStart>N</nrboardTimerStart>
+	<xcronTimerStart>N</xcronTimerStart>
+	<recTimerStart>N</recTimerStart>
+	<genesysTimerStart>N</genesysTimerStart>
+	<alarmBackTimerStart>Y</alarmBackTimerStart>
+		
+</environment-config>

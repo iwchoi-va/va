@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+var _url = "service::cs.hr.hrm130m010t010p.do";
+var changeCount = 0;
+
+function page_load(event) {
+//	alert(Xwing.param.user_id);
+}
+
+//---초기화버튼 클릭
+/*function btn_reset_click(event) {
+	Xwing.getEdit("edt_c_pw").setValue("");
+	Xwing.getEdit("edt_n_pw").setValue("");
+}*/
+
+//-- 저장버튼 클릭
+function btn_save_click(event) {
+	if(Xwing.getEdit("edt_c_pw").getValue() == "") {
+		xwing.Dialog.alert("현재 비밀번호를 입력하십시오.");
+		return ;
+	}
+
+	if(Xwing.getEdit("edt_n_pw").getValue() == "") {
+		xwing.Dialog.alert("신규 비밀번호를 입력하십시오.");
+		return ;
+	}
+
+	if(!chkPwd(Xwing.getEdit("edt_n_pw").getValue())) {
+		return ;
+	}
+
+	xwing.Dialog.confirm("저장하시겠습니까?", Xwing.getPage("page").getTitle(), f_savepass);
+/*	if(confirm("저장 하시겠습니까?")){
+		var opt = {
+				reqId : "save"
+				, url : "service::cs.hrm.hrm130m010t010p.changepassword.do"
+				, param :{
+					userid : Xwing.param.user_id
+					, c_password : hex_md5(Xwing.getEdit("edt_c_pw").getValue())
+					, password : hex_md5(Xwing.getEdit("edt_n_pw").getValue())
+					, regid : global("G_USER_ID")
+					, change_cd : "C"
+					,
+
+				}
+		};
+
+		Xwing.request(opt, callback);
+	}*/
+
+}
+
+function chkPwd(str){
+	 var pw = str;
+	 var num = pw.search(/[0-9]/g);
+	 var eng = pw.search(/[a-z]/ig);
+	 var spe = pw.search(/[`~!@@#$%^&*|₩₩₩'₩";:₩/?]/gi);
+
+	 if (pw.length < 8) {
+		xwing.Dialog.alert("8자리 이상으로 입력해주세요.");
+		return false;
+	 }
+
+	 if(pw.search(/₩s/) != -1){
+		 xwing.Dialog.alert("비밀번호는 공백없이 입력해주세요.");
+		 return false;
+	 }
+
+	 if(num < 0 || eng < 0 || spe < 0 ){
+		 xwing.Dialog.alert("영문, 숫자, 특수문자를 혼합하여 입력해주세요.");
+		 return false;
+	 }
+
+	 var SamePass_0 = 0; //동일문자 카운트
+	 var SamePass_1 = 0; //연속성(+) 카운드
+	 var SamePass_2 = 0; //연속성(-) 카운드
+
+	 var chr_pass_0;
+	 var chr_pass_1;
+
+	 for(var i=0; i < str.length; i++) {
+		 chr_pass_0 = str.charAt(i);
+		 chr_pass_1 = str.charAt(i+1);
+
+		// 동일문자 카운트
+		if (chr_pass_0 == chr_pass_1) {
+			SamePass_0 = SamePass_0 + 1
+		} // if
+
+		// 연속성(+) 카운드
+		if (chr_pass_0.charCodeAt(0) - chr_pass_1.charCodeAt(0) == 1) {
+			SamePass_1 = SamePass_1 + 1
+		} // if
+
+		// 연속성(-) 카운드
+		if (chr_pass_0.charCodeAt(0) - chr_pass_1.charCodeAt(0) == -1) {
+			SamePass_2 = SamePass_2 + 1
+		} // if
+	} // for
+
+	if (SamePass_0 > 1) {
+		xwing.Dialog.alert("동일문자를 3번 이상 사용할 수 없습니다.");
+		return false;
+	} // if
+
+	if (SamePass_1 > 1 || SamePass_2 > 1) {
+		xwing.Dialog.alert("연속된 문자열(123 또는 321, abc, cba 등)을\n 3자 이상 사용 할 수 없습니다.");
+		return false;
+	} // if
+
+	return true;
+}
+
+function f_savepass(e) {
+	if(e == false){
+		return;
+	}
+
+	var opt = {
+			reqId : "save"
+			, url : "service::cs.hrm.hrm130m010t010p.changepassword.do"
+			, param :{
+				userid : Xwing.param.user_id
+				, c_password : hex_md5(Xwing.getEdit("edt_c_pw").getValue())
+				, password : hex_md5(Xwing.getEdit("edt_n_pw").getValue())
+				, regid : global("G_USER_ID")
+				, change_cd : "C"
+				,
+
+			}
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function callback(reqId, res, err, xhr) {
+	if (res.ResultCode != 0){
+//		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+
+		if(res.ResultCode == "CURPASS_ERROR"){
+			changeCount++;
+			Xwing.getEdit("edt_c_pw").setValue("");
+			Xwing.getEdit("edt_n_pw").setValue("");
+			xwing.Dialog.alert(res.ResultMessage);
+
+			return;
+		}
+
+		if(changeCount == 3){
+			xwing.Dialog.alert("현재 비밀번호 입력 3회 오류입니다.\n 다시 시도해 주십시오.");
+			return;
+		}
+
+		xwing.Dialog.alert(res.ResultMessage);
+
+		return;
+	}
+
+	switch(reqId) {
+
+		case "save":
+			xwing.Dialog.alert( '처리되었습니다.','', alertCallback);
+
+		break;
+
+	}
+}
+
+function alertCallback(){
+	try{
+		Xwing.parent.Xwing.parent.Xwing.getDialog("hrm130m").close();
+		Xwing.parent.Xwing.getDialog("changePw").close();
+	}catch(e) {
+		Xwing.parent.Xwing.getDialog("changePw").close();
+	}
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="ds_passwordlist">
+		<xwing:dataset-column id="user_id"></xwing:dataset-column>
+		<xwing:dataset-column id="password"></xwing:dataset-column>
+		<xwing:dataset-column id="currentpassword"></xwing:dataset-column>
+		<xwing:dataset-column id="regid"></xwing:dataset-column>
+		<xwing:dataset-column id="changecd"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="비밀번호변경" width="330" height="128" load="page_load" scroll="false">
+		<xwing:group id="grp_01" left="0" top="0" width="330" height="90" fontweight="bold" anchor="top right left" styles="div_perform" borderstyle="solid">
+			<xwing:edit id="edt_c_pw" left="115" top="15" width="200" height="25" binddataset="ds_passwordlist" bindcolumn="currentpassword" mode="password" styles="edit_mand"></xwing:edit>
+			<xwing:edit id="edt_n_pw" left="115" top="45" width="200" height="26" binddataset="ds_passwordlist" bindcolumn="password" mode="password" styles="edit_mand" tabindex="1"></xwing:edit>
+			<xwing:label id="stc_c_pw" value="현재비밀번호" left="15" top="15" height="25" halign="left" width="95" styles="label_lititle"></xwing:label>
+			<xwing:label id="stc_n_pw" value="신규비밀번호" left="15" top="45" height="26" halign="left" width="95" styles="label_lititle"></xwing:label>
+		</xwing:group>
+		<xwing:button id="btn_save" value="저 장" left="257" top="97" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_save_click" borderstyle="none"></xwing:button>
+	</xwing:page>
+</body>
+</html>

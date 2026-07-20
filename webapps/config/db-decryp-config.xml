@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<decryp-datas>
+      
+	<data query-id="wfm.hr.hrm100m010p.dept.sel" 
+	      columns="TEL_NO1,TEL_NO2"
+	      initech-poly-columns="ENC_TEL_NO,ENC_TEL_NO" />
+	      
+	<data query-id="rsk.rsk080.engine.tunning.src" 
+	      columns="REGIST_NO"
+	      initech-poly-columns="ENC_REG_NO" />
+	      
+    <data query-id="rsk.rsk080.engine.tunning.src.registno" 
+	      columns="REGIST_NO"
+	      initech-poly-columns="ENC_REG_NO" /> 
+	       
+    <data query-id="cs.info.info070m.V_STT_RSLT.sel.rec" 
+	      columns="CONTENT"
+	      initech-poly-columns="ENC_ADDR" />
+	      
+	<data query-id="cs.info.info070m.V_STT_RSLT_META.sel.rec" 
+	      columns="CONTENT"
+	      initech-poly-columns="ENC_ADDR" />
+	          
+</decryp-datas>

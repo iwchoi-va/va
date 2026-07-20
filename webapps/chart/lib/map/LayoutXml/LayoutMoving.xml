@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+<!--
+centerX 중앙지점의 x좌표 (기본 0)
+centerY 중앙지점의 y좌표 (기본 0)
+percentCenterX 퍼센트로 표시 되는 중앙지점의 x좌표. 0이면 중심을 의미하며, 100%이면 맨 오른쪽, -100%이면 맨왼쪽으로 중심이 이동하게 됩니다 (기본 0)
+percentCenterY 퍼센트로 표시 되는 중앙지점의 y좌표. 0이면 중심을 의미하며, 100%이면 맨 아래, -100%이면 맨위로 중심이 이동하게 됩니다 (기본 0)
+-->
+	<MapChart id="mainMap" percentCenterX="-50" percentCenterY="-5">
+		<series>
+			<MapSeries id="mapseries" labelPosition="inside">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/> 
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

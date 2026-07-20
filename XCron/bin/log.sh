@@ -1,0 +1,1 @@
+tail -f ../ktwfmlog/xcron/xcron_etc/service.log

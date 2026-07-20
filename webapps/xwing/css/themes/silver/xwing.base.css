@@ -1,0 +1,134 @@
+xwing\:data {
+	display: none;
+}
+
+body {
+	padding: 0;
+	border: 0 none;
+	margin: 0;
+}
+
+* {
+	outline: none;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+.xw-container {
+	box-sizing: content-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+/* *:focus{
+	outline:none;
+} */
+*::-moz-focus-inner {
+	border: 0;
+}
+
+.xw-shell { /* position:absolute; */
+	font-family: Dotum, 돋움;
+	font-size: 11px;
+}
+
+.xw-disabled {
+	background-color: #ffffff;
+	/*
+	background: linear-gradient(#ebebeb, #ebebeb);
+	background: -moz-linear-gradient(#ebebeb, #ccc);
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#ebebeb),	to(#b8c6d8) );
+	*/
+	opacity: 0.4;
+	filter: alpha(opacity = 40);
+	z-index: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+.xw-indicator {
+	position: absolute;
+}
+
+.xw-indicator div {
+	position: relative;
+	top: 50%;
+	left: 50%;
+	width: 32px;
+	height: 32px;
+	margin-top: -16px;
+	margin-left: -16px;
+	background-image: url("img/bigWaiting.gif");
+	background-repeat: no-repeat;
+	background-color: #fff;
+}
+
+.xw-indicator span {
+	display: block;
+	position: relative;
+	top: 50%;
+	width: 100%;
+	margin-top: 5px;
+	text-align: center;
+}
+
+.xw-trace-refresh {
+	z-index: 999;
+	cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
+	width: 16px;
+	height: 16px;
+}
+
+.xw-align {
+	display: inline-block;
+}
+
+.xw-align-image {
+	width: 0px;
+}
+
+.xw-tooltiptext {
+	position: absolute;
+	display: inline-block;
+	border: 1px solid #798da7;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	padding: 2px;
+	background-color: #F2F4F6;
+	white-space: pre;
+	z-index: 9999;
+}
+
+.xw-placeholder {
+	color: #ACA899 !important;
+	position: absolute;
+	font-size: 13px;
+	top: 0px;
+	left: 0px;
+	padding-left: 5px;
+	display: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	pointer-events: none;
+}
+
+.xw-scroll-wrapper {
+	width: 100%;
+	overflow: auto;
+}
+
+.xw-unselectable {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}

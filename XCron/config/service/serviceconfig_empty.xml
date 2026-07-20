@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE DomainConfig PUBLIC  "-//XCRON//DTD XCRON 1.0//EN" "config/service/serviceconfig.dtd">
+
+<DomainConfig>
+	<ServiceDefinition>
+	
+	</ServiceDefinition>
+	<RequestServiceDefinition>
+	
+	</RequestServiceDefinition>
+</DomainConfig>

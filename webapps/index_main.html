@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="shortcut icon" href="msens_icon.ico" />
+<link rel="icon" href="msens_icon.ico" />
+<title>V-SENS</title>
+<script>
+
+var getParameter = function (param) {
+    var returnValue;
+    var url = location.href;
+    var parameters = (url.slice(url.indexOf('?') + 1, url.length)).split('&');
+    for (var i = 0; i < parameters.length; i++) {
+        var varName = parameters[i].split('=')[0];
+        if (varName.toUpperCase() == param.toUpperCase()) {
+            returnValue = parameters[i].split('=')[1];
+            return decodeURIComponent(returnValue);
+        }
+    }
+};
+
+function onload() {
+	var v_host = window.document.location.host;
+	var v_path = window.document.location.pathname;
+	var v_user_id = getParameter("user_id");
+	var v_url = "http://" + v_host + v_path.substring(0, v_path.indexOf("/", 2)) + "/common/login.xhtml?user_id=" + v_user_id +"&pass_yn=Y";
+	
+	var objWSH = new ActiveXObject("WScript.Shell");
+	try{
+		objWSH.Run('"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Chrome\\Chrome.lnk "' + v_url, 0, false);
+	}catch(e){
+		objWSH.Run('"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Chrome.lnk "' + v_url, 0, false);
+	}
+	
+	var v_flag = getCookie("chrome_install");
+	
+	if(v_flag != "install") {
+		setCookie("chrome_install", "install", 365);
+		location.replace("./");
+	} else {
+		window.open('about:blank','_self').self.close();
+	}
+}
+
+function getCookie(cName) {
+    cName = cName + '=';
+    var cookieData = document.cookie;
+    var start = cookieData.indexOf(cName);
+    var cValue = '';
+    if(start != -1){
+         start += cName.length;
+         var end = cookieData.indexOf(';', start);
+         if(end == -1)end = cookieData.length;
+         cValue = cookieData.substring(start, end);
+    }
+    return unescape(cValue);
+}
+
+function setCookie(cName, cValue, cDay){
+    var expire = new Date();
+    expire.setDate(expire.getDate() + cDay);
+    cookies = cName + '=' + escape(cValue) + '; path=/ '; 
+    if(typeof cDay != 'undefined') cookies += ';expires=' + expire.toGMTString() + ';';
+    document.cookie = cookies;
+}
+
+</script>
+</head>
+<body onload="onload()">
+
+</body>
+</html>

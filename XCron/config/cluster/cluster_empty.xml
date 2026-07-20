@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Cluster ID is the identifier of Domain.
+	IpAddress's Attribute value must be IPv4 format. 
+	so, DO NOT use 127.0.0.1 or localhost.
+-->
+<ClusterConfig>
+	<Cluster Id="XCronClusterView">
+		<Node IpAddress="211.179.3.167" Port="7800"/>
+	</Cluster>
+</ClusterConfig>

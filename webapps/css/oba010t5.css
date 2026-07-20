@@ -1,0 +1,254 @@
+@CHARSET "utf-8";
+
+	*{
+			font-family:'Dotum', '돋움','NanumBarunGothic','Malgun Gothic';
+	}
+	
+	#div_title{
+		height: 40px;
+		background: url(../images/title_sample.png) no-repeat;
+		background-position: left;
+		box-shadow : rgb(189, 202, 214) 0px 2px 0px 0px;
+	}
+	#title {
+		/*width: 100px;*/
+		height : 38px;
+		float: left;
+		font-size : 16px;
+		font-weight : bolder;
+		line-height: 38px;
+		margin-left : 22px;
+		color: #5E5E5E;
+	}
+	
+	#btn_exit {
+		width : 60px;
+		float:left;
+		margin-top : 6px;;
+	}
+	
+	#div_search{
+		height : 45px;
+		margin-top : 10px;
+		border : 1px solid #798da7;
+		background-color: rgb(239, 240, 241);
+	}
+	
+	.btn {
+		height: 25px;
+    	line-height: 20px;
+    	text-align: center;
+    	width: 60px;
+    	font-weight: bold;
+	}
+	
+	.search_lbl {
+		font-size: 11px;
+		margin-top:10px;
+		margin-left : 10px;
+		float : left;
+		height: 25px;
+	}
+	
+	.search_lbl label {
+		line-height: 25px;
+		color : rgb(48, 48, 48);
+		font-weight: bold;	
+	}
+	
+	.search_lbl #lbl_notice{
+		color : red !important;
+	}
+	
+	.search_edt input {
+		height : 20px;
+		font-size: 11px;
+		padding-left : 5px;
+	}
+	
+	.search_edt{
+		height: 25px;
+	    margin-top: 10px;
+	    float : left;
+	}
+	
+	.edt_readonly input {
+		background-color: rgb(233, 243, 248);
+		border : 1px solid #a3a3a3;
+	}
+	
+	#div_history{
+		width : 50%;
+		float : left;
+		margin : 10px 0px;
+	}
+	
+	#div_status{
+		width : 50%;
+		float : left;
+		margin : 10px 0px;
+	}
+	
+	.div_status_sub{
+		margin-bottom : 5px;
+	}
+	
+	.lbl_subtitle{
+		font-size: 14px;
+		font-weight: bold;
+		color: #5E5E5E;
+		padding : 5px 0px;
+	}
+	
+	.txt_option {
+		width: 98%;
+    	height: 50px;
+	}
+	
+	.qc_status {
+		list-style: none;
+    	margin: 0px;
+    	padding: 0px;
+	}
+	
+	.qc_status li {
+		width: 90px;
+    	float: left;
+    	font-size: 12px;
+	}
+	
+	#btn_save:disabled{
+		opacity : 0.8;
+		cursor: auto !important;
+	}
+	
+	/**테이블 동적으로 그리는 부분 ***/
+	#div_estTable {
+		width : 100%;
+		height : 300px;
+		margin-top: 35px;
+		margin-left : 2px;
+		/*overflow: auto;*/
+	}
+	
+	#div_estTable #grd_itemResultNew{
+		width : 120%;
+	}
+	
+	/*jqgrid 디자인 수정*/
+	.ui-jqgrid tr.ui-row-ltr td {
+		white-space :  normal !important;
+	}
+	
+	.ui-jqgrid-labels th {
+		background-color : #d0d8dd;
+		border-top: 1px solid #acacac !important;
+		border-right: 1px solid #acacac;
+    	border-bottom: 1px solid #acacac !important;
+    	color : #636363;
+	}
+	
+	.ui-jqgrid-labels th:FIRST-CHILD{
+		border-left: 1px solid #acacac !important;
+	}
+	
+	
+	.ui-jqgrid-btable tbody tr {
+		border : 1px solid #acacac;
+	}
+	
+	.ui-jqgrid-btable tbody tr td:FIRST-CHILD{
+		border-left : 1px solid #acacac;
+	}
+	
+	#tbl_est_items textarea{
+		width : 165px;
+		height : 40px;
+		overflow : auto;
+	}
+	
+	/*
+	#tbl_est_items textarea[readonly="readonly"],
+	#tbl_est_items input[type=text][readonly=true]{
+		background-color : #E9F3F8;
+		border : 1px solid rgba(169, 169, 169, 1);
+		
+	}
+	
+	#tbl_est_items textarea:read-only,
+	#tbl_est_items input[type=text]:read-only {
+		background-color : #E9F3F8;
+		border : 1px solid rgba(169, 169, 169, 1);
+		
+	}*/
+	
+	#tbl_qc_opinion .ui-state-highlight{
+		background-color : #E2ECF3 !important;
+	}
+	
+	#his_notice label {
+		font-size: 10px;
+	}
+	
+	#div_mod_history {
+		margin : 10px 10px;
+	}
+	
+	.ui-jqgrid .ui-jqgrid-htable .ui-th-div,
+	.ui-jqgrid tr.ui-row-ltr td{
+		font-size : 11px;
+	}
+	
+	#btn_excel{
+		width :23px;
+		height : 23px;
+		border: 1px solid #c6c6c6;
+		background-color : #fff;
+		border-radius : 3px;
+		float: right;
+    	margin: 5px 0px;
+    	background-image: url(../images/ico_excel.png);
+    	background-repeat: no-repeat;
+    	background-position: center;
+	}
+	
+	#tbl_est_items textarea,
+	#tbl_est_items input[type=text] {
+		IME-MODE : active !important;
+		background-color : #E9F3F8;
+		border : 1px solid rgba(169, 169, 169, 1);
+		cursor : default;
+	}
+	
+	#tbl_est_items td .selected{
+		background-color : #ffffff !important;
+		cursor : auto;
+	}
+	
+	#div_estTable .ui-jqgrid-sdiv table{
+		border-top : 1.5px solid #c5c5c5;
+		border-right : 1px solid #acacac;
+		border-left : 1px solid #acacac;
+		border-bottom : 1px solid #acacac;
+		background-color: #fdfae7;
+	}
+	
+	#div_estTable table .footrow {
+		height: 40px;
+	}
+	
+	#div_estTable table .footrow td {
+		text-align: center !important;
+		border-top : 0px solid #c5c5c5;
+		border-right : 1px solid #c5c5c5;
+	}
+	
+	#div_estTable .ui-jqgrid-bdiv{
+		height : 230px !important;
+		overflow: auto;
+	}
+	
+	
+	
+	/*.ui-jqgrid-btable .ui-state-highlight { background-color : #eeeeee !important;}*/ 
+	

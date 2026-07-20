@@ -1,0 +1,22 @@
+.xw-splitbar {
+	height: 100%;
+	width: 100%;
+	border-color: #5d6b75;
+	background-color: #8C99A2;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+.xw-splitbar-resizer-ghost {
+	background: #999;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 100;
+}
+
+.xw-split-icon {
+	top: 50%;
+	top: 50%;
+	position: absolute;
+}

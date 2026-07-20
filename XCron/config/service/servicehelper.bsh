@@ -1,0 +1,45 @@
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import xcron.utils.*;
+
+String substring(String value, int startIndex, int endIndex) {
+	return value.substring(startIndex, endIndex);
+}
+
+String addDate(int nOffSet) throws Exception {
+	String date = DateUtil.getDayAdd(DateUtil.getCurrentDate(), "yyyyMMdd", nOffSet);
+	Date d = DateUtil.string2Date(date, "yyyyMMdd");
+	return DateUtil.date2String(d, "yyyy-MM-dd");
+}
+
+String getPrevMonth() {
+	String date = DateUtil.getYesterday();
+	Date d = DateUtil.string2Date(date, "yyyy/MM/dd");
+	date = DateUtil.date2String(d, "yyyy-MM-dd").substring(0, 8) + "01";
+	return date;
+}
+
+String getPrevDate() {
+	Date d = DateUtil.string2Date(DateUtil.getYesterday(), "yyyy/MM/dd");
+	return DateUtil.date2String(d, "yyyy-MM-dd");
+}
+
+Boolean isEmpty(String value) {
+	if(value == null || value.trim().length() == 0) return true;
+	return false;
+}
+
+Boolean isNotEmpty(String value) {
+	return !isEmpty(value);
+}
+
+Boolean isEqual(String source, String target) {
+	return target.equals(source);
+}
+
+String convertDateFormat(String dateString, String fromFormat, String toFormat) {
+	return DateUtil.convertFormat(dateString, fromFormat, toFormat);
+}

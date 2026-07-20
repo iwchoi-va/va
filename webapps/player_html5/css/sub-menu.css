@@ -1,0 +1,41 @@
+
+/* **********button control area********** */
+.sub-menu { padding: 0px; width: 100%; }
+.sub-menu .btn_info,
+.sub-menu .btn_rank,
+.sub-menu .btn_summary,
+.sub-menu .btn_memo,
+.sub-menu .btn_history { 
+	display: inline-block;
+	/* background: url("../images/call_info.png") no-repeat scroll 0 0 transparent;*/
+	cursor: pointer;
+	height: 40px;
+	width: 40px; 
+	border-width: 0px;
+	padding: 15px;
+	background-position: center center;
+	outline: none;
+}
+.sub-menu .btn_close { 
+	display: inline-block;
+	cursor: pointer;
+	height: 40px;
+	width: 40px; 
+	border-width: 0px;
+	padding: 15px;
+	background-position: center center;
+	outline: none;
+	float: right;
+}
+
+.sub-menu .button button:focus {outline:0;}
+
+
+iframe { width: 100%; }
+
+
+
+
+
+
+

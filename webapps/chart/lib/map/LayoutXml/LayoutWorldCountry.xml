@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="true" showDataTips="true" showDataTipTargets="false">
+		<series>
+			<MapSeries id="mapseries" selectionMarking="line" displayName="Map Series">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0xAAAAAA"/>
+				</filters>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

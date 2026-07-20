@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="./css/bar-horizon.css">
+	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	
+	
+	
+	</head>
+	<body>
+	  	
+	<script type='text/javascript' src='./lib/echarts.min.js'></script>		
+		<div id="container"></div>
+
+		
+	<script>//<![CDATA[ 
+
+	var width, height,option;
+	var dbl = false;
+	var chart = echarts.init(document.getElementById('container'));
+	$( window ).bind("resize", function(){
+		width = parent.$pan_bar_horizon.getAttribute("width");
+		height = parent.$pan_bar_horizon.getAttribute("height");
+
+		$("#container").width( width ); // 20: padding-right 
+	    $("#container").height( height ); 
+		
+	    chart.resize(width - 20, height, true);
+	});
+
+	window.onload = function(){
+		document.body.oncontextmenu = function(){return false;};
+	}
+	
+	$(function () {
+		function getCategory(){
+			var arr = new Array();
+			for(var i=0; i<parent.$DS_BAN_RATE.size(); i++) {
+				arr[i] = parent.$DS_BAN_RATE.getValue(i,"BAN_KEYWORD"); 
+			}
+			return arr;
+		}
+		
+		function getData(){
+			var arr = new Array();
+			for(var i=0; i<parent.$DS_BAN_RATE.size(); i++) {
+				arr[i] = Number(parent.$DS_BAN_RATE.getValue(i,"RATE")); 
+			}
+			return arr;
+		}
+		
+		
+		option = {
+				color: '#0578b9',
+					//['#6F7A84'],
+			   /*  title: {
+			        text: '世界人口总量',
+			        subtext: '数据来自网络'
+			    }, */
+			    toolbox: {
+			        feature: {
+			            restore: {show: true,title:'새로고침'}
+			        }
+			    },
+			    tooltip: {
+			        trigger: 'axis',
+			        formatter: '{b}: {c}%',
+			        axisPointer: {
+			            type: 'shadow'
+			        }
+			    },
+			    grid: {
+			        left: '3%',
+			        right: '4%',
+			        bottom: '3%',
+			        containLabel: true
+			    },
+			    xAxis: {
+			        type: 'value',
+			        max:100,
+			        boundaryGap: [0, 0.01]
+			    },
+			    yAxis: {
+			        type: 'category',
+			        min: 0,
+			        data: getCategory(),
+			        inverse:true
+			    },
+			    series: [
+			        {
+			            name: '',
+			            type: 'bar',
+			            data: getData()
+			        }
+			       
+			    ]
+			};
+		if (option && typeof option === "object") {
+			chart.setOption(option,true);
+		}
+		
+	/* 	setTimeout(function () {
+		    $('#container').highcharts({
+		        chart: { type: 'bar' },
+		        
+		        colors: ['#6F7A84'],
+		        
+		        title: {text: ''},
+		        
+		        subtitle: {text: ''},
+		        
+		        xAxis: {
+		            categories: getCategory(), 
+		            title: {text: null},
+		            labels: {
+		                style: {
+		                    cursor: 'pointer'
+		                }
+		            }
+		        },
+		        
+		        yAxis: {
+		            min: 0,
+		            title: {
+		                text: '',
+		                align: 'high'
+		            },
+		            labels: {overflow: 'justify'}
+		        },
+		       
+		        tooltip: {
+	                headerFormat: '<span style="font-size:11px"><b>{point.key}</b></span><br>',
+	                pointFormat: '<span style="color:{point.color}">{series.name}</span>: <b>{point.y} %</b><br/>', 
+	                shared: true
+	            },
+	            
+	            legend: {enabled: false},
+	            
+		        plotOptions: {
+		        	bar: {
+		                dataLabels: {
+		                    enabled: true
+		                }
+		            },
+		            series: {
+		            	stacking: 'normal',
+		                cursor: 'pointer',
+		                dataLabels: {
+		                	color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+		                    style: {
+		                        textShadow: '0 0 3px black'
+		                    }
+		                 },
+		                point: {
+		                    events: {
+		            			click: function() {
+		            				parent.reSrc1(this.category);
+		            			}
+		                    }
+		                }
+		            }
+		        },
+		        
+		        credits: {enabled: false},
+		        
+		        series: [{
+		            name: '콜비율(금칙어건수/전체콜)',
+		            //colorByPoint: true,
+		            //type: 'column',
+		            data: getData()
+		        }]
+		        
+		    });
+		    
+		    $('.highcharts-xaxis-labels text, .highcharts-xaxis-labels span').click(function () {
+		    	parent.reSrc1_label(this.textContent || this.innerText);
+		    });
+		    
+		}, 30); */
+	});
+	//]]>  
+
+	</script>
+
+	</body>
+	
+</html>
+

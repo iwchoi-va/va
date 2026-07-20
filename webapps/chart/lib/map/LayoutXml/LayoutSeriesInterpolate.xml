@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="true" showDataTips="true">
+<!--
+SeriesInterpolate 이펙트를 사용할 경우 hideDataEffect는 사용하실 수 없습니다.
+-->
+		<series>
+			<MapSeries id="mapseries" displayName="Map Series" labelPosition="inside">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+<!--
+duration 이펙트 시간(단위 밀리세컨드)
+elementOffset 개별 지역 이미지의 이펙트 시작 간격(단위 밀리세컨드)(기본 20)
+startDelay 이펙트가 시작되기 전 간격(단위 밀리세컨드)(기본 0)
+-->
+					<SeriesInterpolate duration="1500"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

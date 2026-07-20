@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="./css/jquery.circliful.css">
+<head>
+
+  	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+  	<script>
+  	$(document).ready(function(){
+  		document.body.oncontextmenu = function(){return false;};
+  		
+  		//660,180	
+  		$( window ).bind("resize", function(){
+  			
+  			draw();		
+  			
+  		});
+  		
+  	});
+  	
+  	//$(function () {
+		
+		function draw() {
+			//$("#container").html("<svg style='margin: 0px 0px 30px 0px;' id='fillgauge0' ></svg><svg style='margin: 20px 15px 50px 15px;' id='fillgauge1' ></svg><svg style='margin: 20px 15px 50px 15px;' id='fillgauge2' ></svg>");
+			$("#container").html("<svg id='fillgauge0' ></svg><svg id='fillgauge1' ></svg><svg id='fillgauge2' ></svg>");
+			
+			var colors = ['#9293EF','#5EA4EB ','#2BDFD3'];
+			
+	        for(var i=0; i < 3; i++){
+	        	var fillgauge_id = 'fillgauge'+i;
+			    var p_width = parent.$pan_liquid_pie.getAttribute("width");
+			    var p_height = parent.$pan_liquid_pie.getAttribute("height");
+			    var width = Math.round(p_width/3 -15);//180 ..35
+			    var height = width;//125 .. 45
+			    var margin = (p_height-width)/2;
+			    if(width>p_height){
+			    	//width = p_height;
+			    	height = p_height;
+			    	margin = 0;
+			    }
+			    
+			    $("#"+fillgauge_id).css('margin-top',margin );
+			    $("#"+fillgauge_id).css('width', width);
+	  			$("#"+fillgauge_id).css('height', height); 
+	  			
+				var value = 0;
+			    //if(parent.$DS_COUNT.getValue(i,"TOTALCOUNT") != 0 || parent.$DS_COUNT.getValue(i,"TOTALCOUNT") == null) {
+			    if(parent.$DS_COUNT.getValue(i,"TOTALCOUNT")) {	
+			    	value = Math.round((parent.$DS_COUNT.getValue(i,"COUNT") / parent.$DS_COUNT.getValue(i,"TOTALCOUNT")) * 1000) / 10;
+			    }
+			    
+	  			$("#"+fillgauge_id).circliful({
+		            animation: 1,
+		            animationStep: 6,
+		            backgroundColor: '#CCCED1',
+		            foregroundColor: colors[i],
+		            foregroundBorderWidth: 20,
+		            backgroundBorderWidth: 20,
+		            percent: value,
+		            textAdditionalCss:'font-family:맑은 고딕;font-size:22px;',
+		            fontColor: '#2E495D',
+		            iconColor: '#3498DB',
+		            icon: 'f004',
+		            iconSize: '0',
+		            iconPosition: 'middle',
+		            textColor:'#2E495D',
+		            textStyle: 'font-family:맑은 고딕;font-size:15px;font-weight:bold',
+		            //text: parent.$DS_COUNT.getValue(i,"COUNT") + " 건  / " + parent.$DS_COUNT.getValue(i,"TOTALCOUNT") + " 건"
+		            //+ "접촉" + (i+3) + "회"
+		            text: "접촉" + (i+3) + "회"
+		            	/*
+		            	parent.$DS_COUNT.getValue(i,"COUNT") + " 건  / " + parent.$DS_COUNT.getValue(i,"TOTALCOUNT") + " 건"
+				    + "<br>&nbsp;&nbsp;<strong>접촉" + (i+3) + "회</strong>"
+				    */
+		        });
+	  			
+	  			var id = 'count'+i;
+			    document.getElementById(id).style.position = "absolute";
+			    document.getElementById(id).style.top = height/2+margin-4+"px";//"140px";
+			    document.getElementById(id).style.left = Math.round(width/2)+Math.round(p_width/3*i)-15*(i+1) +"px";
+			    document.getElementById(id).style.fontSize = "12px";
+			    document.getElementById(id).style.fontcolor = "#2E495D";
+			    document.getElementById(id).style.fontweight = "light";
+			    document.getElementById(id).style.fontfamily = "맑은고딕";
+			    if(parent.$DS_COUNT.getValue(i,"TOTALCOUNT")) {	
+			    	document.getElementById(id).innerHTML = parent.$DS_COUNT.getValue(i,"COUNT") + " 건  / " + parent.$DS_COUNT.getValue(i,"TOTALCOUNT") + " 건";
+			    }else{
+			    	document.getElementById(id).innerHTML = " 0건  / 0 건";
+			    }
+	        }			
+		}
+	//});
+  	</script>
+</head>
+
+<body style="margin-top: 0px;">
+    <script src="./lib/d3_v3_min.js"></script>
+    <script src="./js/jquery.circliful.min.js"></script>
+    <div id="container"></div>
+	<div id="count0"></div>
+	<div id="count1"></div>
+	<div id="count2"></div>	
+	
+</body>

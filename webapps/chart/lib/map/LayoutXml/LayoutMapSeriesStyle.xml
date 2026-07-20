@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="false" showDataTips="true" scaleMode="auto">
+		<series>
+<!--
+blinkInterval 선택된(클릭된) 지역 이미지의 깜빡거림 시간 간격 (기본 400) - selectionMarking가 blink일 경우
+disabledFill 사용자 선택 불가 지역 이미지의 기본 색상
+disabledStroke 사용자 선택 불가 지역 이미지의 경계 라인 색상
+labelPosition 라벨의 위치를 설정  (none, inside중 택일, 기본 none)
+localFill 지역 이미지 기본 색상 - 설정하지 않을 경우 FXG의 색상이 사용됩니다.
+stroke 지역 이미지 경계 라인 색상
+rollOverFill 마우스 오버된 지역 이미지의 색상
+rollOverStroke 마우스 오버된 지역 이미지의 경계 라인 색상
+selectionFill 선택된(클릭된) 지역 이미지 색상 - selectionMarking가 color일 경우
+selectionStroke  선택된(클릭된) 지역 경계 라인 색상
+selectionMarkLineColor 선택된(클릭된) 지역 이미지 라인 표시 색상 - selectionMarking가 line일 경우
+selectionMarkLineGap 선택된(클릭된) 지역 이미지 라인 표시 간격 (기본 6) - selectionMarking가 line일 경우
+
+color 텍스트의 기본 컬러
+disabledColor disabled된 텍스트의 컬러
+fontWeight 폰트 bold 지정 (bold,normal중 택일, 기본 normal)
+fontStyle 폰트 italic 지정 (italic,normal중 택일, 기본 normal)
+fontFamily 폰트 지정
+fontSize 폰트크기 지정(단위:pixel)
+textDecoration 폰트 underline 지정 (underline,none중 택일, 기본 none)
+-->
+			<MapSeries id="mapseries" selectionMarking="blink" color="0xFFFFFF" fontWeight="bold" labelPosition="inside" displayName="Map Series" blinkInterval="200">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesSlide duration="1000"/>
+				</showDataEffect>
+				<localFill>
+					<LinearGradient angle="90">
+						<entries>
+							<GradientEntry color="0xFDF859" ratio="0.0"/>
+							<GradientEntry color="0xDCD849"/>
+						</entries>
+					</LinearGradient>
+				</localFill>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+				<rollOverFill>
+					<SolidColor color="0xC8EC14"/>
+				</rollOverFill>
+				<rollOverStroke>
+					<Stroke color="0xC8EC14" weight="0.25" alpha="0.5"/>
+				</rollOverStroke>
+				<selectionFill>
+					<SolidColor color="0x49DCBF"/>
+				</selectionFill>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

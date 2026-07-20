@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="shortcut icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<!-- script src="../js/websocketAlarm.js" type="text/javascript" charset="UTF-8"></script -->
+<link href="../css/main.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<link href="../css/main_menu.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+ * FormID(명) : Form 설명 : 작성자 : 작성일 :
+ * ================================================================= 변경내역 :
+ * YYYYMMDD 담당자명 변경내용(Why?,What?)
+ * =================================================================
+ ******************************************************************************/
+
+//$(document).ready(function() {
+//	history.replaceState({}, null, location.pathname);
+//
+//	$(window).on('beforeunload', function(e){
+//			unload_logout();
+//	});
+//});
+
+// *********************************************************************************************************
+// Global Variable
+// ********************************************************************************************************/
+var unloadFlag = true; //웹페이지 닫기버튼 클릭시 LOGOUT 정보 UPDATE하기 위한 FLAG
+
+var global = null;
+var _IS_FORCE = "각 함수에서 메인페이지 인식하기 위해 사용.";
+// Score Card
+var lbl_index = 0;
+
+// Window Resize Flagf
+var win_resize_flag = false;
+
+// Timer
+var timer = null;
+var timer_idx = 0;
+
+var g_notice_messege = "";
+var g_notice_time = new Timer;
+
+var g_ds_holiday = [];
+
+var g_alarmmessege_keyword = "";
+var g_alarmmessege_customer = "";
+var g_alarmmessege_system = "";
+
+// movePage
+var _load_val = false; // child load 완료여부
+var _menuId = ""; // child ID
+var _parameter = null; // 검색할 키워드
+var _hidden_val = false; // 숨김화면 여부
+var _label = ""; // 숨김화면 타이틀
+
+// channel
+var g_channel = '1'; // default: voice
+var fix_tab = []; // 열린 탭중에 fix중인 탭 담고 이쒀.
+
+// slide
+var _btn_width = 29;
+var _btn_height = 81;
+var _panel_top = 40;
+var _panel_height = 820; // 769
+var _panel_width = 454;
+var _open_flag = false;
+var _pnl_slide_url = "./slide.xhtml";
+var TAB_OBJECT = [];
+var Tabmenu = function(Object, tab1_Label, tab1_Url) {
+	var that = this;
+	var TAB_ID = "TAB_" + (new Date()).getTime();
+	var CURRENT_TAB = 0;
+	var CURRENT_CURSOR = null;
+	var MAX_TAB = 30; // 90
+	var LABEL = tab1_Label;
+	var URL = tab1_Url;
+	var opt = null;
+	var obj = null;
+			this.getTabObject = function() {
+				return TAB_OBJECT;
+			},
+			this.checkViewSize = function(tab) {
+				if (tab.getLeft() + tab.getWidth() > _$TAB_MENU_CONTAINER
+						.getWidth()
+						+ (_$TAB_MENU.getLeft() * -1)) {
+					_$TAB_MENU
+							.setLeft((tab.getLeft() + tab.getWidth() - _$TAB_MENU_CONTAINER
+									.getWidth())
+									* -1);
+
+				} else {
+					if ((_$TAB_MENU.getLeft() * -1) > tab.getLeft()) {
+						_$TAB_MENU.setLeft(tab.getLeft() * -1);
+					}
+				}
+			};
+	this.setContainer = function() {
+		var that = this;
+		// 실제 메뉴가 들어가는 컨테이너.
+		opt = {
+			width : Object.getWidth() - 90,
+			height : 40,
+			id : TAB_ID + "_CONTAINER",
+			left : Object.getLeft() + 36,
+			top : 0,
+			scroll : false
+		};
+		obj = Xwing.createPanel(opt);
+		// $main.appendChild(obj);
+		$main.insertChild(obj, 5);
+		_$TAB_MENU_CONTAINER = Xwing.getPanel(TAB_ID + "_CONTAINER");
+		_$TAB_MENU_CONTAINER.setAnchor("right left");
+		// 실제 메뉴.
+		opt = {
+			width : 99999,
+			height : 31,
+			id : TAB_ID,
+			left : 0,
+			top : 9,
+			scroll : false
+		};
+		obj = Xwing.createPanel(opt);
+		_$TAB_MENU_CONTAINER.appendChild(obj);
+		_$TAB_MENU = Xwing.getPanel(TAB_ID);
+		_$TAB_MENU.setAnchor("right left");
+		// 스크롤(메뉴이동)버튼 컨테이너.
+		opt = {
+			width : 50,
+			height : 48,
+			id : TAB_ID + "_scroll",
+			left : _$TAB_MENU_CONTAINER.getLeft()
+					+ _$TAB_MENU_CONTAINER.getWidth(),
+			top : _$TAB_MENU_CONTAINER.getTop(),
+			scroll : false
+		};
+		obj = Xwing.createPanel(opt);
+		$main.appendChild(obj);
+		_$TAB_MENU_SCROLL = Xwing.getPanel(TAB_ID + "_scroll");
+		_$TAB_MENU_SCROLL.setAnchor("right");
+		// 스크롤(메뉴이동)버튼 X 2
+		opt = {
+			width : 20,
+			height : 20,
+			id : TAB_ID + "_scroll_left",
+			left : 1,
+			top : 10,
+			borgerwidth : "1",
+			bordercolor : "#a0a7b1",
+			bgcolor : "#e4e7ea",
+			fontcolor : "#5a6b7f",
+			style : "btn_tablr",
+			value : "◀",
+			cursor : "pointer",
+			halign : "center",
+			valign : "middle",
+			click : that.btnLeftClick,
+			mouseenter : that.btnLeftEnter,
+		};
+		obj = Xwing.createLabel(opt);
+		_$TAB_MENU_SCROLL.appendChild(obj);
+		_$TAB_MENU_SCROLL_LEFT = Xwing.getButton(TAB_ID + "_scroll_left");
+		opt = {
+			width : 20,
+			height : 20,
+			id : TAB_ID + "_scroll_right",
+			left : _$TAB_MENU_SCROLL_LEFT.getLeft()
+					+ _$TAB_MENU_SCROLL_LEFT.getWidth() + 2,
+			top : 10,
+			borgerwidth : "1",
+			bordercolor : "#a0a7b1",
+			bgcolor : "#e4e7ea",
+			fontcolor : "#5a6b7f",
+			value : "▶",
+			cursor : "pointer",
+			halign : "center",
+			valign : "middle",
+			click : that.btnRightClick,
+
+		};
+		obj = Xwing.createLabel(opt);
+		_$TAB_MENU_SCROLL.appendChild(obj);
+		_$TAB_MENU_SCROLL_RIGHT = Xwing.getButton(TAB_ID + "_scroll_right");
+	};
+	this.getLabelWidth = function(string) {
+		var str = new String(string);
+		str = str.replace(/ /g, "a");
+		var eng = str.replace(/[^\w]*/g, "");
+		var kor = str.replace(/\w*/g, "");
+		var eng_size = 8.5;
+		var kor_size = 11.5;
+		var result = (eng.length * eng_size) + (kor.length * kor_size) + 30;
+		// return result;
+		return 152;
+	};
+	this.btnLeftClick = function() {
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (TAB_OBJECT[i].getId() == CURRENT_CURSOR.getId()) {
+				if (i > 0) {
+					that.setCursor((TAB_OBJECT[i - 1]));
+					break;
+				}
+			}
+		}
+	};
+	this.btnRightClick = function() {
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (TAB_OBJECT[i].getId() == CURRENT_CURSOR.getId()) {
+				if (TAB_OBJECT.length - 1 > i) {
+					that.setCursor(TAB_OBJECT[~~i + 1]);
+					break;
+				}
+			}
+		}
+	};
+	this.addTab = function(label, url) {
+		_load_val = false;
+		var idx = $DS_MENU.indexOfRow("CAPTION", label);
+		$lbl_summary.setVisible(false);
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+
+			var v_tab_label = label;
+
+			if (label.length > 9) {
+				v_tab_label = v_tab_label.substr(0, 9) + "..";
+			}
+
+			if (TAB_OBJECT[i].getValue() == v_tab_label) {
+
+				// if (TAB_OBJECT[i].getValue() == label) {
+				if (eval("$" + TAB_OBJECT[i].getId() + "_view.getUrl()") == url) {
+					//_load_val = true;
+					this.setCursor(TAB_OBJECT[i]);
+					return false;
+				}
+			}
+		}
+
+		if (MAX_TAB <= TAB_OBJECT.length) {
+			alert("더이상 탭을 열 수 없습니다.");
+			return false;
+		}
+		var tabLeft = CURRENT_TAB == 0 ? 0 : TAB_OBJECT[TAB_OBJECT.length - 1]
+				.getLeft()
+				+ TAB_OBJECT[0].getWidth() + 2;
+		var tabWidth = this.getLabelWidth(label);
+		var tabId = '';
+		if (_hidden_val) { // 숨김파일만(현재, 녹취리스트, 상담사별 스트레스)
+			$DS_HIDDEN.addRow();
+			$DS_HIDDEN.setValue($DS_HIDDEN.size() - 1, "tab_id", (url
+					.split('/')[1]).split('.')[0]);
+			$DS_HIDDEN.setValue($DS_HIDDEN.size() - 1, "label", label);
+			tabId = "tab" + (CURRENT_TAB++) + "_"
+					+ ((url.split('/')[1]).split('.')[0]);
+			_hidden_val = false;
+		} else { // 기존
+			tabId = "tab" + (CURRENT_TAB++) + "_"
+					+ ($DS_MENU.getValue(idx, "ID") || "default");
+		}
+		
+		var that = this;
+
+		var v_text_label = label;
+		if (label.length > 9) {
+			v_text_label = v_text_label.substr(0, 9) + "..";
+
+			opt = {
+				width : 156,
+				height : 31,
+				id : tabId,
+				left : tabLeft,
+				top : 0,
+				halign : "center",
+				value : v_text_label,
+				tooltiptext : label,
+				styles : "tab",
+				cursor : "pointer",
+				click : function(e) {
+					that.tabOnclick(e.source);
+				}
+			};
+		} else {
+			opt = {
+				width : 156,
+				height : 31,
+				id : tabId,
+				left : tabLeft,
+				top : 0,
+				halign : "center",
+				value : label,
+				styles : "tab",
+				cursor : "pointer",
+				click : function(e) {
+					that.tabOnclick(e.source);
+				}
+			};
+		}
+
+		obj = Xwing.createLabel(opt);
+		_$TAB_MENU.appendChild(obj);
+		eval("$" + tabId + " = Xwing.getLabel(tabId)");
+		this.addView(eval("$" + tabId), url);
+		this.addCloseBtn(eval("$" + tabId));
+		if (CURRENT_CURSOR != null)
+			this.setBluer(CURRENT_CURSOR);
+		this.setCursor((CURRENT_CURSOR = eval("$" + tabId)));
+		TAB_OBJECT.push(CURRENT_CURSOR);
+		this.setPosition();
+
+		// $lbl_navigation.setValue(label); //임시
+	};
+	this.addCloseBtn = function(tab) {
+		var that = this;
+		opt = {
+			width : 11,
+			height : 10,
+			id : tab.getId() + "_close",
+			left : tab.getLeft() + tab.getWidth() - 24,
+			top : 10,
+			bgimage : "../images/tab_close.png",
+			cursor : "pointer",
+			click : function(e) {
+				that.tabCloseOnclick(e.source);
+			}
+		};
+		obj = Xwing.createLabel(opt);
+		if (CURRENT_TAB == 1)
+			obj.setVisible(false);
+		_$TAB_MENU.appendChild(obj);
+		eval("$" + obj.getId() + " = Xwing.getLabel(obj.getId())");
+	};
+	this.addView = function(tab, url) {
+		// var that = this;
+		opt = {
+			width : Object.getWidth(),
+			height : Object.getHeight() - 28, // top만큼 빼야 메인본문 높이가 꽉참
+			// height : Object.getHeight() - 133,
+			id : tab.getId() + "_view",
+			left : 0,
+			top : 28,
+			bgcolor : "#ffffff", // #e7ebee 배경색 변경
+			url : url,
+			anchor : "all",
+			shadow : "#A7BACE 0 -1 0 0"
+		};
+		obj = Xwing.createPanel(opt);
+		Object.appendChild(obj);
+		(eval("$" + obj.getId() + " = Xwing.getLabel(obj.getId())"))
+				.setAnchor("all");
+	};
+	this.setCursor = function(tab) {
+		this.setBluer(CURRENT_CURSOR);
+		CURRENT_CURSOR = tab;
+		tab.setStyles("tab_select");
+		tab.setBgimage("../images/btn_tab_on.png");
+		// tab.setBgimageedge("../images/tab_edge_on.png");
+		eval("$" + tab.getId()
+				+ "_close.setBgimage(\"../images/tab_close_on.png\")");
+		eval("$" + tab.getId() + "_view.setVisible(true)");
+		this.checkViewSize(tab);
+		this.setPosition();
+		// 데이터셋 커서와 동기화.
+		for (var i = 0; i < $DS_MENU.size(); i++) {
+			if ((tab.getId().split("_")[1]) == $DS_MENU.getValue(i, "ID")) {
+				$DS_MENU.setCursor(i);
+
+				// if($DS_MENU.getValue(i, "URL")=='MSU/MSU005.xhtml')
+				// btn_reload_click(); //임시추가
+			}
+		}
+
+		var idx = $DS_HIDDEN.indexOfRow('tab_id', tab.getId().split("_")[1]);
+		if (idx != -1) {
+			$lbl_navigation.setValue($DS_HIDDEN.getValue(idx, 'label'));
+		}
+		/*
+		 * if(_hidden_val){ $lbl_navigation.setValue(_label); _hidden_val =
+		 * false; _label = ''; } else
+		 */
+		else
+			this.navigation(tab.getId().split("_")[1]);
+
+		var row = Xwing.getDataset('DS_FIX').indexOfRow("id",
+				tab.getId() + "_view");
+		if (row != -1) {
+			// if(fix_tab.indexOf(tab.getId()+"_view") != -1){
+			fixChannel(Xwing.getDataset('DS_FIX').getValue(idx, "channel"));
+			// $pan_disabled.setVisible(true); //tab 이동/생성시 채널 fix설정된 화면 여부 확인 후
+			// fix
+		} else {
+			// $pan_disabled.setVisible(false); //tab 이동/생성시 채널 fix 안되게 초기화
+		}
+
+	};
+	this.setBluer = function(tab) {
+		tab.setStyles("tab");
+		tab.setBgimage("../images/btn_tab_off.png");
+		// tab.setBgimageedge("../images/tab_edge.png");
+		eval("$" + tab.getId()
+				+ "_close.setBgimage(\"../images/tab_close.png\")");
+		eval("$" + tab.getId() + "_view.setVisible(false)");
+	};
+	this.clearTab = function() {
+		var batch = [];
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (i != 0) {
+				var tabWidget = TAB_OBJECT[i];
+				tabWidget.remove();
+				eval("$" + tabWidget.getId() + "_close.remove()");
+				eval("$" + tabWidget.getId() + "_view.remove()");
+				continue;
+			}
+			batch.push(TAB_OBJECT[i]);
+		}
+		TAB_OBJECT = batch;
+		this.setCursor(TAB_OBJECT[0]);
+		this.setPosition();
+	};
+	this.tabRemove = function(tab) {
+		
+		var _load_val = false; // child load 완료여부
+		var _menuId = ""; // child ID
+		var _parameter = null; // 검색할 키워드
+		var _hidden_val = false; // 숨김화면 여부
+		var _label = ""; // 숨김화면 타이틀
+		
+		
+		var v_position = 0;
+		var batch = [];
+		var before = null;
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (CURRENT_CURSOR != tab)
+				break;
+			if (tab.getId() == TAB_OBJECT[i].getId()) {
+				this.setCursor(TAB_OBJECT[i - 1]);
+			}
+		}
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (TAB_OBJECT[i].getId() == tab.getId()) {
+				v_position = (i - 1);
+				var tabWidget = TAB_OBJECT[i];
+				tabWidget.remove();
+				eval("$" + tabWidget.getId() + "_close.remove()");
+				eval("$" + tabWidget.getId() + "_view.remove()");
+				continue;
+			}
+			batch.push(TAB_OBJECT[i]);
+		}
+		TAB_OBJECT = batch;
+		this.setPosition();
+		this.removePosition(v_position);
+
+	};
+	this.removePosition = function(v_position) {
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			this.btnLeftClick();
+		}
+
+		for (var i = 0; i < v_position; i++) {
+			this.btnRightClick();
+		}
+
+	};
+	this.setPosition = function() {
+		for (var i = 0; i < TAB_OBJECT.length; i++) {
+			if (i == 0) {
+				TAB_OBJECT[i].setAttribute('left', 0);
+				eval("$"
+						+ TAB_OBJECT[i].getId()
+						+ "_close.setAttribute('left', TAB_OBJECT[i].getLeft() + TAB_OBJECT[i].getWidth() - 24)");
+				continue;
+			}
+			TAB_OBJECT[i].setAttribute('left', TAB_OBJECT[i - 1].getLeft()
+					+ TAB_OBJECT[i - 1].getWidth() + 1);
+			eval("$"
+					+ TAB_OBJECT[i].getId()
+					+ "_close.setAttribute('left', TAB_OBJECT[i].getLeft() + TAB_OBJECT[i].getWidth() - 24)");
+		}
+	};
+	this.tabOnclick = function(tab) {
+		this.setCursor(tab);
+	};
+	this.tabCloseOnclick = function(tab) {
+		this.tabRemove(eval("$" + (tab.getId().replace("_close", ""))));
+	};
+	this.openTab = function() {
+		return TAB_OBJECT.length;
+	};
+	this.navigation = function(sMenuId) {
+		if (sMenuId == "default") {
+			$lbl_navigation.setValue("My홈");
+			$lbl_summary.setVisible(false);
+		} else {
+			var navi = "";
+			var idx = 0;
+			$lbl_navigation.setWidth(470);
+			$lbl_summary.setVisible(false);
+
+			var clickMenuIdx = "";
+			if(idx == 0){ clickMenuIdx=$DS_MENU.indexOfRow("ID", sMenuId); }
+			while (true) {
+				idx = $DS_MENU.indexOfRow("ID", sMenuId);
+				var parent_id = $DS_MENU.getValue(idx, "PARENT_ID");
+				var caption = g_nvl($DS_MENU.getValue(idx, "CAPTION"), "");
+				if (g_isEmpty(parent_id) || g_isNull(parent_id)) {
+					break;
+				} else {
+					sMenuId = parent_id;
+				}
+				navi = caption + ">" + navi;
+			}
+			$lbl_navigation.setValue(g_substr(navi, 0, navi.length - 1));
+			//summary 제공
+			var summary = g_nvl($DS_MENU.getValue(clickMenuIdx, "SUMMARY"), "");
+			if(summary != ""){
+				$lbl_navigation.setWidth($lbl_navigation.getValue().length*13);
+				$lbl_summary.setValue(summary);
+				$lbl_summary.setLeft($lbl_navigation.getWidth()+5);
+				$lbl_summary.setVisible(true);
+			}
+		}
+	};
+	this.reload = function() {
+		var tabId = CURRENT_CURSOR.getId();
+		var panel_obj = eval("$" + tabId + "_view");
+		Object.removeChild(panel_obj);
+		Object.appendChild(panel_obj);
+		if (CURRENT_CURSOR != null)
+			this.setBluer(CURRENT_CURSOR);
+		this.setCursor((CURRENT_CURSOR = eval("$" + tabId)));
+		this.setPosition();
+	};
+	this.print = function() {
+		window.print();
+	};
+	this.getCurrentTab = function() {
+		return CURRENT_CURSOR.getId() + "_view";
+	};
+	this.getCurrentLabel = function() {
+		return Xwing.getLabel(CURRENT_CURSOR.getId());
+	};
+	this.popupTab = function() {
+		var w = window
+				.open(
+						'../'
+								+ eval("$" + tab.getCurrentTab() + ".getUrl()")
+										.substring('service::'.length),
+						'window',
+						'width=1050,height=780,left=0,top=0,status=0,toolbar=0,scrollbars=0,directories=0,location=0,resizable=1');
+		w.focus();
+	};
+	this.setContainer();
+	this.addTab(LABEL, URL);
+};
+// *********************************************************************************************************
+// Page Action
+// ********************************************************************************************************/
+function main_load(event) {
+
+	/*if(location.search != "")
+	{
+		f_ssoConnection();
+	}*/
+	XwingObject();
+	var hostname = window.location.hostname.split(".");
+	var lbl="";
+		if(hostname[0] == "vadev"){
+			lbl = "[DEV]";
+		}else if(hostname[0] == "vauat"){
+			lbl = "[UAT]";
+		}else if(hostname[0] == "va"){
+			lbl = "";
+		}else{
+			lbl = "[LOCAL]";
+		}
+		$lbl_servername.setValue(lbl);
+
+
+
+	// f_create_slide();
+	//setTimeout(function(){
+			f_init();
+	//},1000);
+
+}
+
+function f_ssoConnection(){
+
+}
+
+function f_init() {
+
+
+	f_main_refresh();
+
+	//clearInterval(g_notice_time); //20180530
+	//g_notice_time = setInterval("getNotice()", 90000);
+	f_setholidayinfo();
+
+	// tab = new Tabmenu($pnl_main, "My홈", "");
+	/*
+	 * tab = new Tabmenu($pnl_main, "My홈", "service::common/main_grid.xhtml");
+	 *
+	 * Xwing.createContextMenu("DS_CONTEXT", _$TAB_MENU.getId(), { beforeShow :
+	 * function() { f_before_tab_open(); } });
+	 */
+
+	// 사용자 등급에 따른 권한
+	f_getGradeAuth();
+	//alert("f_init4");
+
+
+}
+
+
+
+function f_setholidayinfo() {
+	var d_sdate = g_addDate("d", -600, g_toDate(), "");
+	var d_edate = g_addDate("d", 100, g_toDate(), "");
+	//alert("f_setholidayinfo");
+
+	var v_param = {
+		_sqlName : "cs.com.setDate_holiday.sel",
+		sdate : d_sdate,
+		edate : d_edate
+	};
+
+	var opt = {
+		reqId : "getHoliday",
+		url : "service::cs.com.dateutil.do",
+		param : v_param,
+		indicator : false,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+/*
+ * function f_create_slide() { // Panel Create var pnl_slide =
+ * Xwing.createPanel({ id : "pnl_slide", left : $pnl_top.getWidth() + 5, width :
+ * _panel_width, bgcolor : "#fff", borderstyle : "solid", shadow : "-2 1 7 0
+ * #494949", borderwidth : "4", bordercolor : "#38549F", top : _panel_top,
+ * height : _panel_height, url : _pnl_slide_url, scroll : false });
+ * $main.appendChild(pnl_slide); pnl_slide.setAnchor("right"); //_panel_top =
+ * $pnl_main.getTop() + 10; // controller Create var btn_open =
+ * Xwing.createLabel({ id : "btn_open", value : "+\n열\n기", //fontfamily :
+ * "NanumGothic", fontcolor : "#fff", fontweight : "bold", fontsize : "12",
+ * textpadding : "0 0 0 11", bgimage : "../images/btn_open_slide_blue.png",
+ * cursor : "pointer", left : $pnl_top.getWidth() - _btn_width, width :
+ * _btn_width, top : _panel_top, height : _btn_height, click : "btn_open_click"
+ * }); $main.appendChild(btn_open); btn_open.setAnchor("right"); }
+ */
+function f_setposition() {
+	for (var i = 0; i < TAB_OBJECT.length - 1; i++) {
+		this.btnLeftClick();
+	}
+}
+
+function f_main_refresh(sReqId) {
+	var opt = {
+		reqId : g_nvl(sReqId, "f_main_refresh"),
+		url : "service::cs.com.refresh.main.do",
+		indicator : false
+	};
+	Xwing.request(opt, callback);
+}
+
+function f_score_card() {
+	var v_param = {
+		_sqlName : "cs.com.main.scorecard",
+		grade_cd : global.G_USER_GRADE,
+		org1_cd : global.G_ORG1_CD,
+		org2_cd : global.G_ORG2_CD,
+		org3_cd : global.G_ORG3_CD
+	};
+
+	var opt = {
+		reqId : "f_score_card",
+		url : "service::cs.com.scorecard.do",
+		param : v_param,
+		indicator : false,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function f_before_tab_open() {
+	$DS_CONTEXT.setValue(0, "disabled", (tab.openTab() == 1));
+}
+
+function main_resize(event) {
+	btn_menu_click();
+	// btn_menu_click(); // ?
+}
+// *********************************************************************************************************
+// UI Action
+// ********************************************************************************************************/
+function f_tab_close_all() {
+	tab.clearTab();
+}
+function f_tab_popup() {
+	tab.popupTab();
+}
+function lbl_logout_click(event) {
+	new xwing.Dialog.confirm("로그아웃 하시겠습니까?", "", function(e) {
+		if (!e)
+			return false;
+		var param = {
+			_sqlName : "cs.com.logout.logoutchk",
+			USER_ID : global.G_USER_ID
+		};
+
+		var opt = {
+			reqId : "LOGOUT_CHK",
+			url : "service::cs.com.logout.do", // "service::cs.com.logout.chk.do",
+			param : param
+		};
+
+		Xwing.request(opt, callback);
+	});
+}
+
+
+function unload_logout(){
+	var param = {
+			_sqlName : "cs.com.logout.logoutchk",
+			USER_ID : global.G_USER_ID
+	};
+
+	var opt = {
+			reqId : "LOGOUT_CHK",
+			url : "service::cs.com.logout.do", // "service::cs.com.logout.chk.do",
+			param : param
+	};
+
+	Xwing.request(opt, callback);
+}
+
+/*//work gubun :: 0:VA 팝업 생성 / 1:평가표 팝업 생성
+function dtTimeStamp(wg,ced_no,user_id){
+	var opt = {
+			reqId: "dtTimeStamp",
+			url: "service::oba.oba030p1.sel.do",
+			param: {
+				_sqlName  : 'oba.oba010p1.timestamp.upd',
+				CED_NO : ced_no
+				,WORK_GUBUN: wg
+				,USER_ID : user_id
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}*/
+// function tre_menu_01_select(event) {
+// if ($DS_MYMENU.getValue("LEAF_YN") == "N")
+// return false;
+// if ($DS_MYMENU.getValue("POPUP_YN") == "Y") {
+// var opt = {
+// modal : true,
+// resizable : false,
+// url : '../' + $DS_MYMENU.getValue("URL"),
+// left : (parseInt($main.getWidth(), 10) / 2 -
+// parseInt($DS_MYMENU.getValue("WIDTH"), 10) / 2),
+// top : (parseInt($main.getHeight(), 10) / 2 -
+// parseInt($DS_MYMENU.getValue("HEIGHT"), 10) / 2),
+// width : $DS_MYMENU.getValue("WIDTH"),
+// height : $DS_MYMENU.getValue("HEIGHT"),
+// title : $DS_MYMENU.getValue("CAPTION")
+// };
+// var dialog = new parent.xwing.Dialog(opt);
+// dialog.open();
+// } else {
+// tab.addTab($DS_MYMENU.getValue("CAPTION"),
+// (g_isEmpty($DS_MYMENU.getValue("URL")) ? "" : "service::" +
+// $DS_MYMENU.getValue("URL")));
+// }
+// }
+//
+// function tre_menu_02_select(event) {
+// if ($DS_MENU.getValue("LEAF_YN") == "N")
+// return false;
+// if ($DS_MENU.getValue("POPUP_YN") == "Y") {
+// var opt = {
+// modal : true,
+// resizable : false,
+// url : '../' + $DS_MENU.getValue("URL"),
+// left : (parseInt($main.getWidth(), 10) / 2 -
+// parseInt($DS_MENU.getValue("WIDTH"), 10) / 2),
+// top : (parseInt($main.getHeight(), 10) / 2 -
+// parseInt($DS_MENU.getValue("HEIGHT"), 10) / 2),
+// width : $DS_MENU.getValue("WIDTH"),
+// height : $DS_MENU.getValue("HEIGHT"),
+// title : $DS_MENU.getValue("CAPTION")
+// };
+// var dialog = new parent.xwing.Dialog(opt);
+// dialog.open();
+// } else {
+// tab.addTab($DS_MENU.getValue("CAPTION"), (g_isEmpty($DS_MENU.getValue("URL"))
+// ? "" : "service::" + $DS_MENU.getValue("URL")));
+// }
+// }
+
+/*
+ * function pnl_left_resize(event) { $btn_menu.setHeight($pnl_left.getHeight() /
+ * 5); var v_btn_menu_top = $pnl_left.getTop() + ($pnl_left.getHeight() / 2) -
+ * ($btn_menu.getHeight() / 2); $btn_menu.setTop(v_btn_menu_top);
+ *
+ *  }
+ */
+
+// *********************************************************************************************************
+// Button Action
+// ********************************************************************************************************/
+function btn_home_click(event) {
+	if (global.G_USER_GRADE == "11")
+		return;
+	tab.setCursor((TAB_OBJECT[0]));
+}
+
+function btn_help_click(event) {
+	var menuId = tab.getCurrentTab().split('_')[1];
+	var menuName = tab.getCurrentLabel().getValue();
+
+	var opt = {
+		modal : false,
+		resizable : false,
+		url : '../INF/INF110.xhtml',
+		id : 'help',
+		param : {
+			menuId : menuId,
+			menuName : menuName
+		},
+		draggable : true,
+		width : 700,
+		height : 615,
+		title : "도움말"
+	};
+	var dialog = new parent.xwing.Dialog(opt);
+	dialog.open();
+}
+
+function btn_reload_click(event) {
+	if (event.event.ctrlKey && event.event.shiftKey) {
+		var opt = {
+			modal : false,
+			resizable : true,
+			url : './dv.xhtml',
+			width : 600,
+			height : 450,
+			title : g_nvl(tab.getCurrentLabel().getValue(), "Dataset View"),
+			param : {
+				p_target : true
+			}
+		};
+		g_dialog(opt, true);
+		// var dialog = new xwing.Dialog(opt);
+		// dialog.open();
+		return;
+	}
+	tab.reload();
+}
+
+function btn_print_click(event) {
+	// alert("준비중입니다..(요청중)");
+	// tab.print();
+}
+/*
+ * function btn_open_click(event) { var btn_obj = event.source; if (_open_flag) {
+ * _open_flag = false; btn_obj.setValue("+\n열\n기"); g_slidePanel("pnl_slide",
+ * "main", "RIGHT", $pnl_top.getWidth() + 5, function() { }, "btn_open"); } else {
+ * _open_flag = true; btn_obj.setValue("-\n닫\n기"); g_slidePanel("pnl_slide",
+ * "main", "LEFT", $pnl_top.getWidth() - _panel_width - 8, function() { },
+ * "btn_open"); } }
+ */
+function btn_menu_click(event) {
+	var v_pnl_width = 220;
+	var v_btn_width = 0;
+	if ($pnl_left.getWidth() == v_btn_width) {
+		$pnl_left.setWidth(v_pnl_width);
+		$btn_menu.setLeft(v_pnl_width);
+		$pnl_main.setLeft(v_pnl_width);
+		$pnl_bottom.setLeft(v_pnl_width);
+		$pnl_top.setLeft(v_pnl_width);
+		_$TAB_MENU_CONTAINER.setLeft(v_pnl_width + 40);
+		$splitbar0_0.setVisible(true);
+
+	} else {
+		$pnl_left.setWidth(v_btn_width);
+		$btn_menu.setLeft(0);
+		$pnl_main.setLeft(v_btn_width);
+		$pnl_bottom.setLeft(v_btn_width);
+		$pnl_top.setLeft(v_btn_width);
+		_$TAB_MENU_CONTAINER.setLeft(v_btn_width + 40);
+		$splitbar0_0.setVisible(false);
+	}
+
+	$pnl_main.setWidth($main.getWidth() - $pnl_left.getWidth());
+	$pnl_bottom.setWidth($main.getWidth() - $pnl_left.getWidth());
+	_$TAB_MENU_CONTAINER.setWidth($main.getWidth() - $pnl_left.getWidth() - 94);
+	$pnl_top.setWidth($main.getWidth() - $pnl_left.getWidth());
+
+}
+function btn_pre_click(event) {
+	if (lbl_index == 0)
+		lbl_index = 4;
+	else
+		lbl_index--;
+
+	switch (lbl_index) {
+	case 0:
+		$lbl_title.setValue("IB건수");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "ACD_CALLS"));
+		break;
+	case 1:
+		$lbl_title.setValue("대기중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "READY_AGENT"));
+		break;
+	case 2:
+		$lbl_title.setValue("통화중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "CALL_AGENT"));
+		break;
+	case 3:
+		$lbl_title.setValue("휴식중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "NOT_READY_AGENT"));
+		break;
+	case 4:
+		$lbl_title.setValue("OB건수");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "OUT_CALLS"));
+		break;
+	}
+}
+
+function btn_next_click(event) {
+	if (lbl_index == 4)
+		lbl_index = 0;
+	else
+		lbl_index++;
+
+	switch (lbl_index) {
+	case 0:
+		$lbl_title.setValue("IB건수");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "ACD_CALLS"));
+		break;
+	case 1:
+		$lbl_title.setValue("대기중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "READY_AGENT"));
+		break;
+	case 2:
+		$lbl_title.setValue("통화중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "CALL_AGENT"));
+		break;
+	case 3:
+		$lbl_title.setValue("휴식중");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "NOT_READY_AGENT"));
+		break;
+	case 4:
+		$lbl_title.setValue("OB건수");
+		$lbl_score_card.setValue($DS_SCORECARD.getValue(0, "OUT_CALLS"));
+		break;
+	}
+}
+// *********************************************************************************************************
+// CallBack Action
+// ********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '<br/>'
+				+ 'ResultMessage : ' + res.ResultMessage, $main.getTitle(),
+				function(e) {
+					window.self.close();
+				});
+		return false;
+	}
+	if (reqId == "f_main_refresh") {
+		global = res;
+		// $lbl_user.setValue(global.G_USER_NAME.trim() + "(" +
+		// global.G_EMP_NO.trim() + ")");
+		$lbl_user.setValue(global.G_USER_NAME.trim());
+		var now = new Date();
+		var daysb = [ '일', '월', '화', '수', '목', '금', '토' ][now.getDay()];
+		$lbl_time.setValue(String(now.getMonth() + 1) + "/" + now.getDate()
+				+ "(" + daysb + ") " + now.getHours() + ":" + now.getMinutes());
+		$lbl_grade.setValue("[" + global.G_USER_GRADE_NM + "]");
+
+		// $lbl_score_org.setValue(global.G_ORG1_NM+(g_isEmpty(global.G_ORG2_NM)?"":"-"+global.G_ORG2_NM)+(g_isEmpty(global.G_ORG3_NM)?"":"-"+global.G_ORG3_NM));
+
+		// if(global.G_ALARM_LV != 0) initWebSocket(); // lv=0은 안받기임
+
+//		Xwing.createContextMenu("DS_CONTEXT", _$TAB_MENU.getId(), { aig 멈춰서 주석처리. 주석해도 문제없는지 확인
+//			beforeShow : function() {
+//				f_before_tab_open();
+//			}
+//		});
+
+		f_main_data_sel();
+		// f_score_card(global.G_USER_ID);
+		// f_notice(); //추후 게시한 작동시 주석풀기
+	} else if (reqId == "session") {
+		global = res;
+	} else if (reqId == "f_main_data_sel") {
+
+		$DS_MENU.setData(res.DS_MENU.column, res.DS_MENU.record);
+		// $DS_MYMENU.setData(res.DS_MYMENU.column, res.DS_MYMENU.record);
+
+		// $DS_TIME.setData(res.DS_TIME.column, res.DS_TIME.record);
+		// $tre_menu_01.expandAll();
+
+		$pnl_mask_bg.setUrl("./lnb.html");
+
+		tab = new Tabmenu($pnl_main, "대시보드", "service::common/main_dashboard.xhtml");
+
+		history.replaceState({}, null, location.pathname);
+		$(window).on('beforeunload', function(e){
+				unload_logout();
+		});
+
+		
+		//11.13 서버 알람 위함. 주석처리.
+		//getNotice();
+		//getServer(); // SYS020 서버정보 조회
+	} else if (reqId == "getServer") {
+		$DS_SERVER.setData(res.SYS020.column, res.SYS020.record);
+		// main load 마지막에 voice channel default selection!
+		// $btn_voice_0.setTop("0");
+		// $btn_text_0.setTop("-37");
+		// $btn_social_0.setTop("-37");
+
+		// $btn_voice_0.setVisible("true");
+
+		g_channel = '1';
+
+		// getNotice();
+	} else if (reqId == "f_menu_sel") {
+		$DS_MENU.setData(res.DS_MENU.column, res.DS_MENU.record);
+		// $DS_MYMENU.setData(res.DS_MYMENU.column, res.DS_MYMENU.record);
+		$tre_menu_01.expandAll();
+	} else if (reqId == "LOGOUT_CHK") {
+		unloadFlag = false;
+		window.self.close();
+	} else if (reqId == "f_notice") {
+		$DS_TICKER.setData(res.DS_TICKER.column, res.DS_TICKER.record);
+		// $DS_MSG.setData(res.DS_MSG.column, res.DS_MSG.record);
+
+		// $lbl_msg_cnt.setValue($DS_MSG.getValue(0, "READCNT") + "/" +
+		// $DS_MSG.getValue(0, "ALLCNT"));
+
+		timer = new Timer(); // Timer Object 생성
+		timer.setInterval(5); // 반복할 시간(초) - Integer 단위 초
+		timer.setfunction("f_ticker"); // 주기적으로 발생할 Event - function & string
+										// 함수 또는 문자
+		timer.start(); // Timer start
+		// timer.stop(); //Timer stop
+	} else if (reqId == "f_score_card") {
+		$DS_SCORECARD.setData(res.DS_SCORECARD.column, res.DS_SCORECARD.record);
+		lbl_index = 0;
+
+		$lbl_time.setValue("기준시간 : " + g_getNow().substr(11, 5));
+		// slide
+		Xwing.getWidget('lbl_score_card').setValue(
+				g_nvl($DS_SCORECARD.getValue(0, "ACD_CALLS"), "0"));
+		// $lbl_score_card.setValue(g_nvl($DS_SCORECARD.getValue(0,
+		// "ACD_CALLS"),"0"));
+		// list
+		$lbl_acd.setValue(g_nvl(xwing.Util.parseInt($DS_SCORECARD.getValue(0,
+				"ACD_CALLS"))
+				+ xwing.Util.parseInt($DS_SCORECARD.getValue(0, "OUT_CALLS")),
+				"0"));
+		$lbl_ready
+				.setValue(g_nvl($DS_SCORECARD.getValue(0, "READY_AGENT"), "0"));
+		$lbl_call.setValue(g_nvl($DS_SCORECARD.getValue(0, "CALL_AGENT"), "0"));
+		$lbl_notready.setValue(g_nvl($DS_SCORECARD.getValue(0,
+				"NOT_READY_AGENT"), "0"));
+
+	}else if (reqId == "AlarmSel") {
+		$DS_ALARMLIST.setData(res.DS_ALARMLIST.column, res.DS_ALARMLIST.record);
+
+		$DS_ALARMLIST_KEY.clear();
+		$DS_ALARMLIST_KEY.setColumnInfo(res.DS_ALARMLIST.column);
+
+		$DS_ALARMLIST_CUST.clear();
+		$DS_ALARMLIST_CUST.setColumnInfo(res.DS_ALARMLIST.column);
+
+		$DS_ALARMLIST_SYS.clear();
+		$DS_ALARMLIST_SYS.setColumnInfo(res.DS_ALARMLIST.column);
+
+		for (var i = 0; i < $DS_ALARMLIST.size(); i++) {
+			var v_alarm_gubun = $DS_ALARMLIST.getValue(i, "ALARM_GUBUN");
+			var v_noti_yn = $DS_ALARMLIST.getValue(i, "NOTI_YN");
+
+			if (v_alarm_gubun == "SYSTEM" && v_noti_yn == "Y") {
+				$DS_ALARMLIST_SYS.addRow();
+				$DS_ALARMLIST_SYS.copyRowFrom($DS_ALARMLIST_SYS.size() - 1,
+						$DS_ALARMLIST, i);
+			}
+		}
+
+		if ($DS_ALARMLIST_SYS.size() > 0) {
+			$lab_system_title.setValue("");
+			$lab_system_1.setValue("");
+			$lab_system_2.setValue("");
+
+			var v_temp = "";
+
+			if ($DS_ALARMLIST_SYS.size() > 1) {
+				v_temp = " 외 " + ($DS_ALARMLIST_SYS.size() - 1) + "대";
+			}
+
+			var v_alarm_title = "분석시스템 알람발생 : "
+					+ $DS_ALARMLIST_SYS.getValue(0, "ETC2") + v_temp;
+			$lab_system_title.setValue(v_alarm_title);
+
+			for (var i = 0; i < $DS_ALARMLIST_SYS.size(); i++) {
+				var v_alarm_messege = $DS_ALARMLIST_SYS.getValue(i, "ETC2")
+						+ " : " + $DS_ALARMLIST_SYS.getValue(i, "ALARM_MSG");
+				eval("$lab_system_" + (i + 1)).setValue(v_alarm_messege);
+
+				if (i == 1) {
+					break;
+				}
+			}
+
+			var v_alarmmessege_system = $lab_system_title.getValue() + "|"
+					+ $lab_system_1.getValue() + "|" + $lab_system_2.getValue();
+
+			if (v_alarmmessege_system != g_alarmmessege_system) {
+				setTimeout("f_alarmpopup_system()", 10000);
+			}
+		}
+	} else if (reqId == "getHoliday") {
+		//alert("getHoliday");
+		for (var i = 0; i < res.DS_HOLIDAY.record.length; i++) {
+			g_ds_holiday.push(res.DS_HOLIDAY.record[i].toString());
+		}
+	} else if (reqId == "getAalarmcode") {
+		$DS_ALARM_YN.setData(res.SYS005.column, res.SYS005.record);
+		var v_alarm_yn = "Y";
+
+		for (var i = 0; i < $DS_ALARM_YN.size(); i++) {
+			var v_code = $DS_ALARM_YN.getValue(i, "CODEID");
+
+			if (v_code == "05") {
+				v_alarm_yn = $DS_ALARM_YN.getValue(i, "ETC1");
+				break;
+			}
+		}
+
+		if (v_alarm_yn == "Y") {
+			//f_getAlarm_search(); 20180530
+		}
+	} else if (reqId == "f_getGradeAuth") {
+		$DS_GRADEAUTH.setData(res.SYS001.column, res.SYS001.record);
+		$DS_MUTICNTR.setData(res.SYS002.column, res.SYS002.record);
+	}
+}
+
+function f_main_data_sel() {
+	var opt = {
+		reqId : "f_main_data_sel",
+		url : "service::cs.com.menu.do",
+		param : {
+			_sqlName : "cs.com.auth_menu.sel",
+
+			// _sqlName : "wfm.com.auth_menu.sel",
+			AUTHORITY_CD : global.G_USER_GRADE,
+			USER_ID : global.G_USER_ID
+		}
+	};
+	Xwing.request(opt, callback);
+}
+
+function f_menu_sel() {
+	var opt = {
+		reqId : "f_menu_sel",
+		url : "service::cs.com.menu.do",
+		param : {
+			/*
+			 * _sqlName : "wfm.com.auth_menu.sel,wfm.com.my_menu.sel",
+			 */
+			_sqlName : "cs.com.auth_menu.sel",
+			AUTHORITY_CD : global.G_USER_GRADE,
+			USER_ID : global.G_USER_ID,
+			indicator : false
+		}
+	};
+	Xwing.request(opt, callback);
+}
+
+function lbl_extend_click(event) {
+	if ($DS_TREE.getValue("tre_menu_02") == "Y") {
+		$tre_menu_02.collapseAll();
+		$DS_TREE.setValue("tre_menu_02", "N");
+		$lbl_extend.setBgimage("../images/left_iconbtn_allmenuopen.gif");
+	} else {
+		$tre_menu_02.expandAll();
+		$DS_TREE.setValue("tre_menu_02", "Y");
+		$lbl_extend.setBgimage("../images/left_iconbtn_allmenuclose.gif");
+	}
+}
+
+function btn_resize_click(event) {
+
+	if (win_resize_flag == true) {
+		$dg_win_resize.setAttribute("visible", "false");
+		win_resize_flag = false;
+	} else {
+		$dg_win_resize.setAttribute("visible", "true");
+		win_resize_flag = true;
+	}
+
+}
+function dg_win_resize_click(event) {
+	var row = Xwing.getDataset("DS_CONTEXT2").getCursor();
+	// alert(row);
+	if (row > 0) {
+		// "width") + "," + $DS_CONTEXT2.getValue(row, "height"));
+
+
+		var height = parseInt($DS_CONTEXT2.getValue(row, "height"));
+		var width = parseInt($DS_CONTEXT2.getValue(row, "width"));
+
+		// alert(width+"-"+height);
+		self.resizeTo(width, height);
+
+		$dg_win_resize.setAttribute("visible", "false");
+		win_resize_flag = false;
+	} else {
+		tab.clearTab();
+		$dg_win_resize.setAttribute("visible", "false");
+	}
+}
+
+function f_ticker() {
+	$lbl_notice.setValue("상담그룹[" + $DS_TICKER.getValue(timer_idx, "DESC1")
+			+ "] 인입콜:" + $DS_TICKER.getValue(timer_idx, "in_calls") + ", 응대호:"
+			+ $DS_TICKER.getValue(timer_idx, "answer_calls") + ", 대기호:"
+			+ $DS_TICKER.getValue(timer_idx, "waiting_calls") + ", 포기호:"
+			+ $DS_TICKER.getValue(timer_idx, "aband_calls"));
+	timer_idx++;
+
+	if (timer_idx == $DS_TICKER.size()) {
+		timer_idx = 0;
+
+		timer.stop();
+		// f_notice();
+	}
+}
+
+/*
+ * function lbl_score_list_click(event) { $lbl_title.setAttribute("visible",
+ * false); $lbl_score_list.setAttribute("visible", false);
+ * $lbl_score_slide.setAttribute("visible", true);
+ *
+ * $pnl_score_list.setAttribute("visible", true);
+ * $pnl_score_slide.setAttribute("visible", false); }
+ *
+ * function lbl_score_slide_click(event) { $lbl_title.setAttribute("visible",
+ * true); $lbl_score_list.setAttribute("visible", true);
+ * $lbl_score_slide.setAttribute("visible", false);
+ *
+ * $pnl_score_list.setAttribute("visible", false);
+ * $pnl_score_slide.setAttribute("visible", true);
+ *  }
+ */
+
+/**
+ * 장애알람 버튼 클릭시
+ *
+ * @param event
+ */
+function btn_alarm_click(event) {
+	if (websocket == null) {
+		// openWebsocket();
+	} else {
+		// closeWebsocket();
+	}
+}
+
+function getGradeCd() {
+	var v_url = "service::cs.main.loadpage.do";
+	var opt = {
+		reqId : "getGradeCd",
+		url : v_url,
+		param : {
+			_sqlName : "cs.main.loadpage",
+			p_user_id : global("user_id")
+		}
+	};
+	Xwing.request(opt, callback);
+}
+
+function f_getGradeAuth() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS001,SYS002",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_getGradeAuth",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function getGradeAuth(grade) {
+		return Xwing.getDataset('DS_GRADEAUTH').lookUp('CODEID', grade, 'ETC2');
+}
+
+function lbl_msg_click(event) {
+	// alert("작업중");
+	var opt = {
+		modal : false,
+		resizable : false,
+		url : 'MsgList.xhtml',
+		width : 800,
+		height : 500,
+		title : "쪽지함",
+		param : {
+			db_click : "1"
+		}
+	};
+	g_dialog(opt);
+}
+
+function lbl_send_click(event) {
+	var opt = {
+		modal : false,
+		resizable : false,
+		url : '../hr/hrm100m010p.xhtml',
+		width : 800,
+		height : 550,
+		title : "조직정보",
+		param : {
+			dept_cd : $DS_DEPT_LIST.getValue("DEPT_CD"),
+			use_yn : $DS_DEPT_LIST.getValue("USE_YN"),
+			db_click : "1",
+			sdate : $dkp_start_date.getValue(),
+			edate : $dpk_end_date.getValue()
+		}
+	};
+	g_dialog(opt);
+}
+
+function openPage(id, param) {
+	// if(param){
+	// //tab.tabRemove(eval("$" + (tab.getId().replace("_close", ""))));
+	// keyword = param;
+	// }
+	// else keyword='';
+
+	var _load_val = false; // child load 완료여부
+	var _menuId = ""; // child ID
+	var _parameter = null; // 검색할 키워드
+	var _hidden_val = false; // 숨김화면 여부
+	var _label = ""; // 숨김화면 타이틀
+
+	var idx = $DS_MENU.indexOfRow("ID", id);
+
+	// if ($DS_MENU.getValue(idx,"LEAF_YN") == "N")
+	// return false;
+	if ($DS_MENU.getValue(idx, "POPUP_YN") == "Y") {
+		var opt = {
+			modal : true,
+			resizable : false,
+			url : '../' + $DS_MENU.getValue(idx, "URL"),
+			left : (parseInt($main.getWidth(), 10) / 2 - parseInt($DS_MENU
+					.getValue(idx, "WIDTH"), 10) / 2),
+			top : (parseInt($main.getHeight(), 10) / 2 - parseInt($DS_MENU
+					.getValue(idx, "HEIGHT"), 10) / 2),
+			width : $DS_MENU.getValue(idx, "WIDTH"),
+			height : $DS_MENU.getValue(idx, "HEIGHT"),
+			title : $DS_MENU.getValue(idx, "CAPTION")
+		};
+		var dialog = new parent.xwing.Dialog(opt);
+		dialog.open();
+	} else {
+		tab.addTab($DS_MENU.getValue(idx, "CAPTION"), (g_isEmpty($DS_MENU
+				.getValue(idx, "URL")) ? "" : "service::"
+				+ $DS_MENU.getValue(idx, "URL")));
+	}
+}
+
+/*******************************************************************************
+ * 서버정보 가져오는 함수(SYS020)
+ ******************************************************************************/
+function getServer() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS020",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "getServer",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+/*******************************************************************************
+ * 화면 이동 함수
+ ******************************************************************************/
+function movePage(url, param, hiddenVal, label) {
+	/*
+	 * children page에 아래 코드 추가 ex)
+	 * parent.movePage("SRC/SRC010.xhtml",parameter,false,''); -> parameter:
+	 * channel|sdate|edate|keyword
+	 * parent.movePage("REC/REC010.xhtml",category,true,'녹취리스트');
+	 */
+	//		+ label);
+	
+	var idx = $DS_MENU.indexOfRow("URL",url);
+	
+	if(idx == -1){ 
+		xwing.Dialog.alert("화면 권한이 없습니다."); 
+		return;
+	}
+	_hidden_val = hiddenVal;
+	_parameter = param;
+	if (hiddenVal) {
+		_label = label.trim();
+		tab.addTab(label, "service::" + url);
+	} else {
+		var idx = $DS_MENU.indexOfRow("URL", url);
+		tab.addTab($DS_MENU.getValue(idx, "CAPTION"), (g_isEmpty(url) ? ""
+				: "service::" + url));
+	}
+
+	for (var i = 0; i < TAB_OBJECT.length; i++) {
+		if (label.length > 9) {
+			label = label.substr(0, 9) + "..";
+		}
+		if (TAB_OBJECT[i].getValue() == label) {
+			_load_val=true;
+		}
+	}
+
+	_menuId = tab.getCurrentTab();
+	if (!_load_val) { // add->setCursor
+		_load_val = true;
+
+	} else { // setCursor
+		eval("Xwing.children." + _menuId + ".reciever('" + _parameter + "')");
+	}
+}
+
+function btn_voice_click(event) {
+	$btn_voice_0.setTop("0");
+	$btn_text_0.setTop("-37");
+	$btn_social_0.setTop("-37");
+
+	$btn_voice_0.setVisible("true");
+
+	g_channel = '1';
+
+	var tab_id = tab.getCurrentTab();
+	eval("Xwing.children." + tab_id + ".chSearch('" + g_channel + "')");
+}
+
+function btn_text_click(event) {
+	$btn_voice_0.setTop("-37");
+	$btn_text_0.setTop("0");
+	$btn_social_0.setTop("-37");
+
+	$btn_text_0.setVisible("true");
+
+	g_channel = '2';
+
+	var tab_id = tab.getCurrentTab();
+	eval("Xwing.children." + tab_id + ".chSearch('" + g_channel + "')");
+}
+
+function btn_social_click(event) {
+	$btn_voice_0.setTop("-37");
+	$btn_text_0.setTop("-37");
+	$btn_social_0.setTop("0");
+
+	$btn_social_0.setVisible("true");
+
+	g_channel = '2'; // 원래는 3
+
+	var tab_id = tab.getCurrentTab();
+	eval("Xwing.children." + tab_id + ".chSearch('" + g_channel + "')");
+}
+
+function btn_voice_mouseenter(event) {
+	$btn_voice_0.setTop("0");
+	$btn_voice_0.setVisible("false");
+}
+function btn_text_mouseenter(event) {
+	$btn_text_0.setTop("0");
+	$btn_text_0.setVisible("false");
+}
+function btn_social_mouseenter(event) {
+	$btn_social_0.setTop("0");
+	$btn_social_0.setVisible("false");
+}
+
+function fixChannel(ch) {
+
+	// fix_tab[fix_tab.length] = tab.getCurrentTab();
+	if ($DS_FIX.indexOfRow("id", tab.getCurrentTab()) == -1) {
+		$DS_FIX.addRow();
+		$DS_FIX.setValue($DS_FIX.size() - 1, "id", tab.getCurrentTab());
+		$DS_FIX.setValue($DS_FIX.size() - 1, "channel", ch);
+	}
+
+	if (ch == '1') {
+		$btn_voice_0.setTop("0");
+		$btn_text_0.setTop("-37");
+		$btn_social_0.setTop("-37");
+
+		$btn_voice_0.setVisible("true");
+
+		g_channel = '1';
+
+		// $pan_disabled.setVisible(true);
+	} else if (ch == '2') {
+		$btn_voice_0.setTop("-37");
+		$btn_text_0.setTop("0");
+		$btn_social_0.setTop("-37");
+
+		$btn_text_0.setVisible("true");
+
+		g_channel = '2';
+
+		// $pan_disabled.setVisible(true);
+	} else if (ch == '3') {
+		$btn_voice_0.setTop("-37");
+		$btn_text_0.setTop("-37");
+		$btn_social_0.setTop("0");
+
+		$btn_social_0.setVisible("true");
+
+		g_channel = '2'; // 원래는 3
+
+		// $pan_disabled.setVisible(true);
+	}
+}
+
+function btn_userinfo_click(event) {
+	var param = {
+		gubun : 'main'
+	// dsName : $DS_USER_LIST.getValue("DEPT_CD")
+	};
+
+	var opt = {
+		modal : false,
+		resizable : false,
+		url : './user_info.xhtml',
+		param : param,
+		width : 630,
+		height : 600,
+		title : "사원조회"
+	};
+	g_dialog(opt);
+}
+
+function getNotice() {
+	f_alarmcode_search();
+}
+
+function f_alarmcode_search() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS005",
+		useyn : "Y"
+	};
+
+	var opt = {
+		reqId : "getAalarmcode",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+function f_getAlarm_search() {
+	var opt = {
+		reqId : "AlarmSel",
+		url : "service::sens.common.alarmmonitoringwebaction.sel.do",
+		param : {
+			reseult_name : "DS_ALARMLIST"
+		},
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function f_alarmpopup_system() {
+	if ($pnl_alarm_system.getLeft() == $main.getWidth()) {
+		$pnl_alarm_system.setLeft($main.getWidth()
+				- $pnl_alarm_system.getWidth());
+		$pnl_alarm_system.setShadow("#42475A 0 0 15 0");
+	} else {
+		$pnl_alarm_system.setLeft($main.getWidth());
+		$pnl_alarm_system.setShadow("");
+	}
+}
+
+function btn_cloase_alarm_system_click(event) {
+	g_alarmmessege_system = $lab_system_title.getValue() + "|"
+			+ $lab_system_1.getValue() + "|" + $lab_system_2.getValue();
+	f_alarmpopup_system();
+}
+/*
+ * logo 클릭시 마이홈으로 이동
+ */
+function pnl_logo_click(event) {
+	tab.setCursor((TAB_OBJECT[0]));
+}
+
+function pnl_logo_mouseenter(event) {
+	$pnl_logo.setCursor("pointer");
+}
+
+function lab_system_title_click(event) {
+	var paramSet = {
+
+	};
+	movePage('INF/INF070.xhtml', paramSet, false, '');
+	setTimeout("btn_cloase_alarm_system_click()", 1000);
+}
+
+function lab_system_1_click(event) {
+	var paramSet = {
+
+	};
+	movePage('INF/INF070.xhtml', paramSet, false, '');
+	setTimeout("btn_cloase_alarm_system_click()", 1000);
+}
+
+function lab_system_2_click(event) {
+	var paramSet = {
+
+	};
+	movePage('INF/INF070.xhtml', paramSet, false, '');
+	setTimeout("btn_cloase_alarm_system_click()", 1000);
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset description="" id="DS_CONTEXT">
+		<xwing:dataset-column id="separator"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+		<xwing:dataset-column id="icon"></xwing:dataset-column>
+		<xwing:dataset-column id="onclick"></xwing:dataset-column>
+		<xwing:dataset-column id="disabled"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>모두닫기</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>f_tab_close_all</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>새창열기</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>f_tab_popup</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_LIST">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG4_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_LIST_ALL">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG4_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MENU">
+		<xwing:dataset-column id="FONT_COL"></xwing:dataset-column>
+		<xwing:dataset-column id="FONT_CLR"></xwing:dataset-column>
+		<xwing:dataset-column id="IMG_COL"></xwing:dataset-column>
+		<xwing:dataset-column id="TREE_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_ORDER"></xwing:dataset-column>
+		<xwing:dataset-column id="ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="URL"></xwing:dataset-column>
+		<xwing:dataset-column id="POPUP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MYMENU">
+		<xwing:dataset-column id="FONT_COL"></xwing:dataset-column>
+		<xwing:dataset-column id="FONT_CLR"></xwing:dataset-column>
+		<xwing:dataset-column id="IMG_COL"></xwing:dataset-column>
+		<xwing:dataset-column id="TREE_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_ORDER"></xwing:dataset-column>
+		<xwing:dataset-column id="ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTH"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="URL"></xwing:dataset-column>
+		<xwing:dataset-column id="POPUP_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TIME"></xwing:dataset>
+	<xwing:dataset id="DS_TREE">
+		<xwing:dataset-column id="tre_menu_01"></xwing:dataset-column>
+		<xwing:dataset-column id="tre_menu_02"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USER">
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PASSWD"></xwing:dataset-column>
+		<xwing:dataset-column id="EMP_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG4_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TEL_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="HP_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="EMAIL"></xwing:dataset-column>
+		<xwing:dataset-column id="LOGIN_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="CLIENT_IP"></xwing:dataset-column>
+		<xwing:dataset-column id="PWD_ERR_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="UPD_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_LOGIN_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_LOGOUT_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_xml">
+		<xwing:dataset-column id="command"></xwing:dataset-column>
+		<xwing:dataset-column id="field"></xwing:dataset-column>
+		<xwing:dataset-column id="datatype"></xwing:dataset-column>
+		<xwing:dataset-column id="option"></xwing:dataset-column>
+		<xwing:dataset-column id="min"></xwing:dataset-column>
+		<xwing:dataset-column id="max"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_CONTEXT2">
+		<xwing:dataset-column id="separator"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+		<xwing:dataset-column id="icon"></xwing:dataset-column>
+		<xwing:dataset-column id="onclick"></xwing:dataset-column>
+		<xwing:dataset-column id="disabled"></xwing:dataset-column>
+		<xwing:dataset-column id="height"></xwing:dataset-column>
+		<xwing:dataset-column id="width"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>전체화면닫기</xwing:dataset-cell>
+			<xwing:dataset-cell>../images/track_winclose.jpg</xwing:dataset-cell>
+			<xwing:dataset-cell>f_tab_close_all</xwing:dataset-cell>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>창크기초기화(1270*920)</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>f_window_resize_1280</xwing:dataset-cell>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell>920</xwing:dataset-cell>
+			<xwing:dataset-cell>1270</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>창크기초기화(1024*768)</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>f_window_resize_1024</xwing:dataset-cell>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell>768</xwing:dataset-cell>
+			<xwing:dataset-cell>1024</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TICKER"></xwing:dataset>
+	<xwing:dataset id="DS_SCORECARD"></xwing:dataset>
+	<xwing:dataset id="DS_DIGIT">
+		<xwing:dataset-column id="FORM_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="GRID_NUM"></xwing:dataset-column>
+		<xwing:dataset-column id="SEQ_NUM"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC1"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC2"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC3"></xwing:dataset-column>
+		<xwing:dataset-column id="DESC4"></xwing:dataset-column>
+		<xwing:dataset-column id="IN_GRP"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_HIDDEN">
+		<xwing:dataset-column id="tab_id"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SERVER">
+	</xwing:dataset>
+	<xwing:dataset id="DS_FIX">
+		<xwing:dataset-column id="id"></xwing:dataset-column>
+		<xwing:dataset-column id="channel"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TEMP">
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="CATEGORY"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_INTER">
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="CATEGORY"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DETECT">
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="CATEGORY"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SORT">
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="CATEGORY"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_TOTALCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_SEARCHCOUNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TODAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="YESTERDAY_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTWEEK_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="LASTMONTH_RATE_GAP"></xwing:dataset-column>
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARMLIST">
+		<xwing:dataset-column id="ALARM_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_MSG"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC6"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARMLIST_KEY">
+		<xwing:dataset-column id="ALARM_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_MSG"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC6"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARMLIST_CUST">
+		<xwing:dataset-column id="ALARM_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_MSG"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC6"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARMLIST_SYS">
+		<xwing:dataset-column id="ALARM_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_MSG"></xwing:dataset-column>
+		<xwing:dataset-column id="NOTI_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="SMS_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC1"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC2"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC3"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC4"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC5"></xwing:dataset-column>
+		<xwing:dataset-column id="ETC6"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ALARM_YN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GRADEAUTH"></xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT"></xwing:dataset>
+	<xwing:dataset id="DS_ISTP"></xwing:dataset>
+	<xwing:dataset id="DS_MUTICNTR"></xwing:dataset>
+	<xwing:dataset id="DS_QC_ORG"></xwing:dataset>
+	<xwing:dataset id="DS_QC_USER"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="main" title="M-SENS" width="1050" height="780" bgimagerepeat="repeat" scroll="false" load="main_load" left="-5">
+		<xwing:panel id="pnl_main" left="220" top="40" width="830" height="740" cursor="default" anchor="all" styles="custom_style" scroll="false" mouseenter="pnl_main_mouseenter" bgcolor="#fff">
+			<xwing:panel id="pnl_navi" left="0" top="0" height="28" tabindex="1" borderstyle="solid" width="830" anchor="top right left" bgimagerepeat="repeat-x" bgcolor="#fff" borderwidth="0" shadow="#A7BACE 0 0 0 0" scroll="false">
+				<xwing:button id="btn_reload" left="794" top="0" anchor="top right" width="36" borderwidth="0" borderstyle="solid" height="28" click="btn_reload_click" bgimagealign="center center" shadow="0 0 0 0" bgcolor="#90e2d2" bggradientcolor="#00b7dd" cursor="pointer"></xwing:button>
+				<xwing:label id="lbl_navigation" value="My홈" left="15" top="0" width="470" fontsize="12" fontcolor="#5e5e5e" height="28" halign="left" bgimage="../images/ico_lbl_navigation.png" bgimagealign="left center" textpadding="0 0 0 16"></xwing:label>
+				<xwing:button id="btn_help" left="758" top="0" anchor="top right" width="36" borderwidth="0" borderstyle="solid" height="28" bgimagealign="center center" shadow="0 0 0 0" bgcolor="#f5f5f5" bggradientcolor="#b2b8bc" click="btn_help_click" cursor="pointer"></xwing:button>
+				<xwing:label id="lbl_summary" left="299" top="0" width="366" fontsize="11" fontcolor="#9b9b9b" height="29" halign="left" bgimagealign="left center" textpadding="0 0 0 16" visible="false"></xwing:label>
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pnl_top" left="220" top="0" width="830" height="40" anchor="right left" scroll="false" shadow="0 0 0 0" bgimagerepeat="repeat" bgcolor="#a0c4e0">
+		</xwing:panel>
+		<xwing:panel id="pnl_left" left="0" top="0" width="220" height="780" bgcolor="#f8f8f8" anchor="top bottom" scroll="false" resize="pnl_left_resize" bgimagealign="left bottom" bordercolor="#dfdfdf" borderwidth="1" borderstyle="solid">
+			<xwing:panel id="pan_left_top" left="-2" top="-2" width="222" height="132" scroll="false" bgcolor="#009edd">
+				<xwing:panel id="pnl_logo" left="65" top="5" width="95" height="55" scroll="false" resize="pnl_left_resize" shadow="0 0 0 0" anchor="top right" borderstyle="none" bgimage="../images/aig_logo2.png" bgimagealign="center center" bggradientdir="vertical">
+				</xwing:panel>
+				<xwing:panel id="pnl_user" left="0" top="70" width="220" height="66" scroll="false" resize="pnl_left_resize" shadow="0 0 0 0" anchor="top right" bgcolor="#009edd" borderstyle="none">
+					<xwing:label id="lbl_user" left="5" top="5" fontsize="13" fontweight="bolder" fontcolor="#fff" height="28" width="65" iconmargin="0 0 0 0" anchor="none" visible="true" halign="left" fontfamily="NanumGothic" textpadding="0 0 0 20" shadow="0 0 0 0" bgimagealign="left center"></xwing:label>
+					<xwing:label id="lbl_time" left="40" top="35" fontsize="13" fontweight="bolder" fontcolor="#fff" height="28" width="115" iconmargin="0 0 0 0" anchor="none" visible="true" halign="left" fontfamily="NanumGothic" textpadding="0 0 0 20" shadow="0 0 0 0" bgimagealign="left center"></xwing:label>
+					<xwing:label id="lbl_logout" left="165" top="26" width="50" height="22" fontweight="bold" visible="true" click="lbl_logout_click" cursor="pointer" bgcolor="#ffffff" value="로그아웃" fontcolor="#000" halign="center" valign="middle" fontfamily="NanumGothic" mouseenter="pnl_main_mouseenter">
+					</xwing:label>
+					<xwing:label id="lbl_grade" left="55" top="5" fontsize="13" fontweight="bolder" fontcolor="#fff" height="28" width="136" iconmargin="0 0 0 0" anchor="none" visible="true" halign="left" fontfamily="NanumGothic" textpadding="0 0 0 20" shadow="0 0 0 0" bgimagealign="left center"></xwing:label>
+				</xwing:panel>
+			</xwing:panel>
+			<xwing:panel id="pnl_mask_bg" left="0" top="137" width="220" height="560" cursor="pointer" scroll="false" anchor="top bottom">
+			</xwing:panel>
+			<xwing:label id="lbl_servername" left="-95" top="0" fontsize="12" fontweight="bolder" fontcolor="#E6F6FA" height="26" width="218" iconmargin="0 0 0 0" anchor="none" visible="true" halign="center" fontfamily="NanumGothic" textpadding="0 0 0 20" shadow="0 0 0 0" bgimagealign="left center"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="btn_menu" left="220" top="0" width="31" height="50" click="btn_menu_click" shadow="0 0 0 0" cursor="pointer" bgimage="../images/btn_tabmenu.png"></xwing:panel>
+		<xwing:panel id="pnl_bottom" left="220" top="752" width="830" height="28" anchor="right bottom left" scroll="false" shadow="#E2E2E2 0 3 5 0" bgimagerepeat="repeat" bgcolor="#C3CCD5" visible="false">
+			<xwing:label id="lbl_hotkeyword" value="실시간 핫키워드" left="15" top="4" fontweight="bold" bgimage="../images/ico_hot.png" textpadding="0 0 0 40" width="132" height="22" visible="false"></xwing:label>
+			<xwing:panel id="pnl_notice" left="-4" top="-6" height="44" width="834" anchor="right bottom left" url="sens_notice.html" visible="true"></xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pnl_alarm_system" left="1050" top="575" width="425" height="207" bgimagerepeat="repeat" bgcolor="#ffecea" visible="true" styles="div_perform" anchor="right bottom" scroll="false">
+			<xwing:label id="title_alarm_1" value="시스템 감지" left="0" top="0" width="425" height="35" fontcolor="#000000" fontsize="15" fontweight="bold" textpadding="0 0 0 15" bgimagerepeat="repeat" bgcolor="#efeff7" bggradientcolor="#cfcfcf"></xwing:label>
+			<xwing:label id="btn_cloase_alarm_system" left="400" top="8" width="18" height="18" bgimage="../images/ico_close_popup.png" bgimagealign="center center" cursor="pointer" click="btn_cloase_alarm_system_click"></xwing:label>
+			<xwing:panel id="panel1_1" left="0" top="60" width="405" height="40">
+				<xwing:label id="lab_system_title" left="64" top="1" width="331" height="25" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" fontcolor="#000000" cursor="pointer" click="lab_system_title_click"></xwing:label>
+				<xwing:label id="label1_0_0_0_3" left="35" top="30" width="360" height="3" fontcolor="#51566C" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" bgcolor="#51566C"></xwing:label>
+				<xwing:label id="lab_system_icon" left="40" top="5" width="20" height="20" fontsize="17" fontweight="bold" textpadding="0 0 0 0" halign="left" fontcolor="#000000" cursor="pointer" click="lab_system_title_click" bgimage="../images/ico_warning.gif"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="panel2_1" left="0" top="105" width="405" height="40">
+				<xwing:label id="lab_system_1" left="35" top="1" width="360" height="25" fontcolor="#000000" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" cursor="pointer" click="lab_system_1_click"></xwing:label>
+				<xwing:label id="label1_0_0_0_0_1" left="35" top="30" width="360" height="3" fontcolor="#51566C" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" bgcolor="#51566C"></xwing:label>
+			</xwing:panel>
+			<xwing:panel id="panel3_1" left="0" top="150" width="405" height="40">
+				<xwing:label id="lab_system_2" left="35" top="1" width="360" height="25" fontcolor="#000000" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" cursor="pointer" click="lab_system_2_click"></xwing:label>
+				<xwing:label id="label1_0_0_0_1_1" left="35" top="30" width="360" height="3" fontcolor="#51566C" fontsize="15" fontweight="bold" textpadding="0 0 0 0" halign="left" bgcolor="#51566C"></xwing:label>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

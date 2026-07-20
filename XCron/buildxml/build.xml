@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="XCron Framework" default="menu" basedir=".">
+	<property environment="env"/>
+	<property name="xcron.home" value="${env.XCRON_HOME}"/>
+	<property name="ant.home" value="${env.ANT_HOME}"/>
+	<property file="build.properties"/>
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+		<pathelement path="${common.dir}"/>
+	</path>
+
+	<!-- start of target menu select number -->
+	
+	<target name="1"><antcall target="userdefine-compile"/></target>
+	<target name="2"><antcall target="xcron-compile"/></target>
+	
+	<!-- end of target menu select number -->
+
+	<!-- start of target "menu" , this task show the menu -->
+	
+	<target name="menu">
+		<echo>
++------------------------------------------------------+
++                   XCron Framework                    +
++------------------------------------------------------+
+ 1.[make-userdefine] : compile *.java of work to common
+ 2.[make-xron] : make xcron.jar to lib
+ ctrl-c.[exit]
+		</echo>
+		<input message="please enter the target number you want : "  addproperty="no"  validargs="1,2"/>
+		<antcall target="${no}"/>
+	</target>
+	
+	<!-- end of target "menu" -->
+
+	<target name="userdefine-compile" depends="clean-common">
+		<javac srcdir="${work.dir}" destdir="${common.dir}" deprecation="off" debug="on" optimize="on" source="1.7" target="1.7" encoding="UTF-8">
+			<include name="**/*.java"/>
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+
+	<!-- start of target "compile" ,  compile component source file -->
+	<target name="xcron-compile" depends="clean-classes">
+		<javac srcdir="${src.dir}" destdir="${class.dir}" deprecation="off" debug="on" optimize="on" source="1.7" target="1.7" encoding="UTF-8">
+			<include name="**/*.java"/>
+			<classpath refid="classpath"/>
+		</javac>
+		<jar jarfile="${lib.dir}/${jar.name}.jar">
+			<fileset dir="${class.dir}"/>
+		</jar>
+	</target>
+	<!-- end of target "compile" -->
+
+	<target name="clean-common">
+		<delete failonerror="false">
+			<fileset dir="${common.dir}" includes="**/*.class"/>
+		</delete>
+	</target>
+
+	<target name="clean-classes">
+		<mkdir dir="${class.dir}"/>
+		<delete failonerror="false">
+			<fileset dir="${class.dir}" includes="**/*.class"/>
+		</delete>
+	</target>
+
+</project>

@@ -1,0 +1,55 @@
+@CHARSET "UTF-8";
+    
+/*공통*/
+*{font-family:'Dotum','돋움', 'NanumBarunGothic'}
+#btn_menu{cursor:pointer;}
+#pnl_left, #pnl_top, #pnl_main, #btn_menu, #pnl_user{-webkit-transition: all 0.2s ease-in-out;
+   -moz-transition: all 0.2s ease-in-out;
+   -o-transition: all 0.2s ease-in-out;
+   -ms-transition: all 0.2s ease-in-out;
+   transition: all 0.2s ease-in-out;}
+/*하단공통 */
+#pnl_bottom #pnl_user #lbl_logout .xw-label-cell{border-radius:4px;}
+#pnl_bottom #pnl_user #lbl_logout .xw-label-cell:hover{background:#4E84B6 !important;}
+#pnl_bottom #pnl_user #lbl_logout .xw-label-label{line-height:16px !important;}
+#pnl_bottom #lbl_hotkeyword .xw-label-label{line-height:16px !important;}
+/*메인공통 - 새로고침버튼*/
+#main #btn_reload .xw-button-shell-inner{border-radius:0px;}
+#main #btn_reload .xw-button-shell-inner:before{content: "";cursor:pointer;width:20px;height:20px;
+margin-left:7px; margin-top:3px;display:block;position: absolute;
+background:url(../images/ico_refresh.png) center center no-repeat;clear:both;
+-webkit-transition: all 0.2s ease-in-out;
+   -moz-transition: all 0.2s ease-in-out;
+   -o-transition: all 0.2s ease-in-out;
+   -ms-transition: all 0.2s ease-in-out;
+   transition: all 0.2s ease-in-out;}
+#main #btn_reload:hover .xw-mod-background{    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(144, 228, 246)), to(rgb(202,152,255))) !important; }
+#main #btn_reload:hover .xw-button-shell-inner:before{transform: rotate(90deg);}
+/*메인공통 - 도움말버튼*/
+#main #btn_help .xw-button-shell-inner{border-radius:0px;}
+#main #btn_help .xw-button-shell-inner:before{content: "";cursor:pointer;width:20px;height:20px;
+margin-left:7px; margin-top:3px;display:block;position: absolute;
+background:url(../images/ico_help.png) center center no-repeat;clear:both;
+-webkit-transition: all 0.2s ease-in-out;
+   -moz-transition: all 0.2s ease-in-out;
+   -o-transition: all 0.2s ease-in-out;
+   -ms-transition: all 0.2s ease-in-out;
+   transition: all 0.2s ease-in-out;}
+#main #btn_help:hover .xw-button-shell-inner:before{background:url(../images/ico_help_open.gif) center center no-repeat;}
+
+
+/*탭메뉴*/
+#main div:nth-of-type(6),  #main #btn_reload .xw-mod-background{-webkit-transition: all 0.2s ease-in-out;
+   -moz-transition: all 0.2s ease-in-out;
+   -o-transition: all 0.2s ease-in-out;
+   -ms-transition: all 0.2s ease-in-out;
+   transition: all 0.2s ease-in-out;}/*탭메뉴*/
+#main div:nth-of-type(6) .xw-container .xw-label-shell .xw-label .xw-label-cell .xw-label-label{width:116px;letter-spacing:-1px; /*white-space: pre-wrap !important;*/}
+/*탭메뉴이동버튼*/
+#main div:nth-of-type(7) .xw-container .xw-label-shell .xw-label .xw-label-cell:hover{background-color:#d1d5d9 !important;}
+#main div:nth-of-type(7) .xw-container .xw-label-shell{border: 1px solid #a0a7b1;border-radius: 3px;}
+#main div:nth-of-type(7) .xw-container .xw-label-shell .xw-label .xw-label-cell .xw-label-label{line-height:16px !important}
+
+#pnl_alarm_keyword{ transition: all 0.5s linear ;}
+#pnl_alarm_cust{ transition: all 0.5s linear ;}
+#pnl_alarm_system{ transition: all 0.5s linear ;}

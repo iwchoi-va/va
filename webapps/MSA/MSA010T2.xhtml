@@ -1,0 +1,385 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<style>
+	/*.grd_manage_list .xw-datagrid-area-body td{
+		padding :4px 0px !important;
+	}*/
+
+
+</style>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var result = null;
+var svcId;
+var v_url = "service::msa.msa010.sqlservice.do";
+var v_flag = "UPDATE";
+var _auth_saveUser = "";			//신규버튼 볼수있는 권한
+
+function page_load(event) {
+	try {
+		XwingObject();
+
+		// g_createproduct("pan_product", 2, "msa070", "", "전체");
+		combo_setting();
+		//if(_auth_saveUser.indexOf(global("G_USER_GRADE")) != -1){
+			$btn_save.setVisible(true);
+		//}
+
+	} catch (e) {
+		xwing.Dialog.alert(e);
+	}
+}
+
+function init(){
+	//$edt_sentence.setValue('');
+	$edt_qst_keyword.setValue('');
+}
+
+function combo_setting(){
+	var param = {
+			_sqlName	: "cs.msa.get.scmanage,cs.msa.get.cntr,cs.msa.get.product"
+		};
+	var opt = {
+		reqId : 'getCombo',
+		url : v_url,
+		param : param
+	};
+	
+	Xwing.request(opt, function(sReqId, oRes, oErr, oXhr) {
+
+		$DS_SCMNG.setData(oRes.DS_SCMNG.column, oRes.DS_SCMNG.record);
+		$DS_LCLF.setData($DS_SCMNG.getColumnInfo(),$DS_SCMNG.getData("[TYPE_CD=='L']"));
+		//$DS_LCLF.insertRow(0,["","전체"]);
+		$cmb_lclf.setValue($DS_LCLF.getValue(9,"CODE_ID")); 
+		cmb_lclf_change();
+		$DS_CNTR.setData(oRes.DS_CNTR.column, oRes.DS_CNTR.record);
+		$DS_CNTR.insertRow(0,["","전체"]);
+		$DS_CNTR.insertRow(1,["00000","공통"]);
+		$cmb_cntr.setItemindex("0");
+
+		$DS_PRODUCT.setData(oRes.DS_PRODUCT.column, oRes.DS_PRODUCT.record);
+		$cmb_product.setItemindex("0");
+
+		btn_search_click();
+
+
+	});
+}
+
+
+function btn_search_click() {
+	$DS_LIST.clearData();
+	$DS_MANAGE_LIST.clearData();
+
+	var lclf_cd,sclf_cd,cntr_cd,prod_cd,sentence;
+	lclf_cd=$cmb_lclf.getValue();
+	sclf_cd=$cmb_sclf.getValue()
+	cntr_cd=$cmb_cntr.getValue();
+	prod_cd=$cmb_product.getValue();
+	sentence = $edt_sentence.getValue();
+	
+	if(lclf_cd == "" || sclf_cd == "" || prod_cd == ""){
+		alert("대분류,소분류,상품값은 필수입니다.");
+		return;
+	}
+
+	var param = {
+		_sqlName : "msa.msa010T2.getVrsSentList.sel"
+		,sc_lclf_cd:lclf_cd
+		,sc_sclf_cd:sclf_cd
+		,cntr_cd:cntr_cd
+		,prod_cd:prod_cd
+		,sentence:sentence
+	};
+
+	var opt = {
+		reqId : "btn_search_click",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+
+function btn_save_click(event) {
+	if ($DS_MANAGE_LIST.size() == 0){
+		xwing.Dialog.alert("저장할 데이터가 없습니다.");
+		return;
+	}
+	
+	if(confirm("저장하시겠습니까?")){
+		manage_list_upd();
+	}else{
+		return;
+	}
+}
+
+
+function manage_list_upd(event) {
+	var qst_cd="", qst_focus="", qst_secret="";
+	
+	
+	//$ds_batch.setCoumnInfo($DS_MANAGE_LIST.getColumnInfo());
+	//$ds_batch.setData($DS_MANAGE_LIST.getData());
+	$ds_batch.copyFrom($DS_MANAGE_LIST);
+	
+	//chg_id set, suppress 된 체크박스 값 넣어주기.
+	for (var i = 0; i < $ds_batch.size(); i++) {
+			$ds_batch.setValue(i, "CHG_ID", global("G_USER_ID"));
+		if($ds_batch.getValue(i,"QST_KEYWORD_YN") == 'Y'){
+			$ds_batch.setValue(i,"QST_KEYWORD",$edt_qst_keyword.getValue());
+		}
+	}
+
+	var param = {
+		_sqlName : "msa.msa010T2.VrsSentList.upd",
+		ds_batch : $ds_batch
+	};
+
+	var opt = {
+		reqId : "manage_list_upd",
+		url : v_url,
+		param : param,
+		indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+
+// *********************************************************************************************************
+// Call Back Action
+// ********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n'
+				+ 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+	case 'btn_search_click':
+
+		$DS_MANAGE_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+		$edit_rowcnt.setValue($DS_MANAGE_LIST.size());
+		//grd_list_click();
+		break;
+		
+	case 'manage_list_upd' :
+		btn_search_click();
+		init();
+		break;
+	}
+
+}
+
+function cmb_lclf_change(event) {
+	$DS_SCLF.clearData();
+	var upper_cd = $cmb_lclf.getValue();
+	$DS_SCLF.setData($DS_SCMNG.getColumnInfo(), $DS_SCMNG.getData("[UPR_SC_CD=='"+upper_cd+"']"));
+	$cmb_sclf.setItemindex("0");
+}
+
+
+function edt_sentence_keyup(event) {
+		if(event.event.keyCode == '13') {
+			btn_search_click();
+	}
+}
+
+
+function chk_keyword_click(event) {
+	if($chk_keyword.isChecked()){
+		for(var i = 0; i<$DS_MANAGE_LIST.size()-1; i++){
+			$DS_MANAGE_LIST.setValue(i,"QST_KEYWORD_YN","Y");
+		}
+	}else{
+		for(var i = 0; i<$DS_MANAGE_LIST.size()-1; i++){
+			$DS_MANAGE_LIST.setValue(i,"QST_KEYWORD_YN","N");
+		}
+	}
+}
+
+
+function chk_except_click(event) {
+	if($chk_except.isChecked()){
+		for(var i = 0; i<$DS_MANAGE_LIST.size(); i++){
+			$DS_MANAGE_LIST.setValue(i,"EXCEPT_YN","Y");
+		}
+	}else{
+		for(var i = 0; i<$DS_MANAGE_LIST.size(); i++){
+			$DS_MANAGE_LIST.setValue(i,"EXCEPT_YN","N");
+		}
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT1_ins">
+		<xwing:dataset-column id="PROD_CD1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM1"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT2_ins">
+		<xwing:dataset-column id="PROD_CD1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM1"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD2"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM2"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="LCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="UP_USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="UP_USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ALTR_DT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_CP">
+		<xwing:dataset-column id="SCRIPT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CONCEPT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CONCEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SENTENCE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SEQ">
+		<xwing:dataset-column id="SEQ_VAL"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FILE">
+		<xwing:dataset-column id="FILE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_SIZE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_PATH"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MANAGE_LIST">
+		<xwing:dataset-column id="QST_SECRET"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_FOCUS"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_CDNM"></xwing:dataset-column>
+		<xwing:dataset-column id="EXCEPT_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SENT"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_RATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SC_SNO"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="QST_KEYWORD_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="CNTR_NM"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LCLF">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCLF">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CNTR">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCMNG"></xwing:dataset>
+	<xwing:dataset id="DS_QST">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MANAGE_ALL_LIST"></xwing:dataset>
+	<xwing:dataset id="ds_batch"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="스크립트관리" width="1050" height="768" load="page_load" scroll="false">
+		<xwing:panel id="pan_multi_line" left="0" top="80" width="1050" height="686" anchor="all" visible="true" scroll="false" styles="pan_box_title">
+			<xwing:label id="lbl_subtitle1_0" value="VRS 관리" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:datagrid id="grd_manage_list" left="10" top="47" width="1020" height="529" anchor="all" binddataset="DS_MANAGE_LIST" rownum="true" resizable="true" autofit="true" virtual="true" groupable="false" borderwidth="1" cursor="default" checkbox="false" sortable="true" textwrap="prewrap" editsuppress="false" styles="table_border" selectedrange="row" click="grd_manage_list_click" editwhen="dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="450"></xwing:datagrid-column>
+					<xwing:datagrid-column width="200"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="센터" bindcolumn="CNTR_NM"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="문장"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="필수검출어"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="제외여부"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="필수검출어&#10;  재등록"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row height="25">
+						<xwing:datagrid-cell bindcolumn="CNTR_NM"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="SCRIPT_SENT" suppress="false" groupable="false" groupkey="false" groupsum="false"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="QST_KEYWORD"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="EXCEPT_YN" halign="center" suppress="false" displaytype="checkbox" groupable="false" truevalue="Y" falsevalue="N"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="QST_KEYWORD_YN" displaytype="checkbox" suppress="false" truevalue="Y" falsevalue="N"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_up" left="983" top="61" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_add.png" bgimagealign="center center" enabled="false" click="btn_up_click" visible="false"></xwing:button>
+			<xwing:button id="btn_down" left="1010" top="61" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_del.png" bgimagealign="center center" enabled="false" click="btn_down_click" visible="false"></xwing:button>
+			<xwing:button id="btn_upload" value="엑셀업로드" left="900" top="60" anchor="top right" styles="btn_normal" width="80" tabindex="4" height="25" iconalign="left" borderwidth="1" shadow="0 0 0 " borderstyle="solid" click="btn_upload_click" bordercolor="#C6C6C6" visible="false"></xwing:button>
+			<xwing:edit id="edit_rowcnt" left="983" top="7" width="45" height="25" halign="right" anchor="top right" readonly="true" enabled="true"></xwing:edit>
+			<xwing:checkbox id="chk_except" label="제외여부" left="834" top="9" width="70" click="chk_except_click" anchor="top right" height="30" value="false"></xwing:checkbox>
+			<xwing:checkbox id="chk_keyword" label="필수검출어
+" left="904" top="9" width="80" click="chk_keyword_click" anchor="top right" height="30" value="false"></xwing:checkbox>
+		</xwing:panel>
+		<xwing:panel id="pnl_bef_meta" left="10" top="660" width="1020" height="93" anchor="right bottom left" styles="div_perform" visible="true" scroll="false">
+			<xwing:button id="btn_new" value="신 규" left="888" top="60" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_new_click" visible="false"></xwing:button>
+			<xwing:button id="btn_save" value="저 장" left="953" top="60" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click" visible="false"></xwing:button>
+			<xwing:label id="lbl_sentence_0" value="필수검출어" left="18" top="20" height="25" halign="right" width="82" styles="label_lititle" visible="true"></xwing:label>
+			<xwing:edit id="edt_qst_keyword" left="105" top="10" width="507" height="52"></xwing:edit>
+		</xwing:panel>
+		<xwing:group id="search_box" left="0" top="0" width="1050" height="78" anchor="top right left" styles="div_search" borderwidth="0" scroll="false">
+			<xwing:label id="lbl_product" value="상품명" left="470" top="12" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_product" left="535" top="12" width="300" height="25" enabled="true" visible="true" domaindataset="DS_PRODUCT" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NAME" size="15"></xwing:combo>
+			<xwing:label id="lbl_cntr" value="센터" left="470" top="44" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_cntr" left="535" top="44" width="100" height="25" enabled="true" visible="true" domaindataset="DS_CNTR" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NAME"></xwing:combo>
+			<xwing:label id="lbl_lclf" value="대분류" left="20" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_lclf" left="85" top="10" width="110" height="25" enabled="true" visible="true" domaindataset="DS_LCLF" domaintextcolumn="CODE_NAME" domaincodecolumn="CODE_ID" change="cmb_lclf_change"></xwing:combo>
+			<xwing:label id="lbl_sclf" value="소분류" left="205" top="10" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_sclf" left="270" top="10" width="200" height="25" enabled="true" visible="true" domaindataset="DS_SCLF" domaintextcolumn="CODE_NAME" domaincodecolumn="CODE_ID" size="15"></xwing:combo>
+			<xwing:label id="lbl_sentence" value="문장검색" left="20" top="42" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:button id="btn_search" value="조 회" left="775" top="44" anchor="bottom" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			<xwing:edit id="edt_sentence" left="85" top="44" width="386" height="22" keydown="edt_sentence_keydown" keyup="edt_sentence_keyup"></xwing:edit>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

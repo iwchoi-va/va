@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+	<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+	<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+	<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_yyyymmdd = null;	//날짜 전역 변수
+
+function lbl_btn_click(event) {
+		
+	//선택된 날짜를 파라미터로 넘기면서 장애 히스토리 탭 열기.
+	Xwing.parent.tab.addTab("장애 히스토리", "service::cm_admin/alarm/alm100m.xhtml"+'?almDate='+v_yyyymmdd);	
+		
+	Xwing.parent.tab.reload();
+	
+}
+
+function page_load(event) {
+	XwingObject(); 
+	makeChart();
+	f_getAlarmData();
+	setInterval("f_getAlarmData()", 600000);
+}
+
+// 장애차트 관련 데이터 갖고 오기
+function f_getAlarmData(){
+	var param	= {
+		_sqlName: "cs.com.slide.sel"
+	};
+
+	var opt 	= { 	
+		reqId: "ALARM_SCH",
+		url: "service::cs.com.slide.do",
+		param: param
+	};
+Xwing.request(opt, callback);	
+}
+
+//차트 그리기
+function makeChart(){
+	Xwing.getChart('alarm_chart').draw({
+		legend : {
+			visible: false,
+			align : 'top',
+			color : ['#FFE400','#ff0000','#0063C5','#ff8040'],
+			shape : ['circle','circle','circle','circle'],
+			border : {
+				width : 1,
+				color : '#000000'
+			},
+			background : {
+				color : '#000000'
+			},
+			margin : {
+				bottom : -10
+			},
+			font : {
+				size : 11,
+				color : '#777777'
+			}
+		},
+		grid : {
+			border : {
+				color : '#EAEAEA',
+				width : 0
+			},
+			background : {
+				color : '#fff',
+				opacity : 0
+			},
+			line : {
+				border : {
+					style : 'none',
+					color : '#EAEAEA',
+					width : 1
+				},
+				color : '#EAEAEA',
+				opacity : 0,
+				direction : 'horizontal'
+			}
+		},
+		series : [
+			{
+				name : "장애건수",
+				gallery : "bar",
+				axis : "y",
+				bindcolumn : 'ALARM_CNT',
+				style : {
+					opacity : 1,
+					width : 1,
+					color : "#FFE400",
+					bordercolor : "#FFE400"
+				}
+			},
+			{
+				name : "매우 심각",
+				gallery : "line",
+				axis : "y",
+				bindcolumn : 'CRI_CNT',
+				style : {
+					opacity : 1,
+					width : 5,
+					color : '#ff0000',
+					bordercolor : '#ff0000',
+			
+				}
+			},
+			{
+				name : "심각",
+				gallery : "line",
+				axis : "y",
+				bindcolumn : "MAJ_CNT",
+				style : {
+					opacity : 1,
+					width : 5,
+					color : "#0063C5",
+					bordercolor : "#0063C5"
+				}
+			},
+			{
+				name : "보통",
+				gallery : "line",
+				axis : "y",
+				bindcolumn : "MIN_CNT",
+				style : {
+					opacity : 1,
+					width : 5,
+					color : "#ff8040",
+					bordercolor : "#ff8040"
+				}
+				
+			}],
+		pointlabel : {
+			visible : true,
+			font : {
+				size : 11,
+				color : '#777777'
+			}
+		}
+	});	
+}
+
+function callback(reqId, res , err , xhr) {
+	Xwing.log( "================ [ BCMS Callback ] ================" );
+	Xwing.log( "reqID : " + reqId );
+	Xwing.log( "res   : " + res );
+	Xwing.log( "err   : " + err );
+	Xwing.log( "xhr   : " + xhr );
+	
+	if(res.Error != "0"){
+		xwing.Dialog.alert("ResultCode : "+ res.ResultCode + "<br/>" + "ResultMessage"+ res.ResultMessage);
+		return;
+	}
+	if(reqId == "ALARM_SCH"){
+		$DS_ERROR_CHART.setData(res.DS_ERROR_CHART.column, res.DS_ERROR_CHART.record);
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset description="" id="ds_dataset0">
+		<xwing:dataset-column id="column0"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>
+			    Hansol has greeted the new millennium as Evergreen Hansol, with the 
+				aspiration of becoming the world’s premier company.
+				The term “evergreen” symbolizes the spirit of youth, the spirit of challenge,
+				the evergreen presence and vigor of nature, and a progressive way of thinking.
+								
+				'늘 푸른 한솔'은 정보와 문화가치가 곧 경쟁력의 원천이 되는 시대적 특성을 제대로
+				인식하고, 시대에 항상 새로움을 창조하여 창조적인 시대를 앞서 리드한다는 한솔의
+				덕목을 포함합니다.
+			</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ERROR_CHART">
+		<xwing:dataset-column id="TITLE"></xwing:dataset-column>
+		<xwing:dataset-column id="ALARM_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="CRI_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="MAJ_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="MIN_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="454" height="769" scroll="false" left="24" top="24" load="page_load">
+		<xwing:panel id="panel0" left="5" top="40" width="440" height="520" url="./intro_todo.xhtml" scroll="false">
+		</xwing:panel>
+		<xwing:label id="label1" left="10" top="15" width="142" height="22" fontsize="13" tabindex="0" fontweight="bold" iconmargin="0 10 0 0" fontcolor="#000000" value="장애 알림 달력" icon="../images/icon_page_title.png"></xwing:label>
+		<xwing:label id="lbl_btn" value="상세내용" left="367" top="20" fontcolor="#000000" width="66" height="22" click="lbl_btn_click" icon="../images/icon_search.png" cursor="pointer"></xwing:label>
+		
+	    <xwing:label id="label1_0_0_0" left="5" top="562" width="444" height="202" bordercolor="#d4d4d4" borderstyle="solid" borderwidth="1" bgcolor="#f6f6f6" anchor="top right left"></xwing:label>
+		<xwing:chart id="alarm_chart" left="11" top="596" width="432" height="162" binddataset="DS_ERROR_CHART" chartgutter="30 5 30 5" categorycolumn="TITLE" borderwidth="0" bgcolor="transparent" galleryshadow="false" anchor="left" xaxisrotate="0" flexiblemin="false"></xwing:chart>
+		<xwing:panel id="panel0" left="186" top="568" width="229" height="24" scroll="false" anchor="top left">
+			<xwing:label id="label0_1" left="15" top="7" width="10" height="10" bgcolor="#FFE400"></xwing:label>
+			<xwing:label id="label0_2" left="30" top="1" width="53" height="22" value="장애건수" fontcolor="#777777" fontfamily="NanumGothic"></xwing:label>
+			<xwing:label id="label0_0_0" left="80" top="7" width="10" height="10" bgcolor="#ff0000"></xwing:label>
+			<xwing:label id="label0_2_0" left="95" top="1" width="65" height="22" value="매우심각" fontcolor="#777777" fontfamily="NanumGothic"></xwing:label>
+			<xwing:label id="label0_0_0_0" left="145" top="7" width="10" height="10" bgcolor="#0063C5"></xwing:label>
+			<xwing:label id="label0_2_0_0" left="160" top="1" width="38" height="22" value="심각" fontcolor="#777777" fontfamily="NanumGothic"></xwing:label>
+			<xwing:label id="label0_0_0_0_0" left="190" top="7" width="10" height="10" bgcolor="#ff8040"></xwing:label>
+			<xwing:label id="label0_2_0_0_0" left="205" top="1" width="38" height="22" value="보통" fontcolor="#777777" fontfamily="NanumGothic"></xwing:label>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

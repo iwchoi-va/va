@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="false">
+		<series>
+<!--
+selectionMarkLineColor 선택된(클릭된) 지역 이미지 라인 표시 색상 - selectionMarking가 line일 경우
+selectionMarkLineGap 선택된(클릭된) 지역 이미지 라인 표시 간격 (기본 6) - selectionMarking가 line일 경우
+-->
+			<MapSeries id="mapseries" selectionMarking="line" selectionMarkLineColor="0x000000" selectionMarkLineGap="5">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

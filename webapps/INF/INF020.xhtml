@@ -1,0 +1,1023 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/xwing.dataset.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+ * FormID(명) : 
+ * Form 설명 : 
+ * 작성자 : 
+ * 작성일 :
+ * =================================================================
+ * 변경내역 :
+ * YYYYMMDD 담당자명 변경내용(Why?,What?)
+ ******************************************************************************/
+
+//*********************************************************************************************************
+// Global Variable
+//********************************************************************************************************/
+var v_url = "service::wfm.hr.hrm100m010p.do";
+var v_admin_grade_cd = "60,90,99"; // 권한을 지정하는 변수
+var v_center_cd = "KYB000";
+
+//var g_select = 0;
+//var g_deptcd = "";
+
+var _dept_cd = "";
+var _use_yn = "";
+var _db_click = "0";
+var _sdate=g_toDate();
+var _edate=g_toDate();
+var _row=0;
+
+//*********************************************************************************************************
+//Page Action
+//********************************************************************************************************/
+function page_load(event) {
+	XwingObject();	
+	
+	_dept_cd = Xwing.param.dept_cd;
+	_use_yn = Xwing.param.use_yn;
+	_db_click = Xwing.param.db_click;
+	
+	if(_db_click == "1"){
+		_sdate = Xwing.param.sdate;
+		_edate = Xwing.param.edate;	
+	}
+	
+	//엑셀다운권한정의
+	excelDownAuth($btn_excel);
+	
+	
+	f_init();	
+	f_codebook_sel();
+}
+
+//초기화
+function f_init() {	
+	
+	if (v_admin_grade_cd.indexOf(global("G_USER_GRADE")) == -1) {		
+		v_center_cd = global("G_ORG1_CD");
+	}
+
+	$DS_SCH.setValue("CENTER_CD", v_center_cd);
+	
+	if(_use_yn == "Y")
+		Xwing.getRadio("rdo_srcuse").setValue("Y");
+	else if(_use_yn == "N")
+		Xwing.getRadio("rdo_srcuse").setValue("N");
+	else
+		Xwing.getRadio("rdo_srcuse").setValue("Y");
+	
+	f_dept_info_reset();
+	
+	Xwing.createContextMenu("DS_CONTEXT", "tre_dept", {
+		beforeShow : function() {
+			f_contxtDeptStatus();
+		}
+	});
+}
+
+//조직 상세정보에 데이터 세팅
+function f_dept_info_reset() {
+	$DS_DEPT_INFO.clearData();
+	$DS_DEPT_INFO.addRow();
+
+	$dkp_start_date.setValue(g_toDate());
+	$dpk_end_date.setValue("20991231");
+
+	//$edt_tel1_01.setValue("");
+	//$edt_tel1_02.setValue("");
+	//$edt_tel1_03.setValue("");
+	//$edt_tel2_01.setValue("");
+	//$edt_tel2_02.setValue("");
+	//$edt_tel2_03.setValue("");
+	$edt_mode.setValue("");
+
+	f_setFocusDept();
+}
+
+// 우클릭 메뉴리스트
+function f_contxtDeptStatus() {
+	var v_row = $DS_DEPT_LIST.getCursor();
+	var v_user_yn = $DS_DEPT_LIST.getValue(v_row, "USE_YN");
+	if (v_user_yn == 'N') {
+		xwing.Dialog.alert("사용하지 않는 조직입니다.");
+		return false;
+	}
+
+	var v_dept_level = $DS_DEPT_LIST.getValue(v_row, "DEPT_LEVEL");	
+
+	$DS_CONTEXT.setValue(0, "disabled", false);
+	$DS_CONTEXT.setValue(1, "disabled", false);
+	$DS_CONTEXT.setValue(3, "disabled", false);
+	$DS_CONTEXT.setValue(4, "disabled", false);
+	$DS_CONTEXT.setValue(5, "disabled", false);
+	// WFM000 일경우
+	if (v_dept_level > 5){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+		$DS_CONTEXT.setValue(1, "disabled", true);
+	} else if (v_dept_level == 5){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+	} else if (v_dept_level == 4){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+	} else if (v_dept_level == 3){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+	} else if (v_dept_level == 2){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+		$DS_CONTEXT.setValue(5, "disabled", true);
+	} else if (v_dept_level == 1){
+		$DS_CONTEXT.setValue(0, "disabled", true);
+		$DS_CONTEXT.setValue(5, "disabled", true);
+		$DS_CONTEXT.setValue(5, "disabled", true);
+	} else if (v_dept_level == 0){
+		$DS_CONTEXT.setValue(3, "disabled", true);
+		$DS_CONTEXT.setValue(4, "disabled", true);
+		$DS_CONTEXT.setValue(5, "disabled", true);
+	}
+}
+
+// 코드북조회
+function f_codebook_sel() {
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS011",
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+// 부서조회
+function f_dept_sel() {
+	var schCode = $edt_sch_dept.getValue();
+	var schName = $edt_sch_name.getValue();
+	
+	var v_param = {
+		_sqlName : "wfm.hr.hrm100m010p.dept.sel",
+		center_cd : $DS_SCH.getValue("CENTER_CD"),
+		use_yn : ($DS_SCH.getValue("USE_YN") == "Y" ? "Y" : "")
+		, sdate : _sdate
+		, edate : _edate
+		, schCode : schCode
+		, schName : schName
+	};
+	var opt = {
+		reqId : "f_dept_sel",
+		url : v_url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+// 부서데이터 받기
+function f_set_ds_dept_list(res){
+	$DS_DEPT_LIST_OLD.setData(res.DS_DEPT_LIST.column, res.DS_DEPT_LIST.record);	
+	if($DS_SCH.getValue("USE_YN") == "Y"){
+		$DS_DEPT_LIST.setData(res.DS_DEPT_LIST.column, $DS_DEPT_LIST_OLD.getData("[USE_YN == 'Y']"));
+	}else{
+		$DS_DEPT_LIST.setData(res.DS_DEPT_LIST.column, res.DS_DEPT_LIST.record);
+	}
+}
+
+// 부서포커스 이동
+function f_setFocusDept(){
+	_row = $DS_DEPT_LIST.indexOfRow("DEPT_CD", _dept_cd);
+	$tre_dept.setSelection(_row);
+	$DS_DEPT_LIST.setCursor(_row);
+	f_set_dept_info();		
+}
+
+// 부서상세화면 보여줌
+function f_set_dept_info(){
+	var v_row_idx = $DS_DEPT_LIST.getCursor();
+	
+	//alert(Xwing.getTree("tre_dept").getSelection());
+	
+	$DS_DEPT_LIST.copyToRow(v_row_idx, "DS_DEPT_INFO", 0);
+	
+	if ($DS_DEPT_INFO.getValue("DEPT_LEVEL") == "1") {
+		$edt_mode.setValue("center_upd");
+	} else {
+		$edt_mode.setValue("dept_upd");
+	}
+	//f_tel_no_split();
+}
+
+// 전화번호 세팅
+function f_tel_no_split() {
+	var v_tel1 = $DS_DEPT_INFO.getValue("TEL_NO1").split("-");
+	$edt_tel1_01.setValue(v_tel1[0]);
+	$edt_tel1_02.setValue(v_tel1[1]);
+	$edt_tel1_03.setValue(v_tel1[2]);
+
+	var v_tel2 = $DS_DEPT_INFO.getValue("TEL_NO2").split("-");
+	$edt_tel2_01.setValue(v_tel2[0]);
+	$edt_tel2_02.setValue(v_tel2[1]);
+	$edt_tel2_03.setValue(v_tel2[2]);
+	
+}
+
+// 조직위치 이동 (up)
+function ctx_orderUp_click() {
+	f_commonOrder_click("U");
+}
+
+// 조직위치 이동 (down)
+function ctx_orderDown_click() {
+	f_commonOrder_click("D");
+}
+
+// 조직위치 이동함수
+function f_commonOrder_click(gubun) {
+	var v_row_idx = $DS_DEPT_LIST.getCursor();
+	var v_ds = $DS_DEPT_LIST.getData("[UPPER_DEPT=='"
+			+ $DS_DEPT_LIST.getValue(v_row_idx, "UPPER_DEPT")
+			+ "'][DEPT_LEVEL == '"
+			+ $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_LEVEL") + "']");
+	var v_col_idx_01 = f_getColIdx($DS_DEPT_LIST, "DEPT_CD");
+	var v_col_idx_02 = f_getColIdx($DS_DEPT_LIST, "SORT_NO");
+
+	var v_target_dept_cd = "";
+	var v_self_dept_cd = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_CD");
+
+	var v_target_sort_no = 0;
+	var v_self_sort_no = $DS_DEPT_LIST.getValue(v_row_idx, "SORT_NO");
+
+	var v_flag = false;
+	if (gubun == "U") {
+		for ( var i = (v_ds.length - 1); i >= 0; i--) {
+			v_target_dept_cd = v_ds[i][v_col_idx_01];
+			v_target_sort_no = v_ds[i][v_col_idx_02];
+			if (v_flag)
+				break;
+			if (v_ds[i][v_col_idx_01] == v_self_dept_cd) {
+				v_flag = true;
+			}
+		}
+	} else {
+		for ( var i = 0; i < v_ds.length; i++) {
+			v_target_dept_cd = v_ds[i][v_col_idx_01];
+			v_target_sort_no = v_ds[i][v_col_idx_02];
+			if (v_flag)
+				break;
+			if (v_ds[i][v_col_idx_01] == v_self_dept_cd) {
+				v_flag = true;
+			}
+		}
+	}
+
+	if (v_target_dept_cd == v_self_dept_cd) return false;
+
+	var v_param = {
+		_sqlName : "wfm.hr.hrm100m010p.sortno.upd01,wfm.hr.hrm100m010p.sortno.upd02,wfm.hr.hrm100m010p.dept.sel",
+		center_cd : $DS_SCH.getValue("CENTER_CD"),
+		use_yn : ($DS_SCH.getValue("USE_YN") == "Y" ? "" : "Y"),
+		target_dept_cd : v_target_dept_cd,
+		target_sort_no : v_self_sort_no,
+		self_dept_cd : v_self_dept_cd,
+		self_sort_no : v_target_sort_no
+		, sdate : _sdate
+		, edate : _edate
+	};
+	
+	var opt = {
+		reqId : "f_commonOrder_click",
+		url : v_url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+}
+
+// 센터 추가
+function ctx_centerAdd_click() {
+	$edt_mode.setValue("center_ins");
+
+	var v_new_sort_no = "0";
+	var v_new_dept_cd = "";
+	var v_dept_cd = "";
+	var v_next_center_cd = "";
+	var v_dept_level = "0";
+	var v_upper_dept = "STA000";
+	var v_chg_id = global("G_USER_ID");
+	var v_chg_name = global("G_USER_NAME");
+
+	var v_sort_no = 1;
+	var v_a_sort_no = [];
+	var v_ds = $DS_DEPT_LIST.getData("[DEPT_LEVEL == '1']");
+	var v_col_idx = parseInt(f_getColIdx($DS_DEPT_LIST, "SORT_NO"), 10);
+
+	for ( var i = 0; i < v_ds.length; i++) {
+		v_a_sort_no.push(v_ds[i][v_col_idx]);
+	}
+
+	if (v_a_sort_no.length != 0) {
+		v_sort_no = "" + (parseInt(v_a_sort_no.sort().reverse()[0], 10) + v_sort_no);
+	}
+
+	$DS_DEPT_INFO.clearData();
+	$DS_DEPT_INFO.addRow();
+
+	$DS_DEPT_INFO.setValue("DEPT_CD", v_new_dept_cd);
+	$DS_DEPT_INFO.setValue("DEPT_LEVEL", 1);
+	$DS_DEPT_INFO.setValue("UPPER_DEPT", v_upper_dept);
+	$DS_DEPT_INFO.setValue("SORT_NO", v_sort_no);
+	$DS_DEPT_INFO.setValue("DEPT_NAME", "새센터");
+	$DS_DEPT_INFO.setValue("DEPT_ENAME", "New Center");
+	$DS_DEPT_INFO.setValue("TEL_NO1", "");
+	$DS_DEPT_INFO.setValue("TEL_NO2", "");
+	$DS_DEPT_INFO.setValue("USE_YN", "Y");
+	$DS_DEPT_INFO.setValue("START_DATE", g_toDate());
+	$DS_DEPT_INFO.setValue("END_DATE", "20991231");
+	$DS_DEPT_INFO.setValue("DEPT_INFO", "");
+	$DS_DEPT_INFO.setValue("ORG1_CD", v_new_dept_cd);
+	$DS_DEPT_INFO.setValue("ORG2_CD", "");
+	$DS_DEPT_INFO.setValue("ORG3_CD", "");
+	$DS_DEPT_INFO.setValue("ORG4_CD", "");
+	$DS_DEPT_INFO.setValue("ORG5_CD", "");
+	$DS_DEPT_INFO.setValue("ORG6_CD", "");
+	$DS_DEPT_INFO.setValue("CHG_ID", v_chg_id);
+	$DS_DEPT_INFO.setValue("CHG_NAME", v_chg_name);
+
+	$edt_dept_cd.setReadonly(false);
+	$edt_dept_cd.focus();
+}
+
+// 하위조직 추가.
+function ctx_deptAdd_click() {
+	f_get_dept_cd();
+}
+
+// 하위조직 cd get
+function f_get_dept_cd(){
+	var v_row_idx = $DS_DEPT_LIST.getCursor();
+	var v_dept_cd = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_CD");
+	
+	var opt = {
+			reqId : "get_dept_cd",
+			url : v_url,
+			param : {
+				_sqlName : "wfm.hr.hrm100m010p.deptcd.sel"
+				, upper_cd : v_dept_cd
+				,
+			},
+			indicator : null,
+			showError : true
+		};
+
+	Xwing.request(opt, callback);	
+}
+
+// 하위조직추가 setting
+function f_set_sub_dept(new_dept_cd){
+	$edt_mode.setValue("dept_ins");
+
+	var v_new_dept_cd = new_dept_cd;
+	var v_new_sort_no = "1";
+	var v_row_idx = $DS_DEPT_LIST.getCursor();
+	var v_dept_cd = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_CD");
+	var v_dept_level = parseInt($DS_DEPT_LIST.getValue(v_row_idx, "DEPT_LEVEL"), 10);
+	var v_new_dept_level = (v_dept_level + 1);
+	var v_upper_dept = $DS_DEPT_LIST.getValue(v_row_idx, "UPPER_DEPT");
+	var v_sort_no = $DS_DEPT_LIST.getValue(v_row_idx, "SORT_NO");
+	var v_dept_name = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_NAME");
+	var v_dept_ename = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_ENAME");
+	//var v_tel_no1 = $DS_DEPT_LIST.getValue(v_row_idx, "TEL_NO1");
+	//var v_tel_no2 = $DS_DEPT_LIST.getValue(v_row_idx, "TEL_NO2");
+	var v_use_yn = $DS_DEPT_LIST.getValue(v_row_idx, "USE_YN");
+	var v_start_date = $DS_DEPT_LIST.getValue(v_row_idx, "START_DATE");
+	var v_end_date = $DS_DEPT_LIST.getValue(v_row_idx, "END_DATE");
+	var v_dept_info = $DS_DEPT_LIST.getValue(v_row_idx, "DEPT_INFO");
+	var v_org1_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG1_CD");
+	var v_org2_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG2_CD");
+	var v_org3_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG3_CD");
+	var v_org4_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG4_CD");
+	//var v_org5_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG5_CD");
+	//var v_org6_cd = $DS_DEPT_LIST.getValue(v_row_idx, "ORG6_CD");
+	var v_chg_id = global("G_USER_ID");
+	var v_chg_name = global("G_USER_NAME");
+
+	if (v_dept_level > 6) {
+		xwing.Dialog.alert("하위조직을 추가할 수 없습니다.");
+		return;
+	}
+	
+	var v_ds = $DS_DEPT_LIST_OLD.getData("[ORG1_CD=='" + v_org1_cd + "'][DEPT_LEVEL=='" + (v_new_dept_level) + "']");	
+	var v_a_dept_cd = [];
+	var v_a_sort_no = [];
+
+	var v_col_idx_01 = f_getColIdx($DS_DEPT_LIST, "DEPT_CD");
+	var v_col_idx_02 = f_getColIdx($DS_DEPT_LIST, "SORT_NO");
+	var v_col_idx_03 = f_getColIdx($DS_DEPT_LIST, "UPPER_DEPT");
+
+	for ( var i = 0; i < v_ds.length; i++) {
+		if(v_dept_cd==v_ds[i][v_col_idx_03]){
+			v_a_dept_cd.push(v_ds[i][v_col_idx_01]);
+			v_a_sort_no.push(g_lpad(v_ds[i][v_col_idx_02], "0", 10));
+		}
+	}
+	
+	var v_max_dept_cd = "";
+	if (v_a_dept_cd.length != 0) {
+		v_max_dept_cd = v_a_dept_cd.sort().reverse()[0];
+		v_new_sort_no = "" + (parseInt(v_a_sort_no.sort().reverse()[0], 10) + 1);
+	} else {
+		v_max_dept_cd = g_substr(v_dept_cd, 0, 2) + v_new_dept_level + "000";
+		v_new_sort_no = "1";
+	}
+
+	$DS_DEPT_INFO.clearData();
+	$DS_DEPT_INFO.addRow();
+
+	$DS_DEPT_INFO.setValue("DEPT_CD", v_new_dept_cd);
+	$DS_DEPT_INFO.setValue("DEPT_LEVEL", v_new_dept_level);
+	$DS_DEPT_INFO.setValue("UPPER_DEPT", v_dept_cd);
+	$DS_DEPT_INFO.setValue("SORT_NO", v_new_sort_no);
+	$DS_DEPT_INFO.setValue("DEPT_NAME", "새조직");
+	$DS_DEPT_INFO.setValue("DEPT_ENAME", "New Organization");
+	//$DS_DEPT_INFO.setValue("TEL_NO1", "");
+	//$DS_DEPT_INFO.setValue("TEL_NO2", "");
+	$DS_DEPT_INFO.setValue("USE_YN", "Y");
+	$DS_DEPT_INFO.setValue("START_DATE", g_toDate());
+	$DS_DEPT_INFO.setValue("END_DATE", "20991231");
+	$DS_DEPT_INFO.setValue("DEPT_INFO", "");
+	
+	//Xwing.getEdit("edt_tel1_01").setValue("");
+	//Xwing.getEdit("edt_tel1_02").setValue("");
+	//Xwing.getEdit("edt_tel1_03").setValue("");
+	//Xwing.getEdit("edt_tel2_01").setValue("");
+	//Xwing.getEdit("edt_tel2_02").setValue("");
+	//Xwing.getEdit("edt_tel2_03").setValue("");
+	
+	if (v_new_dept_level == 1) {
+		v_org1_cd = v_new_dept_cd;
+	} else if (v_new_dept_level == 2) {
+		v_org2_cd = v_new_dept_cd;
+	} else if (v_new_dept_level == 3) {
+		v_org3_cd = v_new_dept_cd;
+	} else if (v_new_dept_level == 4) {
+		v_org4_cd = v_new_dept_cd;
+	} else if (v_new_dept_level == 5) {
+		v_org5_cd = v_new_dept_cd;
+	} else if (v_new_dept_level == 6) {
+		v_org6_cd = v_new_dept_cd;
+	}
+
+	$DS_DEPT_INFO.setValue("ORG1_CD", v_org1_cd);
+	$DS_DEPT_INFO.setValue("ORG2_CD", v_org2_cd);
+	$DS_DEPT_INFO.setValue("ORG3_CD", v_org3_cd);
+	$DS_DEPT_INFO.setValue("ORG4_CD", v_org4_cd);
+	//$DS_DEPT_INFO.setValue("ORG5_CD", v_org5_cd);
+	//$DS_DEPT_INFO.setValue("ORG6_CD", v_org6_cd);
+	$DS_DEPT_INFO.setValue("CHG_ID", v_chg_id);
+	$DS_DEPT_INFO.setValue("CHG_NAME", v_chg_name);
+
+	$edt_dept_name.focus();
+}
+
+// 상위조직변경
+function ctx_upperDeptMove_click() {
+	var opt = {
+			id: 'dept',
+			url: './INF020P1.xhtml',
+			param : {
+				dept_cd : $edt_dept_cd.getValue()
+			},
+			width: 415,
+			height: 545,
+			draggable:true,
+			resizable : false,
+			modal: true,
+			title : '부서조회'
+		};
+	
+	var dialog = new xwing.Dialog(opt);
+	dialog.open();
+}
+
+// 공통 ColIdx
+function f_getColIdx(dsObj, column) {
+	var columns = dsObj.getColumnInfo();
+	var i = 0;
+	var idx = -1;
+	for (i in columns) {
+		if (g_toUpper(columns[i]) == g_toUpper(column)) {
+			idx = i;
+			break;
+		}
+	}
+	return idx;
+}
+
+// 조직트리 click 이벤트
+function tre_dept_click(event) {
+	_row = $DS_DEPT_LIST.getCursor();	
+	_dept_cd = $DS_DEPT_LIST.getValue(_row, "DEPT_CD");	
+	if($DS_DEPT_INFO.getValue("DEPT_CD") == $DS_DEPT_LIST.getValue(_row, "DEPT_CD")){
+		//f_set_dept_info();	
+	}	
+	
+	Xwing.getEdit('edt_dept_cd').setReadonly(true);
+}
+
+// 조직트리 select 이벤트
+function tre_dept_select(event) {
+	f_set_dept_info();
+}
+
+// 엔터키 입력시 이벤트
+function edt_sch_dept_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_sch_dept_click();
+	}
+}
+
+// 조건에 맞는 조직조회
+function btn_sch_dept_click(event) {
+	f_dept_sel();
+	/*var schCode = $edt_sch_dept.getValue();
+	var schName = $edt_sch_name.getValue();
+	
+	if(schCode == '' && schName == '') {
+		new xwing.Dialog.alert('검색하실 조직코드 혹은 조직명을 입력하세요.', '조직코드검색');
+		return;
+	}
+	
+	var v_param = {
+			_sqlName : "cs.hr.hrm100m.schval.dept"
+			, schCode : schCode
+			, schName : schName
+		};
+		var opt = {
+			reqId : "schvalDept",
+			url : 'service::cs.hr.hrm100m.schval.dept.do',
+			param : v_param,
+			indicator : null,
+			showError : true
+		};
+
+		Xwing.request(opt, callback);*/
+}
+
+// 엑셀다운로드버튼클릭
+function btn_excel_click(event){
+	var v_param = {
+			_sqlName : "wfm.hr.hrm100m010p.dept.sel.excel",
+			use_yn : ($DS_SCH.getValue("USE_YN") == "Y" ? "" : "Y,N") //사용여부 Y이면 사용여부Y인것만, N이면 전부.
+			, sdate : _sdate
+			, edate : _edate
+		};
+		var opt = {
+			reqId : "excel",
+			url : v_url,
+			param : v_param,
+			indicator : null,
+			showError : true
+		};
+
+		Xwing.request(opt, callback);
+}
+
+// 비사용조직 라디오버튼 클릭 이벤트
+function rdo_srcuse_change(event) {	
+	f_dept_sel();
+	if($cmb_use.getValue() == 'Y'){
+		_use_yn = 'Y';
+	} else {
+		_use_yn = 'N';
+	}
+}
+
+// 저장버튼 클릭 이벤트
+function btn_sav_click(event) {
+	if(g_isEmpty($edt_mode.getValue())){
+		xwing.Dialog.alert("저장할 조직을 조직도에서 선택하세요.", $page.getTitle());
+		return false;
+	}
+	
+	if (g_isEmpty($edt_dept_cd.getValue())) {
+		xwing.Dialog.alert("조직코드를 입력하세요.", $page.getTitle(), function(e) {
+			$edt_dept_cd.focus();
+		});
+		return false;
+	}
+
+	if (g_isEmpty($edt_dept_name.getValue())) {
+		xwing.Dialog.alert("조직명을 입력하세요.", $page.getTitle(), function(e) {
+			$edt_dept_name.focus();
+		});
+		return false;
+	}
+
+	
+	xwing.Dialog.confirm("수정하시겠습니까?", $page.getTitle(), f_dept_update);
+		
+}
+
+function f_dept_update(){
+	var param	= {		
+			_sqlName: "hr.inf020.dept.anl_useyn.upd,wfm.hr.hrm100m010p.dept.sel,wfm.hr.hrm100m010p.deptinfo.sel",
+			CHG_ID:global("G_USER_ID"),
+			DEPT_CD: $DS_DEPT_INFO.getValue(0, "DEPT_CD"),
+			ANL_USE_YN:$DS_DEPT_INFO.getValue(0, "ANL_USE_YN")
+	};
+	
+	var opt 	= {
+			reqId: "f_dept_update",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);	
+	
+}
+
+// 조직저장
+function f_dept_save(e) {
+	if (!g_nvl(e, true)) return;
+	
+	var v_mode = $edt_mode.getValue();
+	var v_param = {};
+	var v_sqlName = "";
+	
+	$DS_DEPT_INFO.setValue(0, 'CHG_ID', global('G_USER_ID'));
+	
+	if (v_mode == "center_ins" || v_mode == "dept_ins") {	
+		//$DS_DEPT_INFO.setValue(0, "TEL_NO1", $edt_tel1_01.getValue() + "-" + $edt_tel1_02.getValue() + "-" + $edt_tel1_03.getValue());
+		//$DS_DEPT_INFO.setValue(0, "TEL_NO2", $edt_tel2_01.getValue() + "-" + $edt_tel2_02.getValue() + "-" + $edt_tel2_03.getValue());
+
+		v_sqlName = "wfm.hr.hrm100m010p.dept.ins";
+	} else if (v_mode == "center_upd" || v_mode == "dept_upd") {
+		
+		var v_idx = $DS_DEPT_LIST_OLD.indexOfRow("DEPT_CD", $DS_DEPT_INFO.getValue("DEPT_CD"));
+		
+		if (v_idx != -1) {
+			$DS_DEPT_INFO.setValue(0, "OLD_UPPER_DEPT", $DS_DEPT_LIST_OLD.getValue(v_idx, "UPPER_DEPT"));
+			$DS_DEPT_INFO.setValue(0, "OLD_ORG1_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG1_CD"));
+			$DS_DEPT_INFO.setValue(0, "OLD_ORG2_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG2_CD"));
+			$DS_DEPT_INFO.setValue(0, "OLD_ORG3_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG3_CD"));
+			$DS_DEPT_INFO.setValue(0, "OLD_ORG4_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG4_CD"));
+			//$DS_DEPT_INFO.setValue(0, "OLD_ORG5_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG5_CD"));
+			//$DS_DEPT_INFO.setValue(0, "OLD_ORG6_CD", $DS_DEPT_LIST_OLD.getValue(v_idx, "ORG6_CD"));
+			//$DS_DEPT_INFO.setValue(0, "TEL_NO1", $edt_tel1_01.getValue() + "-" + $edt_tel1_02.getValue() + "-" + $edt_tel1_03.getValue());
+			//$DS_DEPT_INFO.setValue(0, "TEL_NO2", $edt_tel2_01.getValue() + "-" + $edt_tel2_02.getValue() + "-" + $edt_tel2_03.getValue());
+		
+		}
+
+		v_sqlName = "wfm.hr.HRM100M010P_update_org"
+				+ ($DS_DEPT_INFO.getValue("DEPT_LEVEL") == 0 && $DS_DEPT_INFO.getValue("USE_YN") == 'N'? ",wfm.hr.hrm100m010p_update_org_sub2" : ",wfm.hr.HRM100M010P_update_org_sub1");
+		
+	} else {
+		xwing.Dialog.alert("다시 시도해주세요.");
+		return false;
+	}
+	
+	v_param["_sqlName"]  = v_sqlName + ",wfm.hr.hrm100m010p.dept.sel,wfm.hr.hrm100m010p.deptinfo.sel";
+	v_param["batchlist"] = $DS_DEPT_INFO;
+	v_param["center_cd"] = $DS_SCH.getValue("CENTER_CD");
+	v_param["use_yn"]    = ($DS_SCH.getValue("USE_YN") == "Y" ? "Y" : "");	
+	v_param["dept_cd"]   = $DS_DEPT_INFO.getValue("DEPT_CD");
+	v_param["sdate"]    = _sdate;
+	v_param["edate"]   = _edate;
+
+	
+	//g_select = Xwing.getTree("tre_dept").getSelection();
+	//g_deptcd = $DS_DEPT_INFO.getValue(0, "DEPT_CD");
+	
+	var opt = {
+		reqId : "f_dept_save",
+		url : v_url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+	
+	//alert($DS_DEPT_INFO);
+	Xwing.request(opt, callback);	
+}
+
+function tre_menu_select(event) {
+	v_flag = "UPDATE";		
+	//$DS_MENU_COPY.copyRowFrom(0, $DS_MENU, $DS_MENU.getCursor());
+	Xwing.getDataset("DS_DEPT_INFO").clearData();
+	$DS_DEPT_INFO.addRow();
+	$DS_DEPT_INFO.copyRowFrom(0, $DS_DEPT_LIST, $tre_dept.getSelection());
+	//f_create_auth_chk($DS_MENU_COPY.getValue(0, "AUTHORITY_CD"));
+	//$edt_caption.focus();
+}	
+
+// 콜백함수
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	if (reqId == "f_codebook_sel") {
+		$DS_SYS011.setData(res.SYS011.column, res.SYS011.record);
+		f_dept_sel();
+		
+	} else if (reqId == "f_dept_sel") {
+		var sel_menu = Xwing.getTree('tre_dept').getSelection();
+
+		f_set_ds_dept_list(res);
+		$tre_dept.expandAll();
+		
+		Xwing.getTree('tre_dept').setSelection(sel_menu, true);
+		tre_menu_select();
+		
+	} else if (reqId == "f_commonOrder_click") {
+		f_set_ds_dept_list(res);
+		$tre_dept.expandAll();
+		var v_idx_row = $DS_DEPT_LIST.indexOfRow("DEPT_CD", $DS_DEPT_INFO.getValue("DEPT_CD"));
+		$DS_DEPT_LIST.setCursor(v_idx_row);
+		
+		f_init();
+	} else if (reqId == "f_dept_save") {
+		f_set_ds_dept_list(res);
+		$DS_DEPT_INFO.setData(res.DS_DEPT_INFO.column, res.DS_DEPT_INFO.record);
+		$tre_dept.expandAll();
+		var v_idx_row = $DS_DEPT_LIST.indexOfRow("DEPT_CD", $DS_DEPT_INFO.getValue("DEPT_CD"));
+		
+		//alert(v_idx_row);
+		
+		//alert(g_select);
+		//alert($DS_DEPT_LIST);
+		Xwing.getTree("tre_dept").setSelection(v_idx_row);
+		//alert(Xwing.getTree("tre_dept").getSelection());
+		//alert(v_idx_row);
+		//alert($tre_dept.getSelection());
+		//$DS_DEPT_LIST.setCursor(v_idx_row);
+		xwing.Dialog.alert("저장되었습니다.");		
+		//f_init();	
+	}else if(reqId == "get_dept_cd"){
+		Xwing.getDataset("DS_NEW_DEPT_CD").setData(res.DS_NEW_DEPT_CD.column, res.DS_NEW_DEPT_CD.record);
+
+		var new_dept_cd = Xwing.getDataset("DS_NEW_DEPT_CD").getValue(0, "DEPT_CD");
+		
+		f_set_sub_dept(new_dept_cd);
+	} else if(reqId == 'excel') {
+		$ds_excel.setData(res.EXCEL_LIST.column, res.EXCEL_LIST.record);		
+		if($DS_SCH.getValue("USE_YN") == "N"){
+			$ds_excel.setData(res.EXCEL_LIST.column, $ds_excel.getData("[USE_YN == 'Y']"));
+		}else{
+			$ds_excel.setData(res.EXCEL_LIST.column, res.EXCEL_LIST.record);
+		}	
+		
+		if(Xwing.getDataset('ds_excel').size() > 0) {		
+			Xwing.getDataGrid('grd_for_excel').exportData('조직정보', '../jsp/export2.jsp', true);
+		} else {
+			xwing.Dialog.alert("출력할 데이터가 없습니다.");
+		}
+	} else if(reqId == 'schvalDept') {
+		var totalcount = res.DS_DEPT.totalcount;
+		if(totalcount == 0) {
+			new xwing.Dialog.alert('존재하지 않는 조직코드입니다.', '조직코드검색');
+		} else {
+			var dept_name = '';
+
+			if($edt_sch_name.getValue() != '') {
+				for(var i = 0; i < res.DS_DEPT.record.length; i++) {
+					if(dept_name != '') {
+						dept_name = dept_name + "\n";
+					}
+					
+					dept_name = dept_name + $DS_DEPT_LIST.lookUp('DEPT_CD', res.DS_DEPT.record[i][0], 'DEPT_NAME'); 
+				}
+				xwing.Dialog.alert(dept_name + "\n의 조직과 동일한지 확인하십시오.", '조직코드검색');
+			} else {
+				dept_name = $DS_DEPT_LIST.lookUp('DEPT_CD', res.DS_DEPT.record[0][0], 'DEPT_NAME');
+				new xwing.Dialog.alert("'" + dept_name + "'의 코드와 동일합니다.", '조직코드검색');
+			}
+		}
+	}else if(reqId == 'f_dept_update'){
+		
+		f_set_ds_dept_list(res);
+		$DS_DEPT_INFO.setData(res.DS_DEPT_INFO.column, res.DS_DEPT_INFO.record);
+		$tre_dept.expandAll();
+		var v_idx_row = $DS_DEPT_LIST.indexOfRow("DEPT_CD", $DS_DEPT_INFO.getValue("DEPT_CD"));
+		Xwing.getTree("tre_dept").setSelection(v_idx_row);
+		
+		xwing.Dialog.alert("수정되었습니다.");		
+	}	
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_CENTER_LIST"></xwing:dataset>
+	<xwing:dataset description="" id="DS_CONTEXT">
+		<xwing:dataset-column id="separator"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+		<xwing:dataset-column id="icon"></xwing:dataset-column>
+		<xwing:dataset-column id="onclick"></xwing:dataset-column>
+		<xwing:dataset-column id="disabled"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>회사추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_centerAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>하위조직추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_deptAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>위로이동</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_orderUp_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>아래로이동</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_orderDown_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>상위조직변경</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_upperDeptMove_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_INFO">
+		<xwing:dataset-column id="RNUM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="MAPP_DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="NEXT_CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="NEXT_CENTER_SORT_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME2"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_ENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="TEL_NO1"></xwing:dataset-column>
+		<xwing:dataset-column id="TEL_NO2"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="START_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="END_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_INFO"></xwing:dataset-column>
+		<xwing:dataset-column id="COMPANY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG4_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG5_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG6_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_USE_YN"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_LIST">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_LIST_OLD1"></xwing:dataset>
+	<xwing:dataset id="DS_SYS011">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCH">
+		<xwing:dataset-column id="CENTER_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="ds_yn">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_NEW_DEPT_CD">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEPT_LIST_OLD">
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="UPPER_DEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="ds_excel">
+		<xwing:dataset-column id="ORG1_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_CD"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="조직정보" width="1050" height="780" load="page_load" scroll="false">
+		<xwing:panel id="grp_menu" left="0" top="40" width="418" height="740" scroll="false" anchor="all" enabled="true" visible="true" borderwidth="0" bgcolor="transparent" shadow="#bdcad6 2 0 0 0">
+			<xwing:panel id="search_box" left="0" top="0" width="418" height="80" styles="div_search" anchor="top right left" borderwidth="0" borderstyle="solid" scroll="false" bgcolor="#E7EBEE">
+				<xwing:button id="btn_excel" left="322" top="45" height="25" width="25" click="btn_excel_click" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="none" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center"></xwing:button>
+			</xwing:panel>
+			<xwing:edit id="edt_sch_name" left="239" top="15" height="25" keyup="edt_sch_dept_keyup" width="100"></xwing:edit>
+			<xwing:label id="lbl_03" value="사용여부" left="15" top="45" halign="left" width="71" styles="label_lititle" height="25" fontsize="13"></xwing:label>
+			<xwing:radio id="rdo_srcuse" left="90" top="45" width="112" height="25" domaindataset="ds_yn" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" binddataset="DS_SCH" bindcolumn="USE_YN" change="rdo_srcuse_change" valign="middle" iconmargin="-5 10 0 0" textpadding="-10 0 0 10"></xwing:radio>
+			<xwing:label id="lbl_03_0" value="조직코드" left="15" top="15" halign="left" width="70" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_sch_dept" left="90" top="15" height="25" keyup="edt_sch_dept_keyup" width="84" imemode="active"></xwing:edit>
+			<xwing:button id="btn_sch_dept" value="조회" left="352" top="45" height="25" width="60" styles="btn_search" click="btn_sch_dept_click" borderwidth="0" anchor="none"></xwing:button>
+			<xwing:tree id="tre_dept" left="0" top="85" binddataset="DS_DEPT_LIST" idcolumn="DEPT_CD" pidcolumn="UPPER_DEPT" textcolumn="DEPT_NAME2" leafyncolumn="LEAF_YN" mouseover="tree_mouseover" mouseout="tree_mouseout" height="655" width="418" borderwidth="1" borderstyle="none" textpadding="0 0 0 0" fontfamily="dotum" treeline="false" leafmargin="0" opacity="1" bgimagerepeat="repeat-y" anchor="all" multiselectable="true" checkable="false" styles="div_perform" bgcolor="transparent" select="tre_dept_select" click="tre_dept_click"></xwing:tree>
+			<xwing:label id="lbl_03_0_0" value="조직명" left="182" top="15" halign="left" width="52" styles="label_lititle" height="25"></xwing:label>
+		</xwing:panel>
+		<xwing:group id="grp_04" left="418" top="40" width="633" height="740" scroll="false" anchor="top right bottom" enabled="true" visible="true" styles="div_perform" bgcolor="#fdfdf5">
+			<xwing:panel id="bg_btn" left="0" top="681" width="633" height="60" anchor="bottom" bgimagealign="left top" bgcolor="#E7EBEE">
+				<xwing:button id="btn_sav" value="저 장" left="550" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sav_click" borderstyle="none" visible="true"></xwing:button>
+			</xwing:panel>
+			<xwing:label id="lbl_08" value="조직명" left="15" top="137" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_dept_name" left="115" top="137" width="500" binddataset="DS_DEPT_INFO" bindcolumn="DEPT_NAME" enabled="false" readonly="false" halign="left" height="25" tabindex="1" styles="edit_readonly"></xwing:edit>
+			<xwing:label id="lbl_18" value="사용여부" left="15" top="167" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:radio id="rdo_use_yn" left="115" top="167" width="170" height="25" domaindataset="ds_yn" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" binddataset="DS_DEPT_INFO" bindcolumn="USE_YN" textpadding="0 0 0 10" styles="radio" tabindex="11" fontsize="13" enabled="false"></xwing:radio>
+			<xwing:label id="lbl_20" value="최종수정자" left="15" top="197" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_chg_name" left="115" top="197" width="170" binddataset="DS_DEPT_INFO" bindcolumn="CHG_NAME" halign="left" readonly="true" height="25" styles="edit_mand_readonly"></xwing:edit>
+			<xwing:label id="lbl_21" value="최종수정일자" left="340" top="192" halign="left" width="100" styles="label_lititle" height="30"></xwing:label>
+			<xwing:edit id="edt_chg_time" left="440" top="197" width="170" binddataset="DS_DEPT_INFO" bindcolumn="CHG_TIME" halign="left" readonly="true" height="25" styles="edit_mand_readonly" enabled="false"></xwing:edit>
+			<xwing:edit id="edt_mode" left="58" top="523" width="159" enabled="false" visible="false" height="20"></xwing:edit>
+			<xwing:label id="lbl_04" value="조직코드" left="15" top="50" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_dept_cd" left="115" top="50" width="175" binddataset="DS_DEPT_INFO" bindcolumn="DEPT_CD" enabled="false" readonly="true" halign="left" height="25" styles="edit_readonly"></xwing:edit>
+			<xwing:label id="lbl_05" value="조직레벨" left="340" top="50" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_dept_level" left="440" top="50" width="175" binddataset="DS_DEPT_INFO" bindcolumn="DEPT_LEVEL" enabled="false" readonly="true" halign="left" anchor="right left" height="25" styles="edit_readonly"></xwing:edit>
+			<xwing:label id="lbl_06" value="상위코드" left="15" top="80" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_upper_dept" left="115" top="80" width="175" binddataset="DS_DEPT_INFO" bindcolumn="UPPER_DEPT" halign="left" readonly="true" height="25" enabled="false" styles="edit_mand_readonly"></xwing:edit>
+			<xwing:label id="lbl_page_title" left="15" top="0" value="조직 상세 정보" fontweight="bold" height="39" width="600" style="titletext" styles="lbl_grid_title" anchor="none" fontfamily="WallBoardFond" shadow="#B8C4D1 0 1 0 0"></xwing:label>
+			<xwing:label id="lbl_page_title_0" left="15" top="110" fontweight="bold" height="11" width="600" style="titletext" styles="lbl_grid_title" anchor="none" fontfamily="WallBoardFond" shadow="#B8C4D1 0 1 0 0"></xwing:label>
+			<xwing:label id="lbl_18_0" value="분석조회여부" left="340" top="167" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:radio id="rdo_anl_use_yn" left="440" top="167" width="170" height="25" domaindataset="ds_yn" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" binddataset="DS_DEPT_INFO" bindcolumn="ANL_USE_YN" textpadding="0 0 0 10" styles="radio" tabindex="11" fontsize="13" enabled="true"></xwing:radio>
+		</xwing:group>
+		<xwing:datagrid id="grd_for_excel" left="676" top="564" visible="false" width="310" height="141" enabled="true" rownum="false" virtual="true" emptymessage="조회된 데이터가 없습니다." binddataset="ds_excel">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column fixed="false"></xwing:datagrid-column>
+				<xwing:datagrid-column fixed="false"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell text="소속1" halign="center" fontweight="normal"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="소속2" fontweight="normal" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="소속3" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="부서코드" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="ORG1_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG2_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="DEPT_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="DEPT_CD"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle" value="조직관리" left="0" top="0" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+	</xwing:page>
+</body>
+</html>

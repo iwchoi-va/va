@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba010.sel.do";
+var ced_no="",user_grade="",isMask="", browser="" ,user_id ="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		
+		ced_no= parent.ced_no;
+		user_grade = parent.parent.user_grade;
+		user_id = parent.parent.user_id;
+		getCustId();
+		combo0_change();
+		//lbl_tab1_click();
+}
+
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+function getCustId(){
+	var opt = {
+			reqId: "getCustId",
+			url: v_url,
+			param: {		
+				_sqlName  : 'oba.oba010t1t4.getCustId.sel,oba.oba010t1t1.isMaskYn.sel,oba.oba010t1t1.getUserGrade.sel', 
+				CED_NO : ced_no,
+				USER_ID : user_id
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getCustId":
+			$DS_CUST.setData(res.DS_CUST.column, res.DS_CUST.record);
+			$DS_MASK.setData(res.DS_MASK.column, res.DS_MASK.record);
+			$DS_USER_GRADE.setData(res.DS_USER_GRADE.column, res.DS_USER_GRADE.record);
+			
+			var opt = {qmYn : $DS_MASK.getValue(0,"QM_YN") 
+					,usergroupcd : $DS_MASK.getValue(0,"USERGROUPCD") 
+					,conPolNo :$DS_MASK.getValue(0,"CON_POL_NO")
+					,gradeinfo : $DS_USER_GRADE.getValue(0,"USER_GRADE") 
+					, grade : user_grade};
+			
+			$conIpPsnNo.setValue(setMask($DS_CUST.getValue(0,'CON_IP_PSN_NO_MASK'),'j',opt));
+			$conIpIsdName.setValue($DS_CUST.getValue(0,'CON_IP_ISD_NAME'));
+			$cedNo.setValue(ced_no);
+			break;
+		default: break;	
+	}
+}
+
+function combo0_change(event) {
+	
+	var url = ($combo0.getValue("code") == "1") ? "./OBA010T1T6T1.xhtml" : "./OBA010T1T6T2.xhtml";
+	$pan_tab_content.setUrl(url);	
+	
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_CUST">
+		<xwing:dataset-column id="CON_IP_PSN_NO_MASK"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_IP_ISD_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_IP_PSN_NO"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MASK"></xwing:dataset>
+	<xwing:dataset id="DS_COMBO">
+		<xwing:dataset-column id="code"></xwing:dataset-column>
+		<xwing:dataset-column id="value"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>대리인</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>친권자</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USER_GRADE"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="true">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="400" anchor="all" bgcolor="#eee" scroll="false">
+			<xwing:panel id="pan_base_info" left="0" top="0" scroll="false" width="769" height="400" anchor="none">
+				<xwing:label id="lbl_user_id" left="101" top="25" value="설계번호" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="cedNo" left="183" top="25" height="25" width="110" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_dept" left="293" top="25" value="피보험자명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conIpIsdName" left="375" top="25" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_title1" value=" 친권자 정보" left="10" top="4" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+				<xwing:label id="lbl_dept_0" left="506" top="25" value="주민등록번호" height="25" width="88" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conIpPsnNo" left="596" top="25" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:panel id="pan_anl_info" left="5" top="45" width="769" height="354" scroll="false" anchor="right bottom left" cursor="n-resize">
+					<xwing:panel id="pan_tab_content" left="0" top="5" scroll="false" width="759" height="351" anchor="none">
+					</xwing:panel>
+				</xwing:panel>
+				<xwing:combo id="combo0" left="10" top="26" domaindataset="DS_COMBO" domaincodecolumn="code" domaintextcolumn="value" change="combo0_change" value="1"></xwing:combo>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

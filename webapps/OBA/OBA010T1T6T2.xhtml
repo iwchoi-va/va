@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba010.sel.do";
+var ced_no="", user_grade="",browser="",user_id="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		ced_no= parent.ced_no;
+		user_grade = parent.user_grade;
+		user_id = parent.user_id;
+		fnCallWebService();
+		
+		//엑셀다운권한정의
+		//excelDownAuth($btn_excel,false,false);
+}
+
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+function getInsuPlanPaAuth(){
+	//CON_FAMAILY_GB = '1'  /* 1:대리인, 2:친권자 */
+	var opt = {
+			reqId: "getInsuPlanPaAuth",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1t6.getInsuPlanPaAuth.sel,oba.oba010t1t1.isMaskYn.sel,oba.oba010t1t1.getUserGrade.sel', 
+				CED_NO : ced_no,
+				USER_ID : user_id,
+				CON_FAMAILY_GB : "2"
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getInsuPlanPaAuth":
+			$DS_INFO.setData(res.DS_LIST.column, res.DS_LIST.record);
+			$DS_MASK.setData(res.DS_MASK.column, res.DS_MASK.record);
+			$DS_USER_GRADE.setData(res.DS_USER_GRADE.column, res.DS_USER_GRADE.record);
+			
+			var opt = {qmYn : $DS_MASK.getValue(0,"QM_YN") 
+					,usergroupcd : $DS_MASK.getValue(0,"USERGROUPCD") 
+					,conPolNo :$DS_MASK.getValue(0,"CON_POL_NO")
+					,gradeinfo : $DS_USER_GRADE.getValue(0,"USER_GRADE") 
+					, grade : user_grade};
+			
+			$conPa1PsnNo.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_PSN_NO"),'j',opt)); //계약자 주민번호
+			$conPa1Addr2.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_ADDR_2"),'a',opt)); //계약자 주소2
+			$conPa1HomeTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_HOME_TEL"),'e',opt)); //계약자 자택번호
+			$conPa1HpNo.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_HP_NO"),'p',opt)); //계약자 휴대번호
+			$conPa1OffTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_OFF_TEL"),'e',opt)); //계약자 직장번호
+			$conPa1EtcTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA1_ETC_TEL"),'e',opt)); //계약자 기타번호
+			
+			$conPa2PsnNo.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_PSN_NO"),'j',opt)); //계약자 주민번호
+			$conPa2Addr2.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_ADDR_2"),'a',opt)); //계약자 주소2
+			$conPa2HomeTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_HOME_TEL"),'e',opt)); //계약자 자택번호
+			$conPa2HpNo.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_HP_NO"),'p',opt)); //계약자 휴대번호
+			$conPa2OffTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_OFF_TEL"),'e',opt)); //계약자 직장번호
+			$conPa2EtcTel.setValue(setMask($DS_INFO.getValue(0,"CON_PA2_ETC_TEL"),'e',opt)); //계약자 기타번호
+			
+			var r = $DS_RES.searchRow("[ev =='"+ $DS_INFO.getValue(0,"CON_PA1_GB") +"']");
+			$conPa1Gb.setValue($DS_RES.getValue(r,"evNm"));
+			
+			var r2 = $DS_RES.searchRow("[ev =='"+ $DS_INFO.getValue(0,"CON_PA2_GB") +"']");
+			$conPa2Gb.setValue($DS_RES.getValue(r2,"evNm"));
+			
+			break;
+		case "stndItemEvInBndVOList":	
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			
+			getInsuPlanPaAuth();
+		default: break;	
+	}
+}
+
+
+
+function fnCallWebService(){
+	//"https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}";
+	//var url = "https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}";
+	
+	var url = getWebServiceURL();
+	var serviceName ="LTTMINFR0137";
+	var reqJson ="{reqItcd:73041}";
+	//var reqJson ="{\"planNo\":\""+ '941802602612' +"\"}";
+	
+	var opt = {
+			reqId: "stndItemEvInBndVOList",
+			url: "service::oba.oba010T3.getHistDtlIvstInfoList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "stndItemEvInBndVOList",
+				reqJson :reqJson,
+				DS_RES: $DS_RES
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+	
+	//$panel0.setUrl("https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}");
+
+
+
+}
+
+function getWebServiceURL(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}else if(hostname[0] == "vauat"){
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "va"){
+		url = "https://ts.aig.co.kr/tmMciService.do";
+	}else{//로컬도 개발url로.
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+		//url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}
+	
+	return url;
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_INFO">
+		<xwing:dataset-column id="TM_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_IP_INS_AIM_SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_IP_PSN_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_FAMAILY_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_PSN_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_CUST_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_HOME_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_OFF_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ETC_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_HP"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_FAX"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_E_MAIL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_CALL_SITE_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ADDR_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ADDR_PTCD"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ADDR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ADDR_2"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_PSN_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_CUST_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_HOME_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_OFF_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ETC_TEL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_HP"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_FAX"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_E_MAIL"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_CALL_SITE_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ADDR_GB"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ADDR_PTCD"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ZIP"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ADDR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_ADDR_2"></xwing:dataset-column>
+		<xwing:dataset-column id="REGIST_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REGIST_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_ZIP"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_FOREIGN_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA1_NATIONALITY"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_FOREIGN_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="CON_PA2_NATIONALITY"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MASK"></xwing:dataset>
+	<xwing:dataset id="DS_USER_GRADE"></xwing:dataset>
+	<xwing:dataset id="DS_RES">
+		<xwing:dataset-column id="ev"></xwing:dataset-column>
+		<xwing:dataset-column id="evEngNm"></xwing:dataset-column>
+		<xwing:dataset-column id="evNm"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="false">
+		<xwing:panel id="pnl_info" left="0" top="0" width="787" height="400" anchor="all" bgcolor="#eee" scroll="true">
+			<xwing:panel id="pan_base_info" left="0" top="-10" scroll="false" width="729" height="412" anchor="none">
+				<xwing:label id="lbl_user_id" left="21" top="33" value="피보험자와의 관계" height="25" width="126" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1Gb" left="151" top="33" height="25" width="110" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_dept" left="253" top="33" value="주민번호" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1PsnNo" left="335" top="33" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_prod_nm" left="66" top="59" value="고객ID" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPHomeTel" left="151" top="59" height="25" width="110" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA1_CUST_ID"></xwing:edit>
+				<xwing:label id="lbl_dept_0" left="446" top="33" value="성명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_dept_0" left="531" top="33" height="25" width="120" fontsize="11" bindcolumn="CON_PA1_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1" left="68" top="85" value="직장전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1OffTel" left="151" top="85" height="25" width="110" fontsize="11" bindcolumn="CON_IP_ISD_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_0" left="253" top="85" value="기타전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1EtcTel" left="335" top="85" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_0_0" left="443" top="85" value="FAX" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_user_id_0_2_0_1" left="69" top="147" value="주소" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_user_id_0_1_2" left="68" top="110" value="이메일" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conIpTel" left="151" top="110" height="25" width="185" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA1_E_MAIL"></xwing:edit>
+				<xwing:label id="lbl_prod_nm_1" left="253" top="59" value="자택전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1HomeTel" left="335" top="59" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_prod_nm_2" left="446" top="59" value="핸드폰" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa1HpNo" left="531" top="59" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:edit id="edt_dept_0_1" left="531" top="84" height="25" width="120" fontsize="11" bindcolumn="CON_PA1_FAX" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_user_id_0_1_1_0" left="264" top="136" height="25" width="386" fontsize="11" bindcolumn="CON_PA1_ADDR_1" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="conPa1Addr2" left="151" top="162" height="24" width="499" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:edit id="edt_user_id_0" left="151" top="136" height="25" width="110" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA1_ZIP"></xwing:edit>
+				<xwing:label id="lbl_user_id_0" left="276" top="8" value="친권자 추가 입력1" height="25" width="224" anchor="left" styles="label_subtitle" halign="center"></xwing:label>
+				<xwing:label id="lbl_user_id_1" left="22" top="205" value="피보험자와의 관계" height="25" width="126" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2Gb" left="152" top="205" height="25" width="110" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_dept_1" left="254" top="205" value="주민번호" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2PsnNo" left="336" top="205" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_prod_nm_0" left="67" top="231" value="고객ID" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPHomeTel_0" left="152" top="231" height="25" width="110" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA2_CUST_ID"></xwing:edit>
+				<xwing:label id="lbl_dept_0_0" left="447" top="205" value="성명" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="edt_dept_0_0" left="532" top="205" height="25" width="120" fontsize="11" bindcolumn="CON_PA2_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_1" left="69" top="257" value="직장전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2OffTel" left="153" top="257" height="25" width="110" fontsize="11" bindcolumn="CON_IP_ISD_NAME" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_0_1" left="254" top="257" value="기타전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2EtcTel" left="336" top="257" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_1_0_0_0" left="444" top="257" value="FAX" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_user_id_0_2_0_1_0" left="70" top="320" value="주소" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_user_id_0_1_2_0" left="69" top="284" value="이메일" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conIpTel_0" left="153" top="283" height="25" width="185" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA2_E_MAIL"></xwing:edit>
+				<xwing:label id="lbl_prod_nm_1_0" left="254" top="231" value="자택전화" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2HomeTel" left="336" top="231" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:label id="lbl_prod_nm_2_0" left="447" top="231" value="핸드폰" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:edit id="conPa2HpNo" left="532" top="231" height="25" width="120" fontsize="11" enabled="false"></xwing:edit>
+				<xwing:edit id="edt_dept_0_1_0" left="532" top="256" height="25" width="120" fontsize="11" bindcolumn="CON_PA2_FAX" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="edt_user_id_0_1_1_0_0" left="266" top="309" height="25" width="386" fontsize="11" bindcolumn="CON_PA2_ADDR_1" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:edit id="conPa2Addr2" left="153" top="335" height="24" width="499" fontsize="11" bindcolumn="CON_CON_OLT_JM_ID" enabled="false" binddataset="DS_INFO"></xwing:edit>
+				<xwing:label id="lbl_user_id_0_0" left="286" top="183" value="친권자 추가 입력2" height="25" width="224" anchor="left" styles="label_subtitle" halign="center"></xwing:label>
+				<xwing:edit id="edt_user_id_0_0" left="153" top="309" height="25" width="110" fontsize="11" enabled="false" binddataset="DS_INFO" bindcolumn="CON_PA2_ZIP"></xwing:edit>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

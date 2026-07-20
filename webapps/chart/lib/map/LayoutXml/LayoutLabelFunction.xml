@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" showDataTips="true">
+		<series>
+<!--
+labelJsFunction 자바스크립트를 이용한 지역 라벨 변경기능 (자바스크립트에서 선언한 함수명을 넣어줍니다)
+-->
+			<MapSeries id="mapseries" labelPosition="inside" displayName="Map Series" hideOverSizeLabel="false" labelJsFunction="labelFunction">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

@@ -1,0 +1,1125 @@
+<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+  
+  <sql-service name="telecaps.sql.device.info" datasource="snmp" paging="false" type="prepared">
+    <description>[U002]공통_장비정보조회</description>
+    <result-name>telecaps.res.device.info</result-name>
+    <query><![CDATA[
+        SELECT  DEVICE_ID,ADMIN_ID,DEVICE_IP,DEVICE_PORT,DEVICE_DESC,
+                READ_COMMUNITY,WRITE_COMMUNITY,SNMP_VERSION,MIB_NAME
+        FROM    MS_DEVICE
+        WHERE   DEVICE_ID = ?device_id
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.oid.list" datasource="snmp" paging="false" type="prepared">
+    <description>[U102]현재알람내역조회(OID call)</description>
+    <result-name>telecaps.res.oid.list</result-name> 
+    <query><![CDATA[
+         SELECT  B.OID_NAME,
+		          B.OID
+		  FROM    MS_MIB A,
+		          MS_OID B
+		  WHERE   A.MIB_ID = B.MIB_ID
+		    AND   A.DEVICE_ID = ?deviceId
+		    AND   A.OID_TYPE  = 'C'
+		    AND   A.OID_GROUP = ?oid_group
+		  ORDER BY SEQ
+    ]]></query>
+  </sql-service>
+  
+<sql-service name="telecaps.sql.performance.min" datasource="snmp" paging="true" type="prepared">
+    <description>[U201]분 단위 성능 조회</description>
+    <result-name>telecaps.res.performance.min</result-name>
+    <parameter name='STATUS4'  value=" AND   (CP_OCC &gt;= 57 OR IDLE_OCC &lt;= 15) " default=""/>
+    <parameter name='STATUS2'  value=" AND   (CP_OCC &gt;= 57 OR IDLE_OCC &lt;= 20) " default=""/>
+    <parameter name='STATUS3'  value=" AND   (IDLE_OCC &lt;= 20) " default=""/>
+    <query><![CDATA[
+        SELECT  REG_TIME, STATIC_OCC, CP_OCC, SM_OCC, IDLE_OCC
+	      FROM  (SELECT  
+    	      						DATE_FORMAT(B.REG_TIME, '%Y-%m-%d %H:%i')  AS REG_TIME,
+    		                MAX(CASE WHEN C.OID_NAME = 'StaticOcc'  THEN C.VALUE END) AS STATIC_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'CallpOcc'   THEN C.VALUE END) AS CP_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'SysMgmtOcc' THEN C.VALUE END) AS SM_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'IdleOcc'    THEN C.VALUE END) AS IDLE_OCC
+    		        FROM    MS_MIB       A,
+    		                MS_VALUE     B,
+    		                MS_VALUE_MIN C
+    		        WHERE   A.MIB_ID    = B.MIB_ID
+    		          AND   B.VALUE_ID  = C.VALUE_ID
+    		          AND   A.DEVICE_ID = ?deviceId
+    		          AND   A.OID_TYPE  = 'M'
+    		          AND   A.OID_GROUP = 'g3health'
+    		          AND   B.REG_TIME  BETWEEN TO_DATE(?from_yyyymmddhhmi,'%Y%m%d%H%i') AND TO_DATE(?to_yyyymmddhhmi,'%Y%m%d%H%i')
+    		        GROUP BY B.REG_TIME
+    		        ) A
+    		WHERE 1=1
+    		  AND STATIC_OCC + CP_OCC + SM_OCC + IDLE_OCC = 100        
+    		?STATUS4
+    		?STATUS2
+    		?STATUS3
+    		ORDER BY REG_TIME DESC        
+    ]]></query>
+  </sql-service>
+  
+   <sql-service name="telecaps.sql.performance.min.notpage" datasource="snmp" paging="false" type="prepared">
+    <description>[U201]분 단위 성능 조회</description>
+    <result-name>telecaps.res.performance.min</result-name>
+    <parameter name='STATUS4'  value=" AND   (CP_OCC &gt;= 57 OR IDLE_OCC &lt;= 15) " default=""/>
+    <parameter name='STATUS2'  value=" AND   (CP_OCC &gt;= 57 OR IDLE_OCC &lt;= 20) " default=""/>
+    <parameter name='STATUS3'  value=" AND   (IDLE_OCC &lt;= 20) " default=""/>
+    <query><![CDATA[
+        SELECT  REG_TIME, STATIC_OCC, CP_OCC, SM_OCC, IDLE_OCC
+	      FROM  (SELECT  DATE_FORMAT(B.REG_TIME, '%Y-%m-%d %H:%i')  AS REG_TIME,
+    		                MAX(CASE WHEN C.OID_NAME = 'StaticOcc'  THEN C.VALUE END) AS STATIC_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'CallpOcc'   THEN C.VALUE END) AS CP_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'SysMgmtOcc' THEN C.VALUE END) AS SM_OCC,
+    		                MAX(CASE WHEN C.OID_NAME = 'IdleOcc'    THEN C.VALUE END) AS IDLE_OCC
+    		        FROM    MS_MIB       A,
+    		                MS_VALUE     B,
+    		                MS_VALUE_MIN C
+    		        WHERE   A.MIB_ID    = B.MIB_ID
+    		          AND   B.VALUE_ID  = C.VALUE_ID
+    		          AND   A.DEVICE_ID = ?deviceId
+    		          AND   A.OID_TYPE  = 'M'
+    		          AND   A.OID_GROUP = 'g3health'
+    		          AND   B.REG_TIME  BETWEEN TO_DATE(?from_yyyymmddhhmi,'%Y%m%d%H%i') AND TO_DATE(?to_yyyymmddhhmi,'%Y%m%d%H%i')
+        		    GROUP BY B.REG_TIME
+    		        ) A
+    		WHERE 1=1 
+    		  AND STATIC_OCC + CP_OCC + SM_OCC + IDLE_OCC = 100        
+    		?STATUS4
+    		?STATUS2
+    		?STATUS3
+    		ORDER BY REG_TIME DESC        
+    ]]></query>
+  </sql-service>  
+  
+  <sql-service name="telecaps.sql.manage.system.update" datasource="snmp" paging="false" type="prepared">
+    <description>[U503]시스템관리_수정</description>
+    <result-name>telecaps.res.manage.system</result-name>
+    <query><![CDATA[
+        UPDATE MS_DEVICE 
+        SET admin_id = ?admin_id,
+            device_ip = ?device_ip,
+            device_port = ?device_port,
+            device_desc = ?device_desc,
+            snmp_version = ?snmp_version,
+            use_yn = ?use_yn
+        where device_id = ?device_id
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.srhDeviceInfo" datasource="snmp" paging="false" type="prepared">
+    <description>Device 정보를 조회한다</description>
+    <result-name>telecaps.srhDeviceInfo</result-name>
+    <parameter name='device_id' value="AND DEVICE_ID = ?device_id" default=""/> 
+    <query><![CDATA[
+      SELECT  DEVICE_IP,
+              DEVICE_PORT,
+              READ_COMMUNITY,
+              SNMP_VERSION
+      FROM    MS_DEVICE
+      WHERE   1 = 1
+              ?device_id     
+    ]]></query>
+  </sql-service>
+
+    <sql-service name="telecaps.srhDeviceInfo.2" datasource="snmp" paging="false" type="prepared">
+    <description>Device 정보를 조회한다</description>
+    <result-name>telecaps.srhDeviceInfo.2</result-name>
+    <query><![CDATA[
+      SELECT  DEVICE_IP,
+              DEVICE_PORT,
+              READ_COMMUNITY,
+              SNMP_VERSION,
+              AUTH_NAME,
+              AUTH_PASS
+      FROM    MS_DEVICE
+      WHERE   DEVICE_ID = ?device_id    
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.srhScheduledDevice" datasource="snmp" paging="false" type="prepared">
+    <description>일정(시간대별/분단위) Device를 조회한다</description>
+    <result-name>telecaps.srhScheduledDevice</result-name>
+    <query><![CDATA[
+      SELECT  A.DEVICE_ID, A.OID_TYPE, A.OID_GROUP
+      FROM (SELECT  DEVICE_ID, OID_TYPE, OID_GROUP
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'M'
+              AND   USE_YN   = 'Y'
+              AND   (     DATE_FORMAT(SYSDATE(), '%Y%m%d%H%i') >= DATE_FORMAT(LAST_UPDATED + INTERVAL SCH_INTERVL MINUTE, '%Y%m%d%H%i')
+                      OR  LAST_UPDATED IS NULL
+                    )
+            UNION ALL
+            SELECT  DEVICE_ID, OID_TYPE, OID_GROUP
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'H'
+              AND   USE_YN   = 'Y'
+              AND   DATE_FORMAT(SYSDATE(), 'MI') >= IFNULL(LPAD(SCH_INTERVL, 2, '0'), '30')
+              AND   (     DATE_FORMAT(SYSDATE(), '%Y%m%d%H%i') >= DATE_FORMAT(LAST_UPDATED, '%Y%m%d%H%i')
+                      OR  LAST_UPDATED IS NULL
+                    )
+            UNION ALL
+            SELECT  DEVICE_ID, OID_TYPE, OID_GROUP
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'C'
+              AND   USE_YN   = 'Y'
+              AND   SCH_TIME <= DATE_FORMAT(SYSDATE(), 'HH24MI')
+              AND   (     DATE_FORMAT(SYSDATE(), '%Y%m%d') >= DATE_FORMAT(LAST_UPDATED, '%Y%m%d')
+                      OR  LAST_UPDATED IS NULL
+                    )
+			  AND   DATE_FORMAT(SYSDATE(), '%H%i') < '0600'		
+            UNION ALL
+            SELECT  DEVICE_ID, OID_TYPE, OID_GROUP
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'P'
+              AND   USE_YN   = 'Y'
+              AND   SCH_TIME <= DATE_FORMAT(SYSDATE(), '%H%i')
+              AND   (     DATE_FORMAT(SYSDATE(), '%Y%m%d') >= DATE_FORMAT(LAST_UPDATED, '%Y%m%d')
+                      OR  LAST_UPDATED IS NULL
+                    )
+            ) A
+            , MS_DEVICE B
+      WHERE   A.DEVICE_ID = B.DEVICE_ID
+      AND     B.USE_YN = 'Y'
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insValue" datasource="snmp" paging="false" type="prepared">
+    <description>스케줄링 결과를 입력한다</description>
+    <query><![CDATA[
+      INSERT INTO MS_VALUE
+      (
+        VALUE_ID,
+        MIB_ID,
+        REG_TIME,
+        NUM_VALUES
+      )
+      VALUES
+      (
+        ?value_id,
+        ?mib_id,
+        getDate(),
+        ?num_values
+      )
+    ]]></query>
+  </sql-service>
+
+	<sql-service name="telecaps.insSchValue" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>스케줄링 결과를 입력한다</description>
+    <batch-name>telecaps.insSchValue</batch-name>
+    <query><![CDATA[
+      INSERT INTO ?table_name
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        ?value_id,
+        ?oid_name,
+        ?sub_oid,
+        ?value
+      )
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insSchValue.call" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>스케줄링 결과를 입력한다(CALL)</description>
+    <batch-name>telecaps.insSchValue.call</batch-name>
+    <query><![CDATA[
+      INSERT INTO MS_VALUE_CALL
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        ?value_id,
+        ?oid_name,
+        ?sub_oid,
+        ?value
+      )
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.insSchValue.hour" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>스케줄링 결과를 입력한다(HOUR)</description>
+    <batch-name>telecaps.insSchValue.hour</batch-name>
+    <query><![CDATA[
+      INSERT INTO MS_VALUE_HOUR
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        ?value_id,
+        ?oid_name,
+        ?sub_oid,
+        ?value
+      )
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.insSchValue.min" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>스케줄링 결과를 입력한다(MIN)</description>
+    <batch-name>telecaps.insSchValue.min</batch-name>
+    <query><![CDATA[
+      INSERT INTO MS_VALUE_MIN
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        ?value_id,
+        ?oid_name,
+        ?sub_oid,
+        ?value
+      )
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insOidValueList" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>OID 데이터를 입력한다</description>
+    <batch-name>telecaps.insOidValueList</batch-name>
+    <query><![CDATA[
+      INSERT INTO MS_OID_VALUE_LIST
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        '?value_id',
+        '?oid_name',
+        '?sub_oid',
+        '?value'
+      )
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.updMibDate" datasource="snmp" paging="false" type="prepared">
+    <description>MIB 최근 업데이트 일자를 업데이트 한다</description>
+    <result-name>telecaps.updMibDate</result-name>
+    <query><![CDATA[
+      UPDATE  MS_MIB
+         SET  LAST_UPDATED = getDate(),
+              LAST_VALUE_ID = ?value_id
+      WHERE   MIB_ID = ?mib_id
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.srhMibId" datasource="snmp" paging="false" type="prepared">
+    <description>MIB ID를 조회한다</description>
+    <result-name>telecaps.srhMibId</result-name>
+    <query><![CDATA[
+      SELECT  MIB_ID, CHECK_NUM_OIDS
+      FROM    MS_MIB
+      WHERE   DEVICE_ID = ?device_id
+        AND   OID_TYPE  = ?oid_type
+        AND   OID_GROUP = ?oid_group
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.srhNewValueId2" datasource="snmp" paging="false" type="prepared">
+    <description>Value ID를 생성한다</description>
+    <result-name>telecaps.srhNewValueId2</result-name>
+    <query><![CDATA[
+		UPDATE ms_sequence set last_val = last_val + step
+			WHERE name = 'SEQ_VALUE_ID'
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.srhNewValueId" datasource="snmp" paging="false" type="prepared">
+    <description>Value ID를 생성한다</description>
+    <result-name>telecaps.srhNewValueId</result-name>
+    <query><![CDATA[
+		SELECT last_val AS VALUE_ID FROM ms_sequence WHERE NAME = 'SEQ_VALUE_ID'
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.srhOid" datasource="snmp" paging="false" type="prepared">
+    <description>OID 리스트를 조회한다</description>
+    <result-name>telecaps.srhOid</result-name>
+    <query><![CDATA[
+      SELECT  A.DEVICE_ID,
+              A.OID_GROUP,
+              B.OID_NAME,
+              B.OID
+      FROM    MS_MIB A,
+              MS_OID B
+      WHERE   A.MIB_ID = B.MIB_ID
+        AND   A.DEVICE_ID = ?device_id
+        AND   A.OID_TYPE  = ?oid_type
+        AND   A.OID_GROUP = ?oid_group
+      ORDER BY SEQ
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.srhRealScheduledDevice" datasource="snmp" paging="false" type="prepared">
+    <description>실시간 Device 조회</description>
+    <result-name>telecaps.res.srhRealScheduledDevice</result-name>
+    <query><![CDATA[
+    
+    SELECT  A.MIB_ID, A.DEVICE_ID, A.OID_TYPE, A.OID_GROUP, LAST_UPDATED
+      FROM (SELECT  MIB_ID, DEVICE_ID, OID_TYPE, OID_GROUP, IFNULL(LAST_UPDATED, DATE_ADD(NOW(), INTERVAL -5 MINUTE)) AS LAST_UPDATED
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'M'
+              AND   USE_YN   = 'Y'
+              AND   (     DATE_FORMAT(SYSDATE(), '%Y%m%d%H%i') >= DATE_FORMAT(LAST_UPDATED + INTERVAL SCH_INTERVL MINUTE, '%Y%m%d%H%i')
+                      OR  LAST_UPDATED IS NULL
+                    )
+             -- AND   SUBSTR(MIB_ID,1,2)<>'01'
+            UNION ALL
+            SELECT  MIB_ID, DEVICE_ID, OID_TYPE, OID_GROUP, IFNULL(LAST_UPDATED, DATE_ADD(NOW(), INTERVAL -5 MINUTE)) AS LAST_UPDATED
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'H'
+              AND   USE_YN   = 'Y'
+              AND   CAST(DATE_FORMAT(SYSDATE(), '%i') AS UNSIGNED) >= SCH_INTERVL
+              AND   CAST(DATE_FORMAT(SYSDATE(), '%i') AS UNSIGNED) <= SCH_INTERVL + 2
+             -- AND   SUBSTR(MIB_ID,1,2)<>'01'
+            ) A
+            , MS_DEVICE B
+      WHERE   A.DEVICE_ID = B.DEVICE_ID
+          AND B.USE_YN = 'Y'
+          AND B.SNMP_YN = 'Y'
+         -- AND B.DEVICE_GU1 <> '01'
+	  ORDER BY A.OID_TYPE, LAST_UPDATED, A.OID_GROUP, A.DEVICE_ID
+      -- LIMIT 30
+      
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insSchValue.usage.et" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>스케줄링 결과를 임시 입력한다(USAGE_ET)</description>
+    <batch-name>telecaps.insSchValue.usage.et</batch-name>
+    <query><![CDATA[
+      INSERT INTO MS_VALUE_USAGE_ET
+      (
+        VALUE_ID,
+        OID_NAME,
+        SUB_OID,
+        VALUE
+      )
+      VALUES
+      (
+        ?value_id,
+        ?oid_name,
+        ?sub_oid,
+        ?value
+      )
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.insSchValue.usage" datasource="snmp" paging="false" type="prepared">
+    <description>스케줄링 결과를 입력한다(USAGE)</description>
+    <result-name>telecaps.insSchValue.usage</result-name>
+    <query><![CDATA[
+      INSERT
+      INTO    MS_VALUE_USAGE
+              (
+                VALUE_ID,
+                SUB_OID,
+                STORAGE_DESCR,
+                STORAGE_ALLOCATION_U,
+                STORAGE_SIZE,
+                STORAGE_USED
+              )
+      SELECT  A.VALUE_ID,
+              A.SUB_OID,
+              A.STORAGE_DESCR,
+              A.STORAGE_ALLOCATION_U,
+              A.STORAGE_SIZE,
+              (CASE WHEN A.AVAIL_YN = 'Y' THEN CONVERT(decimal(10),A.STORAGE_SIZE) - CONVERT(decimal(10),A.STORAGE_USED) ELSE A.STORAGE_USED END ) AS STORAGE_USED
+      FROM    (
+                SELECT  VALUE_ID,
+                        SUB_OID,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageDescr', 'fileSystemDir')   THEN VALUE END) STORAGE_DESCR,
+                        MAX(CASE WHEN OID_NAME = 'hrStorageAllocationU'                 THEN VALUE END) STORAGE_ALLOCATION_U,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageSize', 'fileSystemBlock')  THEN VALUE END) STORAGE_SIZE,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageUsed', 'fileSystemBavail') THEN VALUE END) STORAGE_USED,
+                        MAX(CASE WHEN OID_NAME = 'fileSystemBavail'                     THEN 'Y'   END) AVAIL_YN
+                FROM    MS_VALUE_USAGE_ET
+                WHERE   VALUE_ID = ?value_id
+                GROUP BY VALUE_ID, SUB_OID
+              ) A
+      WHERE   (A.STORAGE_DESCR        IS NOT NULL
+         OR   A.STORAGE_ALLOCATION_U IS NOT NULL
+         OR   A.STORAGE_SIZE         IS NOT NULL
+         OR   A.STORAGE_USED         IS NOT NULL) AND A.STORAGE_SIZE >= 0 AND A.STORAGE_USED >=0
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.delRTValue.usage" datasource="snmp" paging="false" type="prepared">
+    <description>Usage 실시간 데이터를 삭제한다</description>
+    <result-name>telecaps.delRTValue.usage</result-name>
+    <query><![CDATA[
+      DELETE  FROM MS_RT_USAGE
+      WHERE   DEVICE_ID = ?device_id
+        AND   OID_GROUP = ?oid_group
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.del.usage.et" datasource="snmp" paging="false" type="prepared">
+    <description>MS_VALUE_USAGE_ET 데이터를 삭제한다</description>
+    <result-name>telecaps.del.usage.et</result-name>
+    <query><![CDATA[
+      DELETE  FROM MS_VALUE_USAGE_ET
+      WHERE   VALUE_ID = ?value_id
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insRTValue.usage" datasource="snmp" paging="false" type="prepared">
+    <description>Usage 실시간 데이터를 입력한다</description>
+    <result-name>telecaps.insRTValue.usage</result-name>
+    <query><![CDATA[
+      INSERT
+      INTO    MS_RT_USAGE
+              (
+                DEVICE_ID,
+                OID_GROUP,
+                SUB_OID,
+                VALUE_ID,
+                STORAGE_DESCR,
+                STORAGE_ALLOCATION_U,
+                STORAGE_SIZE,
+                STORAGE_USED
+              )
+      SELECT  ?device_id AS DEVICE_ID,
+              ?oid_group AS OID_GROUP,
+              A.SUB_OID,
+              A.VALUE_ID,
+              A.STORAGE_DESCR,
+              A.STORAGE_ALLOCATION_U,
+              A.STORAGE_SIZE,
+              (CASE WHEN A.AVAIL_YN = 'Y' THEN CONVERT(decimal(10),A.STORAGE_SIZE) - CONVERT(decimal(10),A.STORAGE_USED) ELSE A.STORAGE_USED END ) AS STORAGE_USED
+      FROM    (
+                SELECT  VALUE_ID,
+                        SUB_OID,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageDescr', 'fileSystemDir')   THEN VALUE END) STORAGE_DESCR,
+                        MAX(CASE WHEN OID_NAME = 'hrStorageAllocationU'                 THEN VALUE END) STORAGE_ALLOCATION_U,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageSize', 'fileSystemBlock')  THEN VALUE END) STORAGE_SIZE,
+                        MAX(CASE WHEN OID_NAME IN ('hrStorageUsed', 'fileSystemBavail') THEN VALUE END) STORAGE_USED,
+                        MAX(CASE WHEN OID_NAME = 'fileSystemBavail'                     THEN 'Y'   END) AVAIL_YN
+                FROM    MS_VALUE_USAGE_ET
+                WHERE   VALUE_ID = ?value_id
+                GROUP BY VALUE_ID, SUB_OID
+              ) A
+      WHERE   (A.STORAGE_DESCR        IS NOT NULL
+         OR   A.STORAGE_ALLOCATION_U IS NOT NULL
+         OR   A.STORAGE_SIZE         IS NOT NULL
+         OR   A.STORAGE_USED         IS NOT NULL) AND A.STORAGE_SIZE >= 0 AND A.STORAGE_USED >=0
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.srhNextInsTime" datasource="snmp" paging="false" type="prepared">
+    <description>스케줄링 결과 입력시간을 조회한다</description>
+    <result-name>telecaps.srhNextInsTime</result-name>
+    <query><![CDATA[
+      SELECT  CASE WHEN DATE_FORMAT(CURRENT_TIMESTAMP,'%Y%m%d%H%i%S')
+                       >= DATE_FORMAT(IFNULL(MAX(REG_TIME), DATE_SUB(SYSDATE(), interval 1 day) ) + interval 1*5 MINUTE,'%Y%m%d%H%i%S') THEN 'Y' 
+              ELSE 'N' 
+              END INSERT_YN
+      FROM    MS_VALUE
+      WHERE   MIB_ID IN
+              (
+                SELECT  MIB_ID
+                FROM    MS_MIB
+                WHERE   DEVICE_ID = ?device_id
+                  AND   OID_GROUP = ?oid_group
+              )
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.isCheckSummay" datasource="snmp" paging="false" type="prepared" batch="false">
+    <description>Summary check</description>
+    <result-name>telecaps.sql.isCheckSummay</result-name>
+    <query><![CDATA[
+      
+      SELECT SUM(A.CNT) AS CNT
+		FROM
+		(
+			SELECT COUNT(*) AS CNT FROM T_SUM_CPU_HOUR WHERE  REG_DATE = DATE_FORMAT(CURDATE() - 1, '%Y%m%d')
+			UNION ALL
+			SELECT COUNT(*) AS CNT FROM T_SUM_USAGE_HOUR WHERE  REG_DATE = DATE_FORMAT(CURDATE() - 1, '%Y%m%d')
+			UNION ALL
+			SELECT COUNT(*) AS CNT FROM T_SUM_AGNT_HOUR WHERE  REG_DATE = DATE_FORMAT(CURDATE() - 1, '%Y%m%d')
+		) A
+
+    ]]></query>
+  </sql-service>
+  
+   <sql-service name="telecaps.sql.tcagnt.recvcmd.maxnum.select" datasource="snmp" paging="false" type="prepared">
+    <description>MAX ID 조회</description>
+    <result-name>telecaps.res.tcagnt.recvcmd.maxnum.select</result-name>
+    <query><![CDATA[
+        select ISNULL(max(seq),0)+1 maxnum from MS_AGNT_VALUE_MIN 
+	where DEVICE_ID=?device_id
+    ]]></query>
+  </sql-service>
+
+  <sql-service name="telecaps.sql.tcagnt.recvcmd.insert" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>서버 상태 정보 입력</description>
+    <batch-name>telecaps.sql.tcagnt.recvcmd.insert</batch-name>
+    <query><![CDATA[
+        insert into MS_AGNT_VALUE_MIN (
+	    device_id,      
+	    device_ip,
+	    seq,        
+	    crit_name,             
+	    crit_sub_name,          
+	    value,            
+	    reg_time  )  
+	values (                
+	    ?device_id,        
+	    ?device_ip,        
+	    ?device_id_seq,         
+	    ?crit_name, 
+	    ?crit_sub_name, 
+        ?value, 
+	    getDate() )         
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.srhRealScheduledDevice" datasource="snmp" paging="false" type="prepared">
+    <description>실시간 Device 조회</description>
+    <result-name>telecaps.res.srhRealScheduledDevice</result-name>
+    <query><![CDATA[
+    
+    SELECT  A.MIB_ID, A.DEVICE_ID, A.OID_TYPE, A.OID_GROUP, LAST_UPDATED
+      FROM (SELECT  MIB_ID, DEVICE_ID, OID_TYPE, OID_GROUP, IsNULL(LAST_UPDATED, DATEADD(MI, -5, getDate())) AS LAST_UPDATED
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'M'
+              AND   USE_YN   = 'Y'
+              AND   (     format(getDate(),'yyyyMMddHHmm') >= format(DATEADD(MI, SCH_INTERVL, LAST_UPDATED), 'yyyyMMddHHmm')
+                      OR  LAST_UPDATED IS NULL
+                    )
+             -- AND   SUBSTR(MIB_ID,1,2)<>'01'
+            UNION ALL
+            SELECT  MIB_ID, DEVICE_ID, OID_TYPE, OID_GROUP, IsNULL(LAST_UPDATED, DATEADD(MI, -5, getDate())) AS LAST_UPDATED
+            FROM    MS_MIB
+            WHERE   OID_TYPE = 'H'
+              AND   USE_YN   = 'Y'
+              AND   format(getDate(), 'mm')  >= SCH_INTERVL
+              AND   format(getDate(), 'mm') <= SCH_INTERVL + 2
+             -- AND   SUBSTR(MIB_ID,1,2)<>'01'
+            ) A
+            , MS_DEVICE B
+      WHERE   A.DEVICE_ID = B.DEVICE_ID
+          AND B.USE_YN = 'Y'
+          AND B.SNMP_YN = 'Y'
+         -- AND B.DEVICE_GU1 <> '01'
+	  ORDER BY A.OID_TYPE, LAST_UPDATED, A.OID_GROUP, A.DEVICE_ID
+      -- LIMIT 30
+      
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.phonesync.deviceinfo.select" datasource="snmp" paging="false" type="prepared" batch="false">
+    <description>장비조회</description>
+    <result-name>telecaps.sql.phonesync.deviceinfo.select</result-name>
+    <query><![CDATA[
+      
+      SELECT A.*
+      FROM
+      (
+          SELECT A.DEVICE_ID, A.DEVICE_IP, A.DEVICE_PORT, A.READ_COMMUNITY, A.SNMP_VERSION,
+                (SELECT MIB_ID FROM MS_MIB WHERE DEVICE_ID = A.DEVICE_ID AND OID_GROUP = 'g3statsta') AS MIB_ID
+            FROM MS_DEVICE A
+           WHERE A.USE_YN = 'Y'
+             ?device_local
+             ?device_id
+      )A
+      WHERE A.MIB_ID IS NOT NULL
+      
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.sql.device_id.select" datasource="snmp" paging="false" type="prepared">
+    <description>DEVICE 조회</description>
+    <result-name>telecaps.sql.device_id.select</result-name>
+    <query><![CDATA[
+    SELECT a.device_ip
+        , a.device_ip2
+        , a.device_ip3
+        , a.device_gu1
+        , (select code_name from t_codebook where code_type='SYS001' and code_id=a.device_gu1) device_nm1
+        , a.device_gu2
+        , (select code_name from t_codebook where parent_type='SYS001' and parent_id=a.device_gu1 and code_type='SYS002' and code_id=a.device_gu2) device_nm2
+        , a.os_gu
+        , a.device_local
+        , (select code_name from t_codebook where code_type='SYS003' and code_id=a.device_local) device_local_nm
+        , a.device_id
+        , a.use_yn
+        , a.alarm_yn
+    FROM MS_DEVICE a
+    WHERE  a.DEVICE_ID = ?device_id
+    limit 1
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.delRTValue.process" datasource="snmp" paging="false" type="prepared">
+    <description>Process 실시간 데이터를 삭제한다</description>
+    <result-name>telecaps.delRTValue.process</result-name>
+    <query><![CDATA[
+      DELETE  FROM MS_RT_PROCESS
+      WHERE   DEVICE_ID = ?device_id
+        AND   OID_GROUP = ?oid_group
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="telecaps.insRTValue.process" datasource="snmp" paging="false" type="prepared" batch="true">
+    <description>Process 실시간 데이터를 입력한다</description>
+    <batch-name>telecaps.insRTValue.process</batch-name>
+    <query><![CDATA[
+      INSERT
+      INTO    MS_RT_PROCESS
+              (
+                DEVICE_ID,
+                OID_GROUP,
+                OID_NAME,
+                SUB_OID,
+                VALUE_ID,
+                VALUE
+              )
+      VALUES
+              (
+                ?device_id,
+                ?oid_group,
+                ?oid_name,
+                ?sub_oid,
+                ?value_id,
+                ?value
+              )
+    ]]></query>
+  </sql-service>
+  
+  <sql-service name="w_mgmt.sys.schsys.sch" datasource="snmp" paging="false" type="prepared">
+		<description>[W_SYS]시스템관리 조회</description>
+		<result-name>DS_SYSTEM</result-name>
+		<query><![CDATA[
+			SELECT  T.DEVICE_GU2,
+			         '' AS DEVICE_GU2_NAME,
+			         T.DEVICE_ID,
+						T.ADMIN_ID,
+						T.DEVICE_IP,
+						T.DEVICE_PORT,
+			         T.DEVICE_DESC,
+			         T.DEVICE_GU1,
+			         '' AS SYSNAME,
+			         T.DEVICE_IP2,
+						T.DEVICE_IP3,
+			         T.AUTH_NAME,
+						T.AUTH_PASS,
+			         T.READ_COMMUNITY, 
+						T.WRITE_COMMUNITY, 
+						T.SNMP_VERSION, 
+						T.SNMP_YN, 
+						T.USE_YN,
+			         T.OS_GU, 
+						T.DISP_SEQ, 
+						T.DISP_YN, 
+						T.DISP_YN_2, 
+						T.PING_YN, 
+						'' AS PORT_YN, 
+						T.ALARM_YN,
+			         format(T.REG_DATE,'%Y-%m-%d') AS REG_DATE,
+			         '' AS DEVICE_LOCAL,
+			         T.DEVICE_LOCAL AS DCD                  
+			 FROM MS_DEVICE T   
+          
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.system.addsys.ins" datasource="snmp" paging="false" type="prepared">
+		<description>[W_SYS]시스템 추가</description>
+		<query><![CDATA[
+			INSERT INTO MS_DEVICE(
+          				DEVICE_ID,
+          				DEVICE_IP,
+          				DEVICE_DESC,
+          				USE_YN,
+                  		DEVICE_IP2,
+                  		DEVICE_IP3,
+          				DEVICE_GU1,
+          				DEVICE_GU2,
+          				DEVICE_LOCAL,
+          				OS_GU,
+          				REG_DATE,
+          				DISP_YN,
+          				DEVICE_PORT,
+						ADMIN_ID,
+						AUTH_NAME,
+						AUTH_PASS,
+						READ_COMMUNITY,
+						WRITE_COMMUNITY,
+						SNMP_VERSION,
+						PING_YN,
+						ALARM_YN,
+						SNMP_YN,
+						DISP_SEQ
+          				)
+    			VALUES(
+          				?DEVICE_ID,
+          				?DEVICE_IP,
+          				?DEVICE_DESC,
+          			  	?USE_YN,
+                  		?DEVICE_IP2,
+                  		?DEVICE_IP3,
+          				?DEVICE_GU1,
+          				?DEVICE_GU2,
+          				?DEVICE_LOCAL,
+          				UPPER(?OS_GU),
+          				getDate(),
+          				?DISP_YN,
+          				CAST(?DEVICE_PORT AS INT),
+						?ADMIN_ID,
+						?AUTH_NAME,
+						?AUTH_PASS,
+						?READ_COMMUNITY,
+						?WRITE_COMMUNITY,
+						?SNMP_VERSION,
+						?PING_YN,
+						?ALARM_YN,
+						?SNMP_YN,
+						?DISP_SEQ
+          				)
+		]]></query>
+		<parameter name='DEVICE_PORT' 	value="?DEVICE_PORT" default="null"/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.system.updsys.upd" datasource="snmp" paging="false" type="prepared">
+		<description>[W_SYS]시스템 수정</description>
+		<query><![CDATA[
+			UPDATE MS_DEVICE 
+           		SET  DEVICE_IP = ?DEVICE_IP,
+                 	 DEVICE_DESC = ?DEVICE_DESC,
+                	 USE_YN =?USE_YN,
+                	 DEVICE_IP2 =?DEVICE_IP2,
+                 	 DEVICE_IP3 = ?DEVICE_IP3,
+                 	 DEVICE_GU1 = ?DEVICE_GU1,
+                 	 DEVICE_GU2 = ?DEVICE_GU2,
+                 	 DEVICE_LOCAL = ?DEVICE_LOCAL,      
+                 	 OS_GU = UPPER(?OS_GU),                
+                 	 UPD_DATE = getDate(),
+					 ADMIN_ID = ?ADMIN_ID,
+					 AUTH_NAME=?AUTH_NAME,
+					 AUTH_PASS=?AUTH_PASS,
+					 READ_COMMUNITY = ?READ_COMMUNITY,
+					 WRITE_COMMUNITY = ?WRITE_COMMUNITY,
+					 SNMP_VERSION = ?SNMP_VERSION,
+					 PING_YN = ?PING_YN,
+					 ALARM_YN = ?ALARM_YN,
+					 DISP_YN = ?DISP_YN,
+					 SNMP_YN = ?SNMP_YN
+					 ?DEVICE_PORT
+					 ?DISP_SEQ
+            	WHERE DEVICE_ID = ?DEVICE_ID
+		]]></query>
+		<parameter name='DEVICE_PORT' 	value=",DEVICE_PORT = ?DEVICE_PORT" default=""/>
+		<parameter name='DISP_SEQ' 	value=",DISP_SEQ = ?DISP_SEQ" default=""/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.system.delsys.del" datasource="snmp" paging="false" type="prepared">
+		<description>[W_SYS]시스템 삭제</description>
+		<query><![CDATA[
+			DELETE 
+			FROM 
+				MS_DEVICE
+            WHERE 
+            	DEVICE_ID =?DEVICE_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.schmib.sch" datasource="snmp" paging="false" type="prepared">
+		<description>시스템 MIB정보조회</description>
+		<result-name>DS_MIBLIST</result-name>
+		<query><![CDATA[
+          	SELECT MIB_ID
+				  , DEVICE_ID
+				  , OID_TYPE
+				  , OID_GROUP
+				  , OID
+				  , OID_DESC
+				  , SCH_INTERVL
+				  , SCH_TIME
+				  , LAST_UPDATED
+				  , LAST_VALUE_ID
+				  , CHECK_NUM_OIDS
+				  , USE_YN
+				  , DATA_GATHERED
+				  , '' AS DEVICE_GU
+          	FROM MS_MIB
+          	WHERE DEVICE_ID = ?device_id
+          	ORDER BY MIB_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.schoid.sch" datasource="snmp" paging="false" type="prepared">
+		<description>시스템 OID정보조회</description>
+		<result-name>DS_OIDLIST</result-name>
+		<query><![CDATA[
+          	SELECT *
+          	FROM MS_OID
+          	WHERE MIB_ID = ?mib_id
+          	ORDER BY SEQ
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.insertmib.insert" datasource="snmp" paging="false" type="prepared">
+		<description>MIB 추가</description>
+		<query><![CDATA[
+			INSERT
+			INTO
+				MS_MIB (
+				   MIB_ID
+				  , DEVICE_ID
+				  , OID_TYPE
+				  , OID_GROUP
+				  , OID_DESC
+				  , SCH_INTERVL
+				  , SCH_TIME
+				  , USE_YN
+				) VALUES (
+				    ?MIB_ID
+				  , ?DEVICE_ID
+				  , ?OID_TYPE
+				  , ?OID_GROUP
+				  , ?OID_DESC
+				  , ?SCH_INTERVL
+				  , ?SCH_TIME
+				  , ?USE_YN
+				)
+		]]></query>
+		<parameter name='OID_DESC' 	value="?OID_DESC" default="NULL"/>
+		<parameter name='SCH_INTERVL' 	value="?SCH_INTERVL" default="NULL"/>
+		<parameter name='SCH_TIME' 	value="?SCH_TIME" default="NULL"/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.updatemib.update" datasource="snmp" paging="false" type="prepared">
+		<description>MIB 수정</description>
+		<query><![CDATA[
+			UPDATE
+				MS_MIB
+			SET
+			  OID_TYPE = ?OID_TYPE
+			  , OID_GROUP = ?OID_GROUP
+			  , OID_DESC = ?OID_DESC
+			  , SCH_INTERVL = ?SCH_INTERVL
+			  , SCH_TIME = ?SCH_TIME
+			  , USE_YN = ?USE_YN
+			WHERE
+				MIB_ID = ?MIB_ID
+		]]></query>
+		<parameter name='OID_DESC' 	value="?OID_DESC" default="NULL"/>
+		<parameter name='SCH_INTERVL' 	value="?SCH_INTERVL" default="NULL"/>
+		<parameter name='SCH_TIME' 	value="?SCH_TIME" default="NULL"/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.insertoid.insert" datasource="snmp" paging="false" type="prepared">
+		<description>OID 추가</description>
+		<query><![CDATA[
+			INSERT
+			INTO
+				MS_OID (
+				   MIB_ID
+				  , OID_NAME
+				  , SEQ
+				  , OID
+				  , OID_DESC
+				) VALUES (
+					?MIB_ID
+				  , ?OID_NAME
+				  , (SELECT IsNULL(MAX(A.SEQ), 0)+1 FROM MS_OID A WHERE A.MIB_ID = ?MIB_ID)
+				  , ?OID
+				  , ?OID_DESC
+				)
+		]]></query>
+		<parameter name='OID_DESC' 	value="?OID_DESC" default="NULL"/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.updateoid.update" datasource="snmp" paging="false" type="prepared">
+		<description>OID 수정</description>
+		<query><![CDATA[
+			UPDATE
+				MS_OID
+			SET
+			  OID_NAME = ?OID_NAME
+			  , OID = ?OID
+			  , OID_DESC = ?OID_DESC
+			WHERE
+				MIB_ID = ?MIB_ID
+			AND SEQ = ?SEQ	
+		]]></query>
+		<parameter name='OID_DESC' 	value="?OID_DESC" default="NULL"/>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.deleteoid.delete" datasource="snmp" paging="false" type="prepared">
+		<description>OID 삭제</description>
+		<query><![CDATA[
+			DELETE FROM 
+				MS_OID
+			WHERE
+				MIB_ID = ?MIB_ID
+			AND SEQ = ?SEQ	
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.deletemib.delete1" datasource="snmp" paging="false" type="prepared">
+		<description>OID 삭제</description>
+		<query><![CDATA[
+			DELETE FROM 
+				MS_OID
+			WHERE
+				MIB_ID = ?MIB_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.deletemib.delete2" datasource="snmp" paging="false" type="prepared">
+		<description>OID 삭제</description>
+		<query><![CDATA[		
+			DELETE FROM
+				MS_MIB
+			WHERE
+				MIB_ID = ?MIB_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.device_pop.sch" datasource="snmp" paging="false" type="prepared">
+		<description>시스템정보조회</description>
+		<result-name>DS_DEVICE</result-name>
+		<query><![CDATA[
+          	SELECT DEVICE_ID
+          	FROM MS_DEVICE
+         	ORDER BY DEVICE_GU1, DEVICE_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.copymib" datasource="snmp" paging="false" type="prepared">
+		<description>시스템정보조회</description>
+		<result-name>DS_DEVICE</result-name>
+		<query><![CDATA[
+		BEGIN
+
+			DECLARE @t_device_gu varchar(4)
+		  DECLARE @o_mib_id varchar(10)
+		  DECLARE @t_mib_id varchar(10)
+		  DECLARE @m_Done INT 
+		  
+		  
+		
+			DECLARE O_MIB CURSOR FOR 
+						      SELECT  A.MIB_ID
+						      FROM    MS_MIB A
+						      WHERE   A.DEVICE_ID = ?O_DEVICE_ID
+		  
+		  SELECT DEVICE_GU1 INTO t_device_gu
+		  FROM MS_DEVICE
+		  WHERE DEVICE_ID = ?T_DEVICE_ID;
+		  
+		  OPEN O_MIB;
+		  
+		  REPEAT
+		    FETCH NEXT FROM O_MIB INTO o_mib_id;
+		   
+		    IF NOT m_Done THEN
+		        
+		      SELECT CONCAT(t_device_gu, LPAD(IFNULL(MAX(CAST(SUBSTR(A.MIB_ID, 4) AS UNSIGNED)), 0) + 1, 4, 0)) INTO t_mib_id 
+		      FROM MS_MIB A 
+		      WHERE A.MIB_ID LIKE CONCAT(t_device_gu, '%');
+		        
+		      INSERT
+					INTO
+						MS_MIB (
+						   MIB_ID
+						  , DEVICE_ID
+						  , OID_TYPE
+						  , OID_GROUP
+						  , OID_DESC
+						  , SCH_INTERVL
+						  , SCH_TIME
+						  , USE_YN
+						)
+		        SELECT
+						    t_mib_id
+						  , ?T_DEVICE_ID AS DEVICE_ID
+						  , B.OID_TYPE
+						  , B.OID_GROUP
+						  , B.OID_DESC
+						  , B.SCH_INTERVL
+						  , B.SCH_TIME
+						  , B.USE_YN
+		        FROM MS_MIB B
+		        WHERE B.MIB_ID = o_mib_id;
+		        
+		      INSERT
+					INTO
+						MS_OID (
+						   MIB_ID
+						  , OID_NAME
+						  , SEQ
+						  , OID
+						  , OID_DESC
+						) 
+		        SELECT 
+		             t_mib_id AS MIB_ID
+		           , B.OID_NAME
+		           , B.SEQ
+		           , B.OID
+		           , B.OID_DESC
+		         FROM MS_OID B
+		        WHERE B.MIB_ID = o_mib_id;
+		        
+		    END IF;
+		  UNTIL m_Done END REPEAT;
+		  
+			CLOSE O_MIB;
+		  
+		  COMMIT;
+		
+		END;
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="w_mgmt.sys.copyoid" datasource="snmp" paging="false" type="prepared">
+		<description>시스템정보조회</description>
+		<result-name>DS_DEVICE</result-name>
+		<query><![CDATA[
+          	INSERT
+			INTO
+				MS_OID (
+				   MIB_ID
+				  , OID_NAME
+				  , SEQ
+				  , OID
+				  , OID_DESC
+				) 
+        SELECT 
+             ?t_mib_id AS MIB_ID
+           , B.OID_NAME
+           , B.SEQ
+           , B.OID
+           , B.OID_DESC
+         FROM MS_OID B
+        WHERE B.MIB_ID = ?o_mib_id
+		]]></query>
+	</sql-service>
+      
+  
+</query-collection>
+
+

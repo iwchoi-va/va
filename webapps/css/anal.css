@@ -1,0 +1,29 @@
+@CHARSET "EUC-KR";
+
+#grd_list .xw-datagrid-body-area {
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+#pan_word_cloud, #pan_pie, #pan_bar{
+	overflow:hidden; 
+	width:100%;
+	height:100%;
+}
+#btn_stress_test, #pan_self_test, #pnl_grd_search, #pnl_grd_product, #pnl_grd_customer, #pan_line_bar, #grd_sent, #btn_r_search, #btn_r_product, #btn_r_customer{
+	-webkit-transition: all 0.3s ease-in-out;
+   -moz-transition: all 0.3s ease-in-out;
+   -ms-transition: all 0.3s ease-in-out;
+   transition: all 0.3s ease-in-out;}
+#btn_stress_test .xw-button-shell-inner, #btn_r_search .xw-button-shell-inner, #btn_r_product .xw-button-shell-inner, #btn_r_customer .xw-button-shell-inner{
+-moz-border-radius: 4px 0px 0px 4px;
+-webkit-border-radius: 4px 0px 0px 4px;
+border-radius: 4px 0px 0px 4px;
+	}
+#pnl_grd_search .xw-container, #pnl_grd_product .xw-container, #pnl_grd_customer .xw-container{border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;}
+	
+#btn_stress_test .xw-button, #btn_r_search .xw-button, #btn_r_product .xw-button, #btn_r_customer .xw-button{-webkit-transition: background-image 0.1s;
+	-moz-transition: background-image 0.1s;
+	transition: background-image 0.1s;}
+#time_anal400 .xw-label-label{text-shadow: 2px 2px #4E6BA1;letter-spacing:-1px;}

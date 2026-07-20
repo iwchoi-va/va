@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" showDataTips="true">
+		<series>
+			<MapSeries id="mapseries" interactive="true" selectionMarking="line" color="0x777777"
+				labelPosition="inside" displayName="Map">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+		<backgroundElements>
+<!--
+	Image의 속성으로는
+	source 실제 이미지가 있는 URL경로입니다
+	maintainAspectRation 이미지 원본 비율을 유지할지를 나타냅니다
+							true면 고유비율을 유지하려 하고
+							false면 차트 크기에 맞춘 사이즈를 갖습니다
+	alpha 이미지의 투명도를 나타냅니다
+	horizontalAlign 수펑 정렬 (left,right,center중 택일, 기본 left)
+	verticalAlign 수직 정렬 (top,middle,bottom중 택일, 기본 top)
+	smoothBitmapContent 이미지를 부드럽게 바꿀지 여부 (true,false중 택일, 기본 false)
+-->
+			<Image source="http://riamore.net/flashdemo/map/Samples/Images/logo_big_ke.jpg" maintainAspectRatio="true" alpha="1" smoothBitmapContent="true" horizontalAlign="center" verticalAlign="middle"/>
+		</backgroundElements>
+	</MapChart>
+</rMateMapChart>

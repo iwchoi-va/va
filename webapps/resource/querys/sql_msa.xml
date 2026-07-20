@@ -1,0 +1,1366 @@
+<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+
+   <sql-service name="cs.msa.get.scmanage" datasource="is_stat" paging="false" type="prepared">
+		<description>Combo-소분류</description>
+		<result-name>DS_SCMNG</result-name>
+		<query><![CDATA[
+			      SELECT 
+				distinct
+				SC_CD CODE_ID
+				,SC_CDNM CODE_NAME
+				,TYPE_CD
+				,UPR_SC_CD
+			FROM [tb_sc_code_mng]
+			WHERE USE_YN = 'Y' 
+			ORDER BY SC_CD
+		]]></query>
+	</sql-service>
+
+	<sql-service name="cs.msa.get.cntr" datasource="is_stat" paging="false" type="prepared">
+		<description>Combo-센터</description>
+		<result-name>DS_CNTR</result-name>
+		<query><![CDATA[
+			  SELECT 
+				distinct
+				ORG2_CD CODE_ID,
+				(
+				SELECT	DEPT_NAME
+					  FROM	MS_DEPT
+					 WHERE	DEPT_CD = A.ORG2_CD
+					) AS CODE_NAME
+			FROM ms_dept A
+			where use_yn = 'y'
+			and ORG1_CD = '11002' --tm본부 밑 센터
+			and ORG2_CD <> ''
+			ORDER BY ORG2_CD
+		]]></query>
+		</sql-service>	
+		
+		<sql-service name="cs.msa.get.product" datasource="is_stat" paging="false" type="prepared">
+		<description>Combo-상품</description>
+		<result-name>DS_PRODUCT</result-name>
+		<query><![CDATA[
+			SELECT 
+				distinct
+				PROD_CD CODE_ID
+				,PROD_NM CODE_NAME
+			FROM ms_product    
+			WHERE USE_YN = 'Y' 
+			ORDER BY PROD_CD
+		]]></query>
+	</sql-service>	
+	<sql-service name="msa.msa010T1.getVrsList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>VRS리스트조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT 
+			    A.SC_SNO
+			  ,A.SC_LCLF_CD LCLF_CD
+			  ,(select SC_CDNM from tb_sc_code_mng where a.sc_lclf_cd = sc_cd) as LCLF_NM
+			  ,SC_SCLF_CD SCLF_CD
+			  ,(select SC_CDNM from tb_sc_code_mng where a.sc_sclf_cd = sc_cd) as SCLF_NM
+			  ,CNTR_CD
+			--  ,QST_CD
+			  ,(select DEPT_NAME from ms_dept Y where A.CNTR_CD =Y.dept_cd)  CNTR_NM 
+			  ,PROD_CD
+			  ,(select Y.PROD_NM from ms_product Y  where Z.PROD_CD=Y.PROD_CD) PROD_NM
+			      ,CASE WHEN (SELECT TOP(1) USER_NAME FROM ms_script_mng S,ms_usermaster U WHERE A.SC_SNO=S.SC_SNO AND A.SC_LCLF_CD = S.SC_LCLF_CD AND A.SC_SCLF_CD=S.SC_SCLF_CD AND S.CNTR_CD = A.CNTR_CD AND A.CHG_DATE=A.CHG_DATE AND S.CHG_ID=U.USER_ID) IS NULL THEN (SELECT TOP(1) USER_NAME+'('+U.USER_ID+')' FROM ms_script_mng S,ms_usermaster U WHERE A.SC_SNO=S.SC_SNO AND A.SC_LCLF_CD = S.SC_LCLF_CD AND A.SC_SCLF_CD=S.SC_SCLF_CD AND S.CNTR_CD = A.CNTR_CD AND A.CHG_DATE=A.CHG_DATE AND S.UPDR_CRNO=U.USER_ID)
+			   ELSE (SELECT TOP(1) USER_NAME+'('+U.USER_ID+')' FROM ms_script_mng S,ms_usermaster U WHERE A.SC_SNO=S.SC_SNO AND A.SC_LCLF_CD = S.SC_LCLF_CD AND A.SC_SCLF_CD=S.SC_SCLF_CD AND S.CNTR_CD = A.CNTR_CD AND A.CHG_DATE=A.CHG_DATE AND S.CHG_ID=U.USER_ID) END UP_USER_NM
+			  ,A.CHG_DATE ALTR_DT  --차후 altr_date형식보고 앞에 20붙인거 해결
+		FROM (
+		SELECT
+				a.sc_sno, 
+				a.sc_lclf_cd, 
+				sc_sclf_cd, 
+				cntr_cd,
+				MAX(CHG_DATE) CHG_DATE
+		FROM ms_script_mng a
+		WHERE DEL_YN  = 'N'
+		GROUP BY A.SC_SNO,A.SC_LCLF_CD,SC_SCLF_CD,CNTR_CD
+		) A
+		LEFT OUTER JOIN tb_sc_mng Z ON A.SC_SNO = Z.SC_SNO AND A.SC_LCLF_CD = Z.SC_LCLF_CD
+		WHERE Z.USE_YN = 'Y'
+		?sc_lclf_cd
+		?sc_sclf_cd
+		?cntr_cd
+		?prod_cd
+		ORDER BY LCLF_CD,SCLF_CD,CNTR_CD,PROD_CD,A.SC_SNO
+		]]></query>
+		<parameter name='sc_lclf_cd' value="AND A.SC_LCLF_CD = ?sc_lclf_cd" default="" />
+		<parameter name='sc_sclf_cd' value="AND A.SC_SCLF_CD= ?sc_sclf_cd" default="" />
+		<parameter name='cntr_cd' value="AND A.CNTR_CD= ?cntr_cd" default="" /> 
+		<parameter name='prod_cd' value="AND Z.PROD_CD= ?prod_cd" default="" />
+	</sql-service>
+	
+	<sql-service name="msa.msa010T1.cmbQstcd.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>VRS관리 리스트조회</description>
+		<result-name>DS_QST</result-name>
+		<query><![CDATA[
+		SELECT 
+		distinct
+				B.QST_CD CODE_ID
+				,B.QST_CDNM CODE_NAME
+		FROM ms_script_mng a
+		LEFT OUTER JOIN tb_sc_mng Z ON a.SC_SNO = Z.SC_SNO AND a.SC_LCLF_CD = Z.SC_LCLF_CD ?prod_cd
+		inner join ms_script_sent b
+		 on	a.SC_SNO=b.SC_SNO
+			and a.SC_LCLF_CD=b.SC_LCLF_CD
+			and a.SC_SCLF_CD=b.SC_SCLF_CD
+			and a.QST_CD = b.QST_CD
+			and a.CNTR_CD = b.CNTR_CD
+			AND Z.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			?sc_sno
+			?sc_lclf_cd
+			?sc_sclf_cd
+			?cntr_cd
+		order by B.QST_CD
+		]]></query>
+		<parameter name='sc_sno' value="AND A.SC_SNO = ?sc_sno" default="" />
+		<parameter name='sc_lclf_cd' value="AND A.SC_LCLF_CD = ?sc_lclf_cd" default="" />
+		<parameter name='sc_sclf_cd' value="AND A.SC_SCLF_CD=?sc_sclf_cd" default="" />
+		<parameter name='cntr_cd' value="AND A.CNTR_CD=?cntr_cd" default="" />
+	    <parameter name='prod_cd' value="AND Z.PROD_CD=?prod_cd" default="" /> 
+	</sql-service>
+	
+	<sql-service name="msa.msa010T1.getVrsManageList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>VRS관리 리스트조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+		SELECT 
+				-- 파라미터용
+				B.SC_SNO
+				,B.SC_LCLF_CD 
+				,B.SC_SCLF_CD
+				,B.CNTR_CD
+				--
+				,B.QST_CD
+				,B.QST_CDNM
+				,B.SCRIPT_SENT_ID
+				,QST_SECRET
+				,QST_FOCUS
+				,EXCEPT_YN
+				,QST_KEYWORD
+				,SCRIPT_SENT
+				,QST_RATE
+				,'' CHG_ID
+		FROM ms_script_mng a
+		LEFT OUTER JOIN tb_sc_mng Z ON a.SC_SNO = Z.SC_SNO AND a.SC_LCLF_CD = Z.SC_LCLF_CD ?prod_cd
+		inner join ms_script_sent b
+				 on	a.SC_SNO=b.SC_SNO
+				and a.SC_LCLF_CD=b.SC_LCLF_CD
+				and a.SC_SCLF_CD=b.SC_SCLF_CD
+				and a.QST_CD = b.QST_CD
+				and a.CNTR_CD = b.CNTR_CD
+				AND Z.USE_YN = 'Y'
+				AND A.DEL_YN ='N'
+				?sc_sno
+				?sc_lclf_cd
+				?sc_sclf_cd
+				?cntr_cd
+		order by sc_sno,sc_lclf_cd,sc_sclf_cd,qst_cd,cntr_cd,script_sent_id
+		]]></query>
+		<parameter name='sc_sno' value="AND A.SC_SNO = ?sc_sno" default="" />
+		<parameter name='sc_lclf_cd' value="AND A.SC_LCLF_CD = ?sc_lclf_cd" default="" />
+		<parameter name='sc_sclf_cd' value="AND A.SC_SCLF_CD=?sc_sclf_cd" default="" />
+		<parameter name='cntr_cd' value="AND A.CNTR_CD=?cntr_cd" default="" />
+	    <parameter name='prod_cd' value="AND Z.PROD_CD=?prod_cd" default="" /> 
+	</sql-service>	
+	
+	<sql-service name="msa.msa010T1.VrsManageList.upd" datasource='is_stat' type='prepared' batch='true'>
+		<description>VRS관리 리스트 수정</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+ BEGIN TRANSACTION;		
+   UPDATE ms_script_mng SET
+   				 QST_FOCUS = ?QST_FOCUS
+				, QST_SECRET = ?QST_SECRET
+				, CHG_ID = ?CHG_ID
+				, CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+		FROM ms_script_mng a, ms_script_sent b
+         WHERE 
+		 -- 조인조건
+		 a.SC_SNO= b.SC_SNO
+		 and a.SC_LCLF_CD=b.SC_LCLF_CD
+		 and a.SC_SCLF_CD=b.SC_SCLF_CD
+		 and a.QST_CD=b.QST_CD
+		 and a.CNTR_CD=b.CNTR_CD
+		 AND A.DEL_YN = 'N'
+		 -- 파라미터
+		 and a.SC_SNO = ?SC_SNO
+		 and a.SC_LCLF_CD = ?SC_LCLF_CD
+		 and a.SC_SCLF_CD = ?SC_SCLF_CD
+		 and a.QST_CD = ?QST_CD
+		 and a.CNTR_CD = ?CNTR_CD
+		 and b.SCRIPT_SENT_ID = ?SCRIPT_SENT_ID
+		 
+		 
+       UPDATE ms_script_sent SET
+				QST_RATE = ?QST_RATE
+				,QST_KEYWORD = CASE WHEN LEN(?QST_KEYWORD) = 0 THEN NULL ELSE ?QST_KEYWORD END
+				,EXCEPT_YN = ?EXCEPT_YN
+				, CHG_ID = ?CHG_ID
+				, CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+		FROM ms_script_mng a, ms_script_sent b
+         WHERE 
+		 -- 조인조건
+		 a.SC_SNO= b.SC_SNO
+		 and a.SC_LCLF_CD=b.SC_LCLF_CD
+		 and a.SC_SCLF_CD=b.SC_SCLF_CD
+		 and a.QST_CD=b.QST_CD
+		 and a.CNTR_CD=b.CNTR_CD
+		 AND A.DEL_YN = 'N'
+		 -- 파라미터
+		 and a.SC_SNO = ?SC_SNO
+		 and a.SC_LCLF_CD = ?SC_LCLF_CD
+		 and a.SC_SCLF_CD = ?SC_SCLF_CD
+		 and a.QST_CD = ?QST_CD
+		 and a.CNTR_CD = ?CNTR_CD
+		 and b.SCRIPT_SENT_ID = ?SCRIPT_SENT_ID
+		 
+		 commit;
+	]]></query>
+	</sql-service>
+		
+	<sql-service name="msa.msa010T1.VrsManageQstRate.upd" datasource='is_stat' type='prepared'>
+		<description>VRS관리 임계치 적용</description>
+		<query><![CDATA[
+	 	UPDATE ms_script_sent SET QST_RATE = ?QST_RATE
+								,CHG_ID = ?CHG_ID
+								,CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')	
+		FROM ms_script_sent A, tb_sc_mng B
+		WHERE A.SC_SNO=B.SC_SNO
+			AND A.SC_LCLF_CD=B.SC_LCLF_CD
+			-- AND B.HIST_VER = (SELECT MAX(HIST_VER) FROM tb_sc_mng )
+			AND B.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			AND A.SC_LCLF_CD = ?LCLF_CD
+			?sclf_cd
+			AND A.CNTR_CD = ?CNTR_CD
+			?prod_cd
+	]]></query>
+		<parameter name='sclf_cd' value="AND A.SC_SCLF_CD = ?SCLF_CD" default="" />
+	    <parameter name='prod_cd' value="AND B.PROD_CD = ?PROD_CD" default="" /> 
+	</sql-service>	
+	
+	<sql-service name="msa.msa010T1.VrsMng.upd" datasource='is_stat' type='prepared'>
+		<description>VRS관리 임계치 적용-mng 날짜 업데이트</description>
+		<query><![CDATA[
+		 	UPDATE ms_script_mng 
+		 	SET CHG_ID = ?CHG_ID
+				,CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')	
+			FROM ms_script_mng A, tb_sc_mng B
+			WHERE A.SC_SNO=B.SC_SNO
+				AND A.SC_LCLF_CD=B.SC_LCLF_CD
+				AND B.USE_YN = 'Y'
+				AND A.DEL_YN = 'N'
+				AND A.SC_LCLF_CD = ?LCLF_CD
+				?sclf_cd
+				AND A.CNTR_CD = ?CNTR_CD
+				?prod_cd
+		]]></query>
+		<parameter name='sclf_cd' value="AND A.SC_SCLF_CD = ?SCLF_CD" default="" />
+	    <parameter name='prod_cd' value="AND B.PROD_CD = ?PROD_CD" default="" /> 
+	</sql-service>	
+		
+	<sql-service name="msa.msa030p1.getUser.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>사용자 조직 조회</description>
+		<result-name>DS_USER</result-name>
+		<query><![CDATA[
+			SELECT '' AS VERSION,
+				   TREATYHQCD AS ORG1_CD,
+				   TREATYHQNM AS ORG1_NM,
+				   TREATYBRHCD AS ORG2_CD,
+				   TREATYBRHNM AS ORG2_NM,
+				   TREATYDEPTCD AS ORG3_CD,
+				   TREATYDEPTNM AS ORG3_NM,
+				   USER_ID,
+				   USER_NAME,
+				   '' AS GRADE,
+				   '' AS CHG_COMMENT
+			FROM ms_usermaster
+			WHERE 1=1
+			?ORG1_CD
+	        ?ORG2_CD
+	        ?ORG3_CD
+	        ?USER_ID
+	        ORDER BY ORG1_CD, ORG2_CD, ORG3_CD, USER_ID
+		]]></query>
+		<parameter name='ORG1_CD' value="AND TREATYHQCD        = ?ORG1_CD" default="" />
+		<parameter name='ORG2_CD' value="AND TREATYBRHCD   = ?ORG2_CD" default="" />
+		<parameter name='ORG3_CD' value="AND TREATYDEPTCD       = ?ORG3_CD" default="" />
+		<parameter name='USER_ID' value="AND USER_ID        = ?USER_ID" default="" />
+	</sql-service>	
+	
+	<sql-service name="msa.msa030p1.getMaxVersion.sel" datasource="is_stat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_VERSION</result-name>
+		<query><![CDATA[
+			SELECT ISNULL(MAX(CONVERT(INT,VERSION)),0)+1 AS CUR_VERSION
+			FROM ms_grade_version
+		]]></query>
+	</sql-service>	
+
+	<sql-service name="msa.msa030t1.gradeWeight.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade관리-가중치등록</description>
+		<batch-name>DS_RES_WEIGHT</batch-name>
+		<query><![CDATA[
+ 			INSERT ms_grade_weight
+ 			VALUES(
+ 				?VERSION,
+ 				?ITEM_CD,
+ 				?WEIGHT,
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss'),
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss')
+ 			)
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa030t1.gradeScore.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade관리-점수등록</description>
+		<batch-name>DS_RES_SCORE</batch-name>
+		<query><![CDATA[
+ 			INSERT ms_grade_version
+ 			VALUES(
+ 				?VERSION,
+ 				?GRADE,
+ 				?GRADE_SCORE,
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss'),
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss')
+ 			)
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa030t1.gradeDetail.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade관리-상세항목등록</description>
+		<batch-name>DS_RES_DETAIL</batch-name>
+		<query><![CDATA[
+ 			INSERT ms_grade_detail
+ 			VALUES(
+ 				?VERSION,
+ 				?ITEM_CD,
+ 				?ITEM_CNT1,
+ 				?ITEM_CNT2,
+ 				?ITEM_SCORE,
+ 				?REG_COMMENT,
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss'),
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss')	
+ 			)
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa030t1.gradeUser.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade관리-상담사 예외 등급 등록</description>
+		<batch-name>DS_RES_USER</batch-name>
+		<query><![CDATA[
+ 			INSERT ms_grade_except
+ 			VALUES(
+ 				?VERSION,
+ 				?USER_ID,
+ 				?USER_SCORE,
+ 				?REG_COMMENT,
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss'),
+ 				?REG_ID,
+ 				format(GETDATE(),'yyyyMMddHHmmss')	
+ 			)
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa030p1.getWeight.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>Grade별 가중치 조회</description>
+		<result-name>DS_RES_WEIGHT</result-name>
+		<query><![CDATA[
+			SELECT VERSION,
+				   ITEM_CD,
+				   WEIGHT
+			FROM ms_grade_weight
+			WHERE 1=1
+			?VERSION
+		]]></query>
+		<parameter name='VERSION' value="AND VERSION        = ?VERSION" default="AND VERSION = (select MAX(CONVERT(INT,VERSION)) from ms_grade_version)" />
+	</sql-service>	
+	
+	<sql-service name="msa.msa030p1.getScore.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>Grade별 가중치 조회</description>
+		<result-name>DS_RES_SCORE</result-name>
+		<query><![CDATA[
+			SELECT VERSION,
+				   GRADE,
+				   GRADE_SCORE,
+				   CODE_NAME GRADENAME
+			FROM ms_grade_version A, MS_CODEBOOK B
+			WHERE B.CODE_TYPE='VSS160'
+			AND CODE_ID <> '00'
+			AND CODE_ID = GRADE
+			?VERSION
+			ORDER BY SORT_KEY,CODE_ID
+		]]></query>
+		<parameter name='VERSION' value="AND VERSION        = ?VERSION" default="AND VERSION = (select MAX(CONVERT(INT,VERSION)) from ms_grade_version)" />
+	</sql-service>	
+	
+	<sql-service name="msa.msa030p1.getDetail.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>Grade별 상세항목 조회</description>
+		<result-name>DS_RES_DETAIL</result-name>
+		<query><![CDATA[
+			SELECT VERSION,
+				   ITEM_CD,
+				   ITEM_CNT1,
+				   ITEM_CNT2,
+				   ITEM_SCORE,
+				   REG_COMMENT
+			FROM ms_grade_detail
+			WHERE 1=1
+			and ITEM_CD not in ('04', '05' )
+			?VERSION
+		]]></query>
+		<parameter name='VERSION' value="AND VERSION        = ?VERSION" default="AND VERSION = (select MAX(CONVERT(INT,VERSION)) from ms_grade_version)" />
+	</sql-service>	
+	
+	<sql-service name="msa.msa030p1.getExcept.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>Grade별 상세항목 조회</description>
+		<result-name>DS_RES_USER</result-name>
+		<query><![CDATA[
+			SELECT D.VERSION,
+				   U.TREATYHQCD AS ORG1_CD,
+				   U.TREATYHQNM AS ORG1_NM,
+				   U.TREATYBRHCD AS ORG2_CD,
+				   U.TREATYBRHNM AS ORG2_NM,
+				   U.TREATYDEPTCD AS ORG3_CD,
+				   U.TREATYDEPTNM AS ORG3_NM,
+				   D.USER_ID,
+				   U.USER_NAME,
+				   D.USER_SCORE AS GRADE,
+				   D.REG_COMMENT AS CHG_COMMENT		   
+			FROM ms_grade_except D, ms_usermaster U
+			WHERE D.USER_ID = U.USER_ID
+			?VERSION
+			ORDER BY TREATYHQCD, TREATYBRHCD, TREATYDEPTCD, D.USER_ID
+		]]></query>
+		<parameter name='VERSION' value="AND D.VERSION        = ?VERSION" default="AND D.VERSION = (select MAX(CONVERT(INT,VERSION)) from ms_grade_version)" />
+	</sql-service>	
+	
+	<sql-service name="msa.msa030p2.getGradeList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>Grade별 상세항목 조회</description>
+		<result-name>DS_VER_LIST</result-name>
+		<query><![CDATA[
+			SELECT DISTINCT CONVERT(INT,VERSION) AS VERSION,
+				   REG_ID,
+				   CONCAT((SELECT USER_NAME FROM ms_usermaster WHERE USER_ID = REG_ID), '(', REG_ID, ')') AS USER_NAME,
+				   REG_DATE
+			FROM ms_grade_version
+			WHERE 1=1
+			AND LEFT(REG_DATE,8) BETWEEN ?sdate AND ?edate
+			ORDER BY CONVERT(INT,VERSION) DESC, REG_DATE DESC
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa010T2.getVrsSentList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>VRS관리 리스트조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+		SELECT 
+				QST_SECRET
+				,QST_FOCUS
+				,B.QST_CD
+				,B.QST_CDNM
+				,EXCEPT_YN
+				,QST_KEYWORD
+				,SCRIPT_SENT
+				,QST_RATE
+				,(SELECT DEPT_NAME FROM MS_DEPT WHERE DEPT_CD = A.CNTR_CD) AS CNTR_NM
+				-- 파라미터용
+				,B.SC_LCLF_CD 
+				,B.SC_SCLF_CD
+				,B.CNTR_CD
+				,B.SC_SNO
+				,B.SCRIPT_SENT_ID
+				,'' CHG_ID
+				,'N' QST_KEYWORD_YN
+		FROM ms_script_mng a
+		LEFT OUTER JOIN tb_sc_mng Z ON a.SC_SNO = Z.SC_SNO AND a.SC_LCLF_CD = Z.SC_LCLF_CD ?prod_cd
+		inner join ms_script_sent b
+				 on	a.SC_SNO=b.SC_SNO
+				and a.SC_LCLF_CD=b.SC_LCLF_CD
+				and a.SC_SCLF_CD=b.SC_SCLF_CD
+				and a.QST_CD = b.QST_CD
+				and a.CNTR_CD = b.CNTR_CD
+				AND Z.USE_YN = 'Y'
+				AND A.DEL_YN ='N'
+				?sc_sno
+				?sc_lclf_cd
+				?sc_sclf_cd
+				?cntr_cd
+				?sentence
+		order by sc_sno,sc_lclf_cd,sc_sclf_cd,qst_cd,cntr_cd,script_sent_id
+		]]></query>
+		<parameter name='sc_sno' value="AND A.SC_SNO = ?sc_sno" default="" />
+		<parameter name='sc_lclf_cd' value="AND A.SC_LCLF_CD = ?sc_lclf_cd" default="" />
+		<parameter name='sc_sclf_cd' value="AND A.SC_SCLF_CD=?sc_sclf_cd" default="" />
+		<parameter name='cntr_cd' value="AND A.CNTR_CD=?cntr_cd" default="" />
+	    <parameter name='prod_cd' value="AND Z.PROD_CD=?prod_cd" default="" /> 
+	    <parameter name='sentence' value="AND B.SCRIPT_SENT like CONCAT('%',?sentence,'%')" default="" /> 
+	</sql-service>	
+	
+	<sql-service name="msa.msa010T2.VrsSentList.upd" datasource='is_stat' type='prepared' batch='true'>
+		<description>VRS세부관리 리스트 수정</description>
+		<batch-name>ds_batch</batch-name>
+		<query><![CDATA[
+ BEGIN TRANSACTION;		
+   UPDATE ms_script_mng SET
+   				 QST_FOCUS = ?QST_FOCUS
+				, QST_SECRET = ?QST_SECRET
+				, CHG_ID = ?CHG_ID
+				, CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+		FROM ms_script_mng a, ms_script_sent b
+         WHERE 
+		 -- 조인조건
+		 a.SC_SNO= b.SC_SNO
+		 and a.SC_LCLF_CD=b.SC_LCLF_CD
+		 and a.SC_SCLF_CD=b.SC_SCLF_CD
+		 and a.QST_CD=b.QST_CD
+		 and a.CNTR_CD=b.CNTR_CD
+		 AND A.DEL_YN = 'N'
+		 -- 파라미터
+		 and a.SC_SNO = ?SC_SNO
+		 and a.SC_LCLF_CD = ?SC_LCLF_CD
+		 and a.SC_SCLF_CD = ?SC_SCLF_CD
+		 and a.QST_CD = ?QST_CD
+		 and a.CNTR_CD = ?CNTR_CD
+		 and b.SCRIPT_SENT_ID = ?SCRIPT_SENT_ID
+		 
+		 
+       UPDATE ms_script_sent SET
+				QST_RATE = ?QST_RATE
+				,QST_KEYWORD = CASE WHEN LEN(?QST_KEYWORD) = 0 THEN NULL ELSE ?QST_KEYWORD END
+				,EXCEPT_YN = ?EXCEPT_YN
+				, CHG_ID = ?CHG_ID
+				, CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+		FROM ms_script_mng a, ms_script_sent b
+         WHERE 
+		 -- 조인조건
+		 a.SC_SNO= b.SC_SNO
+		 and a.SC_LCLF_CD=b.SC_LCLF_CD
+		 and a.SC_SCLF_CD=b.SC_SCLF_CD
+		 and a.QST_CD=b.QST_CD
+		 and a.CNTR_CD=b.CNTR_CD
+		 AND A.DEL_YN = 'N'
+		 -- 파라미터
+		 and a.SC_SNO = ?SC_SNO
+		 and a.SC_LCLF_CD = ?SC_LCLF_CD
+		 and a.SC_SCLF_CD = ?SC_SCLF_CD
+		 and a.QST_CD = ?QST_CD
+		 and a.CNTR_CD = ?CNTR_CD
+		 and b.SCRIPT_SENT_ID = ?SCRIPT_SENT_ID
+		 
+		 
+		 commit;
+	]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T1.getMngCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_MNG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng A WITH(NOLOCK), ms_script_mng B WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getSentCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng a  WITH(NOLOCK), ms_script_sent b WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getDelMngCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_DEL_MNG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng A WITH(NOLOCK), ms_script_mng B WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate 
+			AND A.R_FLAG = 'N'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getDelSentCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_DEL_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng a  WITH(NOLOCK), ms_script_sent b WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND A.R_FLAG = 'N'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.delVRS.del" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>MNG,SENT 기존 VRS 제거</description>
+		<query><![CDATA[
+		 BEGIN TRANSACTION;	
+			DELETE FROM ms_script_mng 
+			FROM  tb_sc_qst_mng A , ms_script_mng B
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND A.R_FLAG = 'N'
+			
+			DELETE FROM ms_script_sent 
+			FROM  tb_sc_qst_mng A , ms_script_sent B
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND A.R_FLAG = 'N'
+			
+			UPDATE A SET R_FLAG ='N'
+			FROM  tb_sc_qst_mng A LEFT OUTER JOIN ms_script_mng B ON A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			WHERE B.SC_SNO IS NULL AND B.SC_LCLF_CD IS NULL AND B.SC_SCLF_CD IS NULL AND B.QST_CD IS NULL AND B.CNTR_CD IS NULL
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND A.R_FLAG = 'Y'
+			
+		 COMMIT;	
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.delVRSupdFlag.del" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>MNG,SENT 기존 VRS 제거</description>
+		<query><![CDATA[
+		 BEGIN TRANSACTION;	
+			DELETE FROM ms_script_mng 
+			FROM  tb_sc_qst_mng A , ms_script_mng B
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			
+			DELETE FROM ms_script_sent 
+			FROM  tb_sc_qst_mng A , ms_script_sent B
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			
+			UPDATE A SET R_FLAG = 'N' 
+			FROM  tb_sc_qst_mng A 
+			WHERE A.CHG_DATE BETWEEN ?sdate AND ?edate
+
+		 COMMIT;	
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getRemainingCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>작업 안된 건수</description>
+		<result-name>DS_REM_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng a WITH(NOLOCK)
+			WHERE A.CHG_DATE BETWEEN ?sdate AND ?edate 
+			AND R_FLAG = 'N'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getTaggingYCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>태그제거까지 끝낸건수</description>
+		<result-name>DS_TAG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng A  WITH(NOLOCK), ms_script_mng B WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND A.R_FLAG = 'Y'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getSplitYCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>문장분리까지 끝낸건수</description>
+		<result-name>DS_SPLIT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng A  WITH(NOLOCK), ms_script_mng B WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO AND A.SC_LCLF_CD =B.SC_LCLF_CD AND A.SC_SCLF_CD = B.SC_SCLF_CD 
+			AND A.QST_CD = B.QST_CD AND A.CNTR_CD = B.CNTR_CD
+			AND A.CHG_DATE BETWEEN ?sdate AND ?edate
+			AND B.R_FLAG = 'Y'
+		]]></query>
+	</sql-service>	
+		
+	<sql-service name="msa.msa040T1.getDelSyncTMCount.sel" datasource="aig_tm" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_DEL_TM_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  TSOWN.TB_SC_QST_DEL_HIST A 
+			WHERE TO_CHAR(A.DEL_DT, 'YYYYMMDDHH24MISS') BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T1.getDelSyncCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_DEL_VA_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  tb_sc_qst_mng A WITH(NOLOCK)
+			WHERE A.DEL_DATE BETWEEN ?sdate AND ?edate 
+			AND A.DEL_YN = 'Y'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name='msa.msa040T1.delynupdatewebaction_1' datasource='aig_tm' type='prepared'>
+		<description>시간대별 건수 정보 조회</description>
+		<result-name>msa.msa040T1.delynupdatewebaction_1</result-name>
+		<query><![CDATA[
+			
+			SELECT 
+			       SUBSTR(TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS'), 0, 13) AS DEL_DT
+			       , COUNT(1) AS CNT
+			FROM TSOWN.TB_SC_QST_DEL_HIST M 									
+			WHERE TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS') BETWEEN ?SDATE AND ?EDATE
+			GROUP BY SUBSTR(TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS'), 0, 13)
+			ORDER BY SUBSTR(TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS'), 0, 13)
+
+        ]]></query>
+	</sql-service> 
+	
+	<sql-service name='msa.msa040T1.delynupdatewebaction_2' datasource='aig_tm' type='prepared'>
+		<description>DELETE 정보 시간대별 정보 조회</description>
+		<result-name>msa.msa040T1.delynupdatewebaction_2</result-name>
+		<query><![CDATA[
+			
+			SELECT	
+					SC_SNO
+					,SC_LCLF_CD
+					,SC_SCLF_CD
+					,QST_CD
+					,CNTR_CD
+					,DEL_DT DEL_DATE
+			FROM 
+				(SELECT ROWNUM as RNUM
+				      	,SC_SNO
+						,SC_LCLF_CD
+						,SC_SCLF_CD
+						,QST_CD
+						,CNTR_CD
+						,TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS') DEL_DT
+				FROM TSOWN.TB_SC_QST_DEL_HIST M							
+				WHERE SUBSTR(TO_CHAR(M.DEL_DT, 'YYYYMMDDHH24MISS'), 0, 13) = ?DEL_DT
+				) RE
+			WHERE RNUM BETWEEN ?FROM_RNUM AND ?TO_RNUM
+
+        ]]></query>
+	</sql-service> 
+	
+	<sql-service name='msa.msa040T1.delynupdatewebaction_3' datasource='is_stat_uat' type='prepared' batch='true'>
+		<description>DELETE 된 이력 저장</description>
+		<batch-name>TB_SC_QST_DEL_MNG</batch-name>
+		<query><![CDATA[
+				BEGIN TRANSACTION;		
+				UPDATE tb_sc_qst_mng SET DEL_YN = 'Y', DEL_DATE = ?DEL_DATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				
+				UPDATE ms_script_mng SET DEL_YN = 'Y', DEL_DATE = ?DEL_DATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				
+				UPDATE ms_script_sent SET DEL_YN = 'Y', DEL_DATE = ?DEL_DATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				COMMIT;
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T1.delynupdatewebaction_4' datasource='aig_tm' type='prepared' batch='true'>
+		<description>DELETE 된 이력 저장</description>
+		<batch-name>TB_SC_QST_DEL_MNG</batch-name>
+		<query><![CDATA[
+		
+				UPDATE TSOWN.TB_SC_QST_DEL_HIST SET RDNG_CRNO = 'VA', RDNG_DT = SYSDATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T1.delynupdatewebaction_5' datasource='is_stat_uat' type='prepared'>
+		<description>DELETE 이력 초기화</description>
+		<query><![CDATA[
+				BEGIN TRANSACTION;		
+				UPDATE tb_sc_qst_mng SET DEL_YN = 'N', DEL_DATE = NULL
+				WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE AND DEL_YN = 'Y'
+				
+				UPDATE ms_script_mng SET DEL_YN = 'N', DEL_DATE = NULL
+				WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE AND DEL_YN = 'Y'
+				
+				UPDATE ms_script_sent SET DEL_YN = 'N', DEL_DATE = NULL
+				WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE AND DEL_YN = 'Y'
+				COMMIT;
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getMngCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_MNG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  ms_script_mng B WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getSentCount.sel.200410" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  ms_script_sent B WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getSentCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description></description>
+		<result-name>DS_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1)
+			FROM  ms_script_sent A WITH(NOLOCK), ms_script_mng B WITH(NOLOCK)
+			WHERE A.SC_SNO = B.SC_SNO
+			AND A.SC_LCLF_CD = B.SC_LCLF_CD
+			AND A.SC_SCLF_CD = B.SC_SCLF_CD
+			AND A.QST_CD = B.QST_CD
+			AND A.CNTR_CD = B.CNTR_CD
+			AND B.CHG_DATE BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getProdMaxDate" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>운영 마지막반영일자(마지막변경일자) 구해오기</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT MAX(CHG_DATE) CHG_DATE
+			FROM ms_script_mng
+			WHERE CHG_ID = 'MSA040T2'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getReccDate" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>UAT 기준  반영일 이후 변경일자 구해오기</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT ISNULL(MIN(CHG_DATE),?PROD_DATE) CHG_DATE
+			FROM ms_script_mng
+			WHERE CHG_DATE > ?prod_date
+			AND CHG_DATE <= FORMAT(GETDATE(),'yyyyMMdd')+'235959'
+			
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataMngCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 COUNT GET</description>
+		<result-name>DS_MNG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_mng B  WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataMng.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 GET</description>
+		<result-name>DS_MNG</result-name>
+		<query><![CDATA[
+			SELECT B.*
+			FROM  ms_script_mng B  WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate
+			ORDER BY B.QST_CD,B.CNTR_CD,B.SC_SNO
+			OFFSET  CONVERT(INT,?START) ROWS
+			FETCH NEXT CONVERT(INT,?END) ROWS ONLY 
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataSentCnt.sel.200410" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 COUNT GET</description>
+		<result-name>DS_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_sent B  WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataSentCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 COUNT GET</description>
+		<result-name>DS_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_sent A  WITH(NOLOCK), ms_script_mng B with(nolock) 
+			WHERE A.SC_SNO = B.SC_SNO
+			AND A.SC_LCLF_CD = B.SC_LCLF_CD
+			AND A.SC_SCLF_CD = B.SC_SCLF_CD
+			AND A.QST_CD = B.QST_CD
+			AND A.CNTR_CD = B.CNTR_CD
+			AND B.CHG_DATE BETWEEN ?sdate AND ?edate
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataSent.sel.200410" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 GET</description>
+		<result-name>DS_SENT</result-name>
+		<query><![CDATA[
+			SELECT B.*
+			FROM  ms_script_sent B WITH(NOLOCK)
+			WHERE B.CHG_DATE BETWEEN ?sdate AND ?edate
+			ORDER BY B.QST_CD,B.CNTR_CD,B.SCRIPT_SENT_ID,B.SC_SNO
+			OFFSET  CONVERT(INT,?START) ROWS
+			FETCH NEXT CONVERT(INT,?END) ROWS ONLY
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getUpdatedDataSent.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 GET</description>
+		<result-name>DS_SENT</result-name>
+		<query><![CDATA[
+			SELECT A.*
+			FROM  ms_script_sent A  WITH(NOLOCK), ms_script_mng B with(nolock) 
+			WHERE A.SC_SNO = B.SC_SNO
+			AND A.SC_LCLF_CD = B.SC_LCLF_CD
+			AND A.SC_SCLF_CD = B.SC_SCLF_CD
+			AND A.QST_CD = B.QST_CD
+			AND A.CNTR_CD = B.CNTR_CD
+			AND B.CHG_DATE BETWEEN ?sdate AND ?edate
+			ORDER BY A.QST_CD,A.CNTR_CD,A.SCRIPT_SENT_ID,A.SC_SNO
+			OFFSET  CONVERT(INT,?START) ROWS
+			FETCH NEXT CONVERT(INT,?END) ROWS ONLY
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.prodMng.del" datasource="is_stat_prod" paging="false" type="prepared" batch='true'>
+		<description>MNG 기존 VRS 제거</description>
+		<batch-name>DS_MNG</batch-name>
+		<query><![CDATA[
+			DELETE FROM ms_script_mng 
+			WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.prodSent.del.200410" datasource="is_stat_prod" paging="false" type="prepared" batch='true'>
+		<description>SENT 기존 VRS 제거</description>
+		<batch-name>DS_SENT</batch-name>
+		<query><![CDATA[
+		 	DELETE FROM ms_script_sent 
+			WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD AND SCRIPT_SENT_ID = ?SCRIPT_SENT_ID
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.prodSent.del" datasource="is_stat_prod" paging="false" type="prepared" batch='true'>
+		<description>SENT 기존 VRS 제거</description>
+		<batch-name>DS_SENT</batch-name>
+		<query><![CDATA[
+		 	DELETE FROM ms_script_sent 
+			WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name='msa.msa040T2.prodMng.ins' datasource='is_stat_prod' type='prepared' batch='true'>
+		<description>가져온 uat 데이터 운영에 ins</description>
+		<batch-name>DS_MNG</batch-name>
+		<query><![CDATA[
+			INSERT INTO ms_script_mng (
+				SC_SNO,
+				SC_LCLF_CD,
+				SC_SCLF_CD,
+				QST_CD,
+				CNTR_CD,
+				QST_CDNM,
+				QST_FOCUS,
+				QST_SECRET,
+				QST_CNTS_P1,
+				QST_CNTS_P2,
+				DEL_YN,
+				DEL_DATE,
+				R_FLAG,
+				UPDR_CRNO,
+				QST_KIND_CD,
+				SORTKEY,
+				REG_ID,
+				REG_DATE,
+				CHG_ID,
+				CHG_DATE
+			) VALUES (
+				?SC_SNO,
+				?SC_LCLF_CD,
+				?SC_SCLF_CD,
+				?QST_CD,
+				?CNTR_CD,
+				?QST_CDNM,
+				?QST_FOCUS,
+				?QST_SECRET,
+				?QST_CNTS_P1,
+				CASE WHEN LEN(?QST_CNTS_P2) = 0 THEN NULL ELSE ?QST_CNTS_P2 END,
+				?DEL_YN,
+				CASE WHEN LEN(?DEL_DATE) = 0 THEN NULL ELSE ?DEL_DATE END,
+				?R_FLAG,
+				?UPDR_CRNO,
+				?QST_KIND_CD,
+				?SORTKEY,
+				?REG_ID,
+				?REG_DATE,
+				'MSA040T2',
+				?CHG_DATE
+			)
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T2.prodSent.ins' datasource='is_stat_prod' type='prepared' batch='true'>
+		<description>가져온 uat 데이터 운영에 ins</description>
+		<batch-name>DS_SENT</batch-name>
+		<query><![CDATA[
+			INSERT INTO ms_script_sent (
+				SC_SNO,
+				SC_LCLF_CD,
+				SC_SCLF_CD,
+				QST_CD,
+				CNTR_CD,
+				SCRIPT_SENT_ID,
+				QST_CDNM,
+				QST_KIND_CD,
+				SCRIPT_SENT,
+				SCRIPT_TA_SENT,
+				QST_RATE,
+				QST_KEYWORD,
+				EXCEPT_YN,
+				DEL_YN,
+				DEL_DATE,
+				REG_ID,
+				REG_DATE,
+				CHG_ID,
+				CHG_DATE,
+				SORTKEY
+			) VALUES (
+				?SC_SNO,
+				?SC_LCLF_CD,
+				?SC_SCLF_CD,
+				?QST_CD,
+				?CNTR_CD,
+				?SCRIPT_SENT_ID,
+				?QST_CDNM,
+				?QST_KIND_CD,
+				?SCRIPT_SENT,
+				?SCRIPT_TA_SENT,
+				?QST_RATE,
+				CASE WHEN LEN(?QST_KEYWORD) = 0 THEN NULL ELSE ?QST_KEYWORD END,
+				?EXCEPT_YN,
+				?DEL_YN,
+				CASE WHEN LEN(?DEL_DATE) = 0 THEN NULL ELSE ?DEL_DATE END,
+				?REG_ID,
+				?REG_DATE,
+				'MSA040T2',
+				?CHG_DATE,
+				?SORTKEY
+			)
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getRemainMNGCnt.sel" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>해당 기간 내에 운영 mng 건수 조회</description>
+		<result-name>DS_REM_MNG_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			from ms_script_mng WITH(NOLOCK)
+			WHERE CHG_DATE BETWEEN ?SDATE AND ?EDATE
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getRemainSENTCnt.sel" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>해당 기간 내에 운영 sent 건수 조회</description>
+		<result-name>DS_REM_SENT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			from ms_script_sent A WITH(NOLOCK), ms_script_mng B with(nolock)
+			WHERE A.SC_SNO = B.SC_SNO
+			AND A.SC_LCLF_CD = B.SC_LCLF_CD
+			AND A.SC_SCLF_CD = B.SC_SCLF_CD
+			AND A.QST_CD = B.QST_CD
+			AND A.CNTR_CD = B.CNTR_CD
+			WHERE B.CHG_DATE BETWEEN ?SDATE AND ?EDATE
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getDelUatDataMngCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>TM에서 삭제된 데이터 UAT로부터 MNG COUNT GET</description>
+		<result-name>DS_DEL_UAT_CNT_1</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_mng A  WITH(NOLOCK)
+			WHERE A.DEL_DATE BETWEEN ?sdate AND ?edate 
+			AND DEL_YN = 'Y'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getDelUatDataSentCnt.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>TM에서 삭제된 데이터 UAT로부터 SENT COUNT GET</description>
+		<result-name>DS_DEL_UAT_CNT_2</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_sent A  WITH(NOLOCK)
+			WHERE A.DEL_DATE BETWEEN ?sdate AND ?edate 
+			AND DEL_YN = 'Y'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa040T2.getDelProdDataMngCnt.sel" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>TM에서 삭제된 데이터 PROD로부터 COUNT GET</description>
+		<result-name>DS_DEL_PROD_CNT_1</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_mng A  WITH(NOLOCK)
+			WHERE A.DEL_DATE BETWEEN ?sdate AND ?edate 
+			AND DEL_YN = 'Y'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name="msa.msa040T2.getDelProdDataSentCnt.sel" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>TM에서 삭제된 데이터 PROD로부터 COUNT GET</description>
+		<result-name>DS_DEL_PROD_CNT_2</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			FROM  ms_script_sent A  WITH(NOLOCK)
+			WHERE A.DEL_DATE BETWEEN ?sdate AND ?edate 
+			AND DEL_YN = 'Y'
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name='msa.msa040T2.delynupdatewebaction_1' datasource='is_stat_uat' type='prepared'>
+		<description>시간대별 건수 정보 조회</description>
+		<result-name>msa.msa040T2.delynupdatewebaction_1</result-name>
+		<query><![CDATA[
+			
+				SELECT 
+			       SUBSTRING(DEL_DATE, 0, 13) AS DEL_DT
+			       , COUNT(1) AS CNT
+			FROM TB_SC_QST_MNG M 								
+			WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE
+			AND DEL_YN = 'Y'
+			GROUP BY SUBSTRING(DEL_DATE, 0, 13)
+			ORDER BY SUBSTRING(DEL_DATE, 0, 13)
+
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T2.delynupdatewebaction_2' datasource='is_stat_uat' type='prepared'>
+		<description>DELETE 정보 시간대별 정보 조회</description>
+		<result-name>msa.msa040T2.delynupdatewebaction_2</result-name>
+		<query><![CDATA[
+			
+			SELECT 
+				  	SC_SNO
+				 	,SC_LCLF_CD
+				 	,SC_SCLF_CD
+			     	,QST_CD
+					,CNTR_CD
+					,DEL_DATE
+			FROM TB_SC_QST_MNG M							
+			WHERE SUBSTRING(DEL_DATE, 0, 13) = SUBSTRING(?DEL_DT,0,13)
+			AND DEL_YN = 'Y'
+		 	ORDER BY CNTR_CD, QST_CD
+		 	OFFSET  CONVERT(INT,?FROM_RNUM)-1 ROWS
+			FETCH NEXT CONVERT(INT,?_PAGESIZE) ROWS ONLY
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T2.delynupdatewebaction_3' datasource='is_stat_prod' type='prepared' batch='true'>
+		<description>DELETE 된 이력 저장</description>
+		<batch-name>TB_SC_QST_DEL_MNG</batch-name>
+		<query><![CDATA[
+				BEGIN TRANSACTION;		
+				UPDATE ms_script_mng SET DEL_YN = 'Y', DEL_DATE = ?DEL_DATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				
+				UPDATE ms_script_sent SET DEL_YN = 'Y', DEL_DATE = ?DEL_DATE
+				WHERE SC_SNO = ?SC_SNO AND SC_LCLF_CD = ?SC_LCLF_CD AND SC_SCLF_CD = ?SC_SCLF_CD AND QST_CD = ?QST_CD AND CNTR_CD = ?CNTR_CD
+				COMMIT;
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msa.msa040T2.delynupdatewebaction_5' datasource='is_stat_prod' type='prepared'>
+		<description>DELETE 이력 초기화</description>
+		<query><![CDATA[
+				BEGIN TRANSACTION;		
+				UPDATE ms_script_mng SET DEL_YN = 'N', DEL_DATE = NULL
+				WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE AND DEL_YN = 'Y'
+				
+				UPDATE ms_script_sent SET DEL_YN = 'N', DEL_DATE = NULL
+				WHERE DEL_DATE BETWEEN ?SDATE AND ?EDATE AND DEL_YN = 'Y'
+				COMMIT;
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa050.getDmbo.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>담보코드 조회</description>
+		<result-name>DS_DMBO</result-name>
+		<query><![CDATA[
+			SELECT PROD_CD, DMBO_CD, DMBO_NM
+			FROM ms_dmbo
+			WHERE USE_YN = 'Y'
+			ORDER BY PROD_CD, DMBO_CD
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa050.getDmboList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>필수멘트 및 담보 리스트 조회</description>
+		<result-name>DS_DMBO_LIST</result-name>
+		<query><![CDATA[
+			SELECT A.PROD_CD, 
+				   (SELECT PROD_NM FROM ms_product WHERE PROD_CD = A.PROD_CD)+' ('+A.PROD_CD+')' AS PROD_NM,
+				   A.DMBO_CD, 
+				   A.DMBO_NM+' ('+A.DMBO_CD+')' AS DMBO_NM,
+				   CASE WHEN LEN(B.CHG_ID) > 0 THEN CONCAT((ISNULL((SELECT USER_NAME FROM ms_usermaster WHERE USER_ID = B.CHG_ID),'')), '(' ,ISNULL(B.CHG_ID, ''), ')')
+						ELSE '' END AS CHG_ID,
+				   ISNULL(B.CHG_DATE, '') AS CHG_DATE
+			FROM ms_dmbo A WITH(NOLOCK) 
+			LEFT OUTER JOIN 
+				 (SELECT PROD_CD
+					   , DMBO_CD
+					   , (SELECT TOP(1) CHG_ID FROM ms_ment_mng WITH(NOLOCK) WHERE PROD_CD = B.PROD_CD AND DMBO_CD = B.DMBO_CD AND CHG_DATE = MAX(B.CHG_DATE)) AS CHG_ID,
+						 MAX(CHG_DATE) AS CHG_DATE 
+				  FROM MS_MENT_MNG B WITH(NOLOCK) 
+				  GROUP BY PROD_CD, DMBO_CD )  B
+			ON A.PROD_CD = B.PROD_CD
+			AND A.DMBO_CD = B.DMBO_CD
+			WHERE A.USE_YN = 'Y'
+			?prod_cd
+			?dmbo_cd
+			ORDER BY PROD_CD, DMBO_CD
+		]]></query>
+		<parameter name='prod_cd' value="AND A.PROD_CD = ?prod_cd" default="" />
+		<parameter name='dmbo_cd' value="AND A.DMBO_CD = ?dmbo_cd" default="" />
+	</sql-service>
+	
+	<sql-service name="msa.msa050.getMentList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>등록된 필수멘트 정보 조회</description>
+		<result-name>DS_MENT_LIST</result-name>
+		<query><![CDATA[
+			SELECT PROD_CD,
+				  (SELECT PROD_NM FROM ms_product WITH(NOLOCK) WHERE PROD_CD = M.PROD_CD) AS PROD_NM,
+				   DMBO_CD,
+				  (SELECT DMBO_NM FROM ms_dmbo WITH(NOLOCK) WHERE PROD_CD = M.PROD_CD AND DMBO_CD = M.DMBO_CD ) AS DMBO_NM,
+				   MENT_CD,
+				   MENT_SENT,
+				   MENT_KEYWORD,
+				   USE_YN,
+				   CASE WHEN LEN(M.CHG_ID) > 0 THEN CONCAT((ISNULL((SELECT USER_NAME FROM ms_usermaster WHERE USER_ID = M.CHG_ID),'')), '(' ,ISNULL(M.CHG_ID, ''), ')')
+						ELSE '' END AS CHG_ID,
+				   CHG_DATE,
+				   CASE WHEN LEN(M.REG_ID) > 0 THEN CONCAT((ISNULL((SELECT USER_NAME FROM ms_usermaster WHERE USER_ID = M.REG_ID),'')), '(' ,ISNULL(M.REG_ID, ''), ')')
+						ELSE '' END AS REG_ID,
+				   REG_DATE
+			FROM ms_ment_mng M WITH(NOLOCK)
+			WHERE 1=1
+			?prod_cd
+			?dmbo_cd
+			ORDER BY USE_YN DESC, CONVERT(INT, MENT_CD) ASC
+		]]></query>
+		<parameter name='prod_cd' value="AND M.PROD_CD = ?prod_cd" default="" />
+		<parameter name='dmbo_cd' value="AND M.DMBO_CD = ?dmbo_cd" default="" />
+	</sql-service>
+	
+	<sql-service name="msa.msa050.setMentList.upd" datasource='is_stat' type='prepared' batch='true'>
+		<description>VRS관리 리스트 수정</description>
+		<batch-name>DS_MENT_INFO</batch-name>
+		<query><![CDATA[
+					UPDATE ms_ment_mng 
+					SET 
+						MENT_SENT = ?MENT_SENT,
+						USE_YN = ?USE_YN,
+						CHG_ID = ?CHG_ID,
+						CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+					WHERE PROD_CD = ?PROD_CD
+					AND DMBO_CD = ?DMBO_CD
+					AND MENT_CD = ?MENT_CD
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa050.setMentList.del" datasource='is_stat' type='prepared' batch='false'>
+		<description>VRS관리 리스트 등록</description>
+		<query><![CDATA[
+					DELETE FROM ms_ment_mng
+					WHERE PROD_CD = ?PROD_CD
+					AND DMBO_CD = ?DMBO_CD
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa050.setMentList.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>VRS관리 리스트 등록</description>
+		<batch-name>DS_MENT_LIST</batch-name>
+		<query><![CDATA[
+					INSERT INTO ms_ment_mng(
+						PROD_CD
+					   ,DMBO_CD
+					   ,MENT_CD
+					   ,MENT_SENT
+					   ,MENT_KEYWORD
+					   ,USE_YN
+					   ,REG_ID
+					   ,REG_DATE
+					   ,CHG_ID
+					   ,CHG_DATE
+					  )
+					VALUES ( 
+						?PROD_CD
+					   ,?DMBO_CD
+					   ,(SELECT CASE WHEN MAX(MENT_CD) IS NULL THEN 10000 ELSE MAX(MENT_CD)+1 END FROM ms_ment_mng)
+					   ,?MENT_SENT
+					   ,CASE WHEN LEN(?MENT_KEYWORD) = 0 THEN NULL ELSE ?MENT_KEYWORD END
+					   ,?USE_YN
+					   ,?REG_ID
+					   ,format(GETDATE(),'yyyyMMddHHmmss')
+					   ,?CHG_ID
+					   ,format(GETDATE(),'yyyyMMddHHmmss')
+					);
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa050.setMentList.one.del" datasource='is_stat' type='prepared' batch='false'>
+		<description>담보별 필수멘트 삭제</description>
+		<query><![CDATA[
+					DELETE FROM MS_MENT_MNG
+					WHERE PROD_CD = ?PROD_CD
+					AND DMBO_CD = ?DMBO_CD
+					AND MENT_CD =?MENT_CD
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa060T1.getUatMentCount.sel" datasource="is_stat_uat" paging="false" type="prepared">
+		<description>업데이트 할 데이터 UAT로부터 COUNT GET</description>
+		<result-name>DS_UAT_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			from ms_ment_mng WITH(NOLOCK)
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="msa.msa060T1.getProdMentCount.sel" datasource="is_stat_prod" paging="false" type="prepared">
+		<description>업데이트 할 데이터 PROD로부터 COUNT GET</description>
+		<result-name>DS_PROD_CNT</result-name>
+		<query><![CDATA[
+			SELECT COUNT(1) CNT
+			from ms_ment_mng WITH(NOLOCK)
+		]]></query>
+	</sql-service> 
+</query-collection>

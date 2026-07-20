@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style>
+		html {
+			overflow:hidden;
+			resize: both;
+			height: 100%;
+		}
+		body {
+			background: #434343;
+			color: #fafafa;
+			font-family: 'Dotum','돋움', "NanumBarunGothic", Helvetica, Arial, sans-serif;
+			font-size: 13px;
+			overflow: hidden;
+			height: 100%;
+			width: 100%;
+			margin: 0 auto;
+		}
+		#container {
+			margin: 10px;
+			height: 90%;
+		}
+		#summary{
+			overflow: auto;
+			height: 89%;
+		}
+
+		#container .title { display: inline-block;}
+
+
+		#container .title  .btn_tuning2 { margin-left: 10px; float: right;}
+		.btn_tuning2{cursor: pointer;}
+    </style>
+	<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+	<script type='text/javascript' src='../js/servicemanager.js'></script>
+</head>
+
+<body onLoad="calling()">
+
+	<div id="container">
+		<div id="title" class="title">
+			<font size="2" color="#4cc8e9">[ 스크립트 메모 ]</font><br><br>
+		</div>
+			<div id="memo"></div>
+			<div style="font-size:10px;text-align:right"><span id="user_nm"></span><span style="" id="date"></span></div>
+
+	</div>
+
+
+	<script>
+		var xhr = new XMLHttpRequest();
+	 	function calling(){
+	 		//constContext(); //브라우저 우측 메뉴 막아.
+			document.body.oncontextmenu = function(){return false;};
+	 		var host = parent.host;
+    		var ced_no =  parent.meta.ced_no;
+    		alert(ced_no);
+
+    		xhr.onreadystatechange = loader;
+    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=script_memo&ced_no="+ ced_no),false);
+    		xhr.send(null);
+
+    		//grade부분
+    		/* var user_grade = parent.user_grade;
+   			if(user_grade == 'Y'){
+				var img = document.createElement('img');
+				img.src = "../images/icon_typelist.png";
+				img.className = "btn_tuning2";
+				img.onclick = function() { parent.openTunning('04'); };
+				img.alt="tuning";
+				document.getElementById("title").appendChild(img);
+			} */
+	 	}
+
+	 	function loader(){
+   			if(xhr.readyState == 4 && xhr.status == 200) {
+	        	result = JSON.parse(xhr.responseText);
+	        	var data = result;
+   				var user_nm = data.USER_NM;
+   				var memo =  data.MEMO;
+   				var date = data.ALTR_DT;
+
+   				user_nm = user_nm == "" ? user_nm : ""+user_nm+" / " ;
+   				date = date == "" ? date : ""+date;
+
+   				var tmp = memo.replace(/\\\\n/g, '<br \/>');
+	        	document.getElementById("memo").innerHTML = tmp;
+	        	document.getElementById("user_nm").innerHTML = user_nm;
+	        	document.getElementById("date").innerHTML = date;
+	        }
+	   	}
+    </script>
+</body>
+
+</html>

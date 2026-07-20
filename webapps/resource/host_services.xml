@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='euc-kr' ?>
+<host-services>
+	<definition-directory dir='packet' description='Packet정의xml파일' />
+	<service-module name='HANSOL-NGF'>
+		<description>IP CM의 관리자 데이터 통신 서비스</description>
+		<service-type>string packet</service-type>
+		<service-class>hansol.host.adapter.PBXSocketHostService</service-class>
+		<resource key='server' id='10.1.15.130:9201' description='IS-CM 서버' />
+		<header />
+	</service-module>
+	
+	<service-module name='HANSOL-MS'>
+		<description>IS-CM의 MEDIA SERVER</description>
+		<service-type>string packet</service-type>
+		<service-class>hansol.host.adapter.PBXSocketHostService</service-class>
+		<resource key='media_server' id='10.1.15.133:9201' description='IS-CM MEDIA 서버' />
+		<header />
+	</service-module>
+	
+	<service-module name='HANSOL-RM'>
+		<description>IS-RM과 통신</description>
+		<service-type>string packet</service-type>
+		<service-class>hansol.host.adapter.RMSocketHostService</service-class>
+		<header />
+	</service-module>
+</host-services>

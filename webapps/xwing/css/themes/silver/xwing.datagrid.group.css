@@ -1,0 +1,32 @@
+.xw-datagrid-body-group{
+	border-right : 1px solid #d2d2d2 !important;
+}
+.xw-datagrid-body-group td{
+	border-right : 0px !important;
+}
+.xw-datagrid-group-step {
+	height : 20px;
+	border-bottom : 0px !important;
+	border-right : 0px !important;
+}
+.xw-datagrid-group-expand {
+	background-image : url(img/group-expand.png);
+}
+.xw-datagrid-group-collapse {
+	background-image : url(img/group-collapse.png);
+}
+.xw-datagrid-group-text {
+	background-repeat : no-repeat;
+	background-position-y : center;
+	background-position-x : 5px;
+	width : 100%;
+	position : relative;
+	height : 20px;
+	padding-left : 20px;
+	line-height : 20px;
+	border-bottom : 1px solid #d2d2d2;
+	/* border-right : 1px solid #d2d2d2; */
+}
+.xw-datagrid-group-disabled{
+	display : none;
+}

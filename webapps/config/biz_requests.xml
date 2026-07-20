@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<biz-request-config>
+
+	<biz-request name="sqlService">
+		<action-class>com.locus.jedi.service.bizaction.SQLServiceBizAction</action-class>
+	</biz-request>
+
+	<biz-request name="hostService">
+		<action-class>com.locus.jedi.service.bizaction.HostServiceBizAction</action-class>
+	</biz-request>
+
+	<biz-request name="sample.award">
+		<action-class>sample.jedi.jsp.action.AwardBizAction</action-class>
+	</biz-request>
+
+
+</biz-request-config>

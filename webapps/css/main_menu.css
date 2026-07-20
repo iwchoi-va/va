@@ -1,0 +1,29 @@
+﻿
+@CHARSET "UTF-8";
+.xw-page{background:none !important;}
+#pnl_snb{display:none;}
+#pnl_allmenu{position: relative;
+   -webkit-transition: all 0.3s ease-in-out;
+   -moz-transition: all 0.3s ease-in-out;
+   -o-transition: all 0.3s ease-in-out;
+   -ms-transition: all 0.3s ease-in-out;
+   transition: all 0.3s ease-in;}
+#pnl_mask_bg .xw-dialog-iframe{
+	overflow:auto;
+	height:100%;
+	scrollbar-highlight-color: #FFF; 
+	 scrollbar-darkshadow-color: #FFF; 
+	 scrollbar-face-color: #FFF; 
+	 scrollbar-arrow-color: #CCC; 
+	 scrollbar-track-color: #FFF; 
+	 scrollbar-shadow-color: #FFF;
+	 scrollbar-3dlight-color: #CCC;
+}
+
+/* 왼쪽메뉴글자 */
+#pnl_mask_bg div.xw-label{-webkit-transition: background 0.3s;cursor: pointer;
+	-moz-transition: background 0.3s;
+	transition: background 0.3s;
+	background: url(../images/icon_lnb.png)-10px 10px no-repeat;
+	}
+#pnl_mask_bg div.xw-label:hover{background: rgba(0,0,0,0.2) url(../images/icon_lnb.png)10px no-repeat;}

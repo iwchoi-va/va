@@ -1,0 +1,19 @@
+소스 스캔시 지우는 파일
+webapps에 config,resource,src 넣음
+삭제
+-images
+-css
+-js/jqgird
+-font
+-temp
+-uploadFiles
+-xwing
+-PLY_IE/css
+-PLY_IE/images
+-player_html5/memo
+-player_html5/css
+-player_html5/images
+-src/telecaps
+-src/com/jcraft
+-WEB-INF/classes/com/jcraft
+-WEB-INF/classes/telecaps

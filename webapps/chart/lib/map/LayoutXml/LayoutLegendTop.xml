@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart horizontalAlign="center">
+<!--
+direction 범례의 방향을 정합니다 (horizontal,vertical 택일, 기본 vertical)
+labelPlacement 범례에서 색을 나타내는 도형을 기준으로 텍스트 글자의 구체적인 위치 (right, left, top, bottom중 택일, 기본 right)
+backgorundColor 배경색
+borderStyle 테두리의 형태 (none,solid,inset,outset중 택일, 기본 none)
+borderColor 테두리 색
+color 텍스트의 기본 컬러
+disabledColor disabled된 텍스트의 컬러
+fontWeight 폰트 bold 지정 (bold,normal중 택일, 기본 normal)
+fontStyle 폰트 italic 지정 (italic,normal중 택일, 기본 normal)
+fontFamily 폰트 지정
+fontSize 폰트크기 지정(단위:pixel)
+textDecoration 폰트 underline 지정 (underline,none중 택일, 기본 none)
+useVisibleCheck 범례 옆에 체크박스를 표시합니다 (true,false중 택일, 기본 false)
+paddingLeft 왼쪽 여백 (기본값 5)
+paddingRight 왼쪽 여백 (기본값 5)
+paddingTop 왼쪽 여백 (기본값 5)
+paddingBottom 왼쪽 여백 (기본값 5)
+verticalGap 범례 아이템들의 세로 간격 사이 여백을 나타냅니다 (기본값 7)
+horizontalGap 범례 아이템들의 가로 간격 사이 여백을 나타냅니다 (기본값 8)
+-->
+	<Legend dataProvider="{mainMap}" useVisibleCheck="true" position="top" horizontalGap="3" direction="horizontal" borderStyle="solid" borderColor="0x999999"/>
+	<MapChart id="mainMap" drillDownEnabled="false" showDataTips="true">
+		<series>
+			<MapSeries id="mapseries" interactive="false">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+			<MapPlotSeries id="plot1" areaCodeField="branchCode" labelField="branchName" horizontalCenterGapField="h" verticalCenterGapField="v" adjustedRadius="5" fill="#00ff00"
+				labelPositionField="lapos" color="0xFFFFFF" fontWeight="bold" labelPosition="bottom" displayName="지점">
+				<labelFilters>
+					<GlowFilter blurX="5" blurY="5" color="0x111111"/>
+				</labelFilters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+			</MapPlotSeries>
+			<MapPlotSeries id="plot2" areaCodeField="factoryCode" labelField="factoryName" horizontalCenterGapField="h" verticalCenterGapField="v" adjustedRadius="5" fill="#00aaff"
+				labelPositionField="lapos" color="0xDDAAAA" fontWeight="bold" labelPosition="bottom" itemRenderer="TriangleItemRenderer" displayName="공장">
+				<labelFilters>
+					<GlowFilter blurX="5" blurY="5" color="0x111111"/>
+				</labelFilters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+			</MapPlotSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

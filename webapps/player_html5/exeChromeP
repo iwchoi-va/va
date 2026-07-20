@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+    
+    <script>
+    	
+    	var strURL = "http://102.90.1.176:8090/MSENS/common/recplayer_pop.xhtml";
+    	var xhr = new XMLHttpRequest();
+    	//var v_contact_id = '574560297', v_start_time='20160201091913';//parameter
+    	//var v_contact_id = '576560386', v_start_time='20160325110332';
+    	//var v_contact_id = '576561819', v_start_time='20160325111043';
+    	//var v_contact_id = '576561588', v_start_time='20160325110924';
+    	//var v_contact_id = '576560693', v_start_time='20160325110503';
+    	var v_contact_id = '576560336', v_start_time='20160325110314';
+    	
+	    window.onload = function(){
+	    	var WshShell = new ActiveXObject('WScript.Shell');
+	    	var strPFPATH = WshShell.ExpandEnvironmentStrings('%ProgramFiles%');
+	    	
+	    	var strChrome = strPFPATH + '/Google/Chrome/Application/chrome.exe';
+	    	var FSO=new ActiveXObject('Scripting.FileSystemObject');
+	    	if(FSO.FileExists(strChrome)){
+	    		var v_url = strURL + "?contact_id=" + v_contact_id + "&start_time=" + v_start_time;
+	    		try{
+	    			WshShell.Run('"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Chrome\\Chrome.lnk "' + v_url, 0, false);
+	    		}catch(e){
+	    			WshShell.Run('"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Chrome.lnk "' + v_url, 0, false);
+	    		}
+	    		window.open('about:blank','_self').self.close();
+	    		
+	    	}else {
+	    		//기존 플레이어 호출
+	    	}
+	    }
+    </script>
+    
+</body>
+</html>

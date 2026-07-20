@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-config>
+	<request name="bis.bis030t1.getOmitScript.sel" login="true">
+		<description>VRS누락항목결과 조회</description>
+		<action-class>sens.src.script.OmitScriptResWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis030t1.getOmitBycedno.sel" login="true">
+		<description>VRS누락항목결과 설계번호별조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis030t1.getUser.sel" login="true">
+		<description>클릭된 조직의 상담사 조회하기</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis010t1.getFocusScript.sel" login="true">
+		<description>집중관리항목 결과 조회</description>
+		<action-class>sens.src.script.FocusScriptResWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis020t1.getSecretScript.sel" login="true">
+		<description>개인정보항목 결과 조회</description>
+		<action-class>sens.src.script.SecretScriptResWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis020p1.getSentlist.sel" login="true">
+		<description>개인정보항목 결과의 문장 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis060.sel" login="true">
+		<description>VA진행현황 SQL</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis040.sel" login="true">
+		<description>조직별통합통계 SQL</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="bis.bis050.sel" login="true">
+		<description>상품별통합통계 SQL</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="bis.bis070.sel" login="true">
+		<description>근속년수별통계 SQL</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="bis.bis080.sel" login="true">
+		<description>QC통계 SQL</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="bis.bis090.sel" login="true">
+		<description>분당발화문자 평균건수</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="bis.bis100.sel" login="true">
+		<description>QC업무통계</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+</request-config>

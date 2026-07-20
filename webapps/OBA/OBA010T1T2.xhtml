@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba010.sel.do";
+var ced_no="", browser="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		ced_no= parent.ced_no;
+
+		getInfo();
+		
+}
+
+function getInfo(){
+	var opt = {
+			reqId: "getInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t2.getInsuPlanMast.sel,oba.oba010t2.getInsuPlanDtl.sel', 
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getInfo":
+			$DS_MAST.setData(res.DS_MAST.column, res.DS_MAST.record);
+			$DS_DETAIL.setData(res.DS_DETAIL.column, res.DS_DETAIL.record);
+			
+			fnOpenPop();
+			
+			break;
+		default: break;	
+	}
+}
+
+
+
+function fnOpenPop(){
+	 /*
+	 알릴사항(AGQTP079) 화면(기간계) 호출시 입력 파라미터
+	 prsScreenType  설계(QT), 계약상세(IE)
+	 prsPolicyNumber  증권번호
+	 prsPlanNumber  설계번호
+	 prsProductCode  상품코드
+	 prsSaleClerkNo  판매사원번호(취급자-사용인이 있을경우 사용인)
+	 proInsuredList  피보험자식별정보리스트
+	 prsPlanCls   신계약(1), 배서(2)
+	 prsBaseDate   기준일자
+	 prsSubscriptionDate 청약일자
+	 channelCls   채널구분
+	 */
+	var sPrsScreenType;
+	var sPrsSearchVal;
+	var sPrsProductCode;
+	var sPrsSaleClerkNo
+	var sProInsuredList;
+	var sPrsBaseDate;
+	var sPrsSubscriptionDate;
+	
+	sPrsProductCode = $DS_MAST.getValue(0, "CON_I_KIND_CD"); //상품코드
+	
+	if(!g_isEmpty($DS_MAST.getValue(0, "CON_CAMP_CD"))){
+		sPrsSaleClerkNo = $DS_MAST.getValue(0, "CON_CAMP_CD");
+	} else {
+		sPrsSaleClerkNo = $DS_MAST.getValue(0, "CON_TREATY_CD");
+	}
+	
+	if(!g_isEmpty($DS_MAST.getValue(0, "CON_CAMP_CD"))){
+		sPrsSaleClerkNo = $DS_MAST.getValue(0, "CON_CAMP_CD");
+	} else {
+		sPrsSaleClerkNo = $DS_MAST.getValue(0, "CON_TREATY_CD");
+	}
+
+	 var sProInsuredList   = "";                 //피보험자식별정보리스트
+	 var sPrsBaseDate   = getNow().substring(0,8); //"20190401"; //p_cur_date;               //기준일자
+	 var sPrsSubscriptionDate = g_nvl($DS_MAST.getValue(0, "CON_APP_DATE"),""); //청약일자
+
+	 if(!g_isEmpty($DS_MAST.getValue(0, "CON_POL_NO"))){
+	  sPrsScreenType = "TM";
+	  sPrsSearchVal = $DS_MAST.getValue(0, "CON_POL_NO");
+	 }else{
+	  sPrsScreenType = "QT";
+	  sPrsSearchVal = $DS_MAST.getValue(0, "CON_ENT_DGN_NO");
+	}
+		 
+	for(var i = 0 ; i < $DS_DETAIL.size() ; i++){
+		
+		var strRowData = "";
+	    //var nRelRow = ds_rel.findRow("CODE", ds_insu_plan_detail.getColumn(i, "CON_IP_MAJ_REL_CD"));
+
+	    strRowData += $DS_DETAIL.getValue(i, "CON_IP_INS_AIM_SEQ");  //목적물순번
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_INS_CUST_NO"); //피보험자ID
+	    //strRowData += "^" + ds_rel.getColumn(nRelRow, "CODENAME");     //주피관계명
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_MAJ_REL_CD"); //주피관계명
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_ISD_CD");  //주민번호
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_ISD_NAME"); //성명
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_JOB_CD");  //직업코드
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_JOB_NAME"); //직업명
+	    strRowData += "^" + $DS_DETAIL.getValue(i, "CON_IP_VERSION");  //목적물버전
+
+	    if(i > 0){
+		    sProInsuredList += ",";
+		}
+		   sProInsuredList += strRowData;
+	}
+	
+	 var param = 'prsScreenType:'+sPrsScreenType+
+	'|prsPolicyNumber:'+sPrsSearchVal+
+	'|prsPlanNumber:'+sPrsSearchVal+
+	'|prsProductCode:'+sPrsProductCode+
+	'|prsSaleClerkNo:'+sPrsSaleClerkNo+
+     '|proInsuredList:'+sProInsuredList+
+     '|prsPlanCls:1'+
+     '|prsBaseDate:'+sPrsBaseDate+
+     '|prsSubscriptionDate:'+sPrsSubscriptionDate+
+     '|channelCls:TM';
+
+	var url = getWebServiceURL();
+	var data ='?platformType=1'
+	    +'&screenType=P'
+	    +'&returnUrl='
+	    +'&groupId='+'AG.QT'
+	    +'&menuId='+'AGQTP079'
+	    +'&menunm='+ encodeURI('알릴사항')
+	    +'&delimiter='+'|'
+	    +'&param='+encodeURI(param)
+	    +'&paramDst='+''
+	    +'&iWidth='+'1050'
+	    +'&iHeight='+'835';
+	//alert(url);
+	//console.log(data);
+	window.open(url+data, "_blank", "width=1050, height=835, left=100, top=10, location=no,resizable=no, scrollbars=no");
+}
+
+function getWebServiceURL(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "http://corecmdev.aig.co.kr/jsp/connect_channel.jsp";
+	}else if(hostname[0] == "vauat"){
+		url = "http://corecmuat.aig.co.kr/jsp/connect_channel.jsp";
+	}else if(hostname[0] == "va"){
+		url = "http://corecm.aig.co.kr/jsp/connect_channel.jsp";
+	}else{//로컬도 개발url로.
+		//url = "http://corecmdev.aig.co.kr/jsp/connect_channel.jsp";
+		url = "http://corecmuat.aig.co.kr/jsp/connect_channel.jsp";
+	}
+	
+	return url;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_MAST"></xwing:dataset>
+	<xwing:dataset id="DS_DETAIL"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="false">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="400" anchor="all" bgcolor="#eee" scroll="false">
+			<xwing:panel id="pan_base_info" left="0" top="-5" scroll="false" width="769" height="400" anchor="all">
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

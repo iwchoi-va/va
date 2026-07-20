@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9"/>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+	<link href="data:image/gif;" rel="icon" type="image/x-icon" />
+    <link rel="shortcut icon" href="../msens_icon.ico" />
+    <link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+	<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+	<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+	<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+/* **********************************************************
+ *  Page 로드 시 처음 호출되는 함수  
+ *************************************************************/
+function page_load(event) {
+	
+	XwingObject();
+	getHistory();
+}
+
+/* ***********************************************************
+ * 	grade history 가져오는 함수
+ *************************************************************/
+function getHistory(){
+	
+	var param = {
+			_sqlName: "anl.gradeManagement.history.sel"
+		};
+	
+	var opt = {
+			reqId : 'getHistory',
+			url : 'service::sqlservice.do',
+			param : param,
+			indicator : null,
+			showError : true
+		};
+	Xwing.request(opt, callback);		
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getHistory" :
+			$DS_HISTORY.clearData();
+			$DS_HISTORY.setData(res.DS_LIST.column, res.DS_LIST.record);
+		break;
+		
+	}
+}
+
+/* ***********************************************************
+ * 	최근 키워드 정보 가져오는  함수 (from MindsLab DB)
+ *************************************************************/
+function getKeyword(exKeys){
+	var opt = {
+			reqId: "sch_keyword_data",
+			url: "service::anl.anl100m.getKeywordData.do",
+			param: {
+				_sqlName:'msa.msa020.getRecomKey.sel',
+				channel: 1,
+				sdate: parent.$src_sdate.getValue(),
+				edate: parent.$src_edate.getValue(),
+				limit: 5,
+				keyword : exKeys
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);	
+}
+
+/* **********************************************************
+ *  키워드 더블클릭시 선택해주는 함수  
+ *************************************************************/
+function grd_list_dblclick(event) {
+	var v_row_idx = $grd_list.getSelection();
+	parent.setKeyword($DS_KEYWORDS.getValue(v_row_idx,"COL"));
+	
+	Xwing.parent.Xwing.getDialog('recomList').close();
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_HISTORY">
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_STD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_STD"></xwing:dataset-column>
+		<xwing:dataset-column id="COND1"></xwing:dataset-column>
+		<xwing:dataset-column id="COND1_STD"></xwing:dataset-column>
+		<xwing:dataset-column id="COND2"></xwing:dataset-column>
+		<xwing:dataset-column id="COND2_STD"></xwing:dataset-column>
+		<xwing:dataset-column id="COND3"></xwing:dataset-column>
+		<xwing:dataset-column id="COND3_STD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_EXCLUDE">
+		<xwing:dataset-column id="KEYWORD"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="Grade저장이력" width="800" height="425" scroll="false" left="24" load="page_load" top="24" unload="page_unload">
+		<xwing:label id="label_title" value="GRADE 저장 이력" left="20" top="20" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+		<xwing:datagrid id="grd_list" left="15" top="55" width="769" height="357" anchor="all" click="grd_list_click" binddataset="DS_HISTORY" rownum="true" dblclick="grd_list_dblclick" sortable="true" resizable="false">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="160"></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="등록일자" bindcolumn="REG_DATE"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="등록자" bindcolumn="USER_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="Grade"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="스크립트점수"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="스크립트기준"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="금칙어점수"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="금칙어기준"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="전월평가점수"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="전월평가점수기준"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="별도평가유형1"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="별도평가기준1"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="별도평가유형2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="별도평가기준2"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="REG_DATE" suppress="true" halign="center" mask="datetime"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="GRADE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SCRIPT_SCORE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SCRIPT_STD" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BAN_SCORE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BAN_STD" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BEF_SCORE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BEF_STD" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="COND1" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="COND1_STD"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="COND2" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="COND2_STD"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle1_0" value="Grade 저장이력" left="10" top="0" width="780" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+	</xwing:page>
+</body>
+</html>

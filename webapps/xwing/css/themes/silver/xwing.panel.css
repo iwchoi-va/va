@@ -1,0 +1,13 @@
+.xw-panel-shell {
+	padding: 0;
+	margin: 0;
+}
+
+.xw-container {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border: 0;
+	position: absolute;
+ 	border-color:#798da7;
+}

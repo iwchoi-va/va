@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<!-- <style>input{background:none !important;box-shadow:none !important;}</style> -->
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*///*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 전역변수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+
+var passwd = null;
+var response = null;
+var pass_user_id = "";
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 페이지 로드합수.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+var getParameter = function (param) {
+    var returnValue;
+    var url = location.href;
+    var parameters = (url.slice(url.indexOf('?') + 1, url.length)).split('&');
+    for (var i = 0; i < parameters.length; i++) {
+        var varName = parameters[i].split('=')[0];
+        if (varName.toUpperCase() == param.toUpperCase()) {
+            returnValue = parameters[i].split('=')[1];
+            return decodeURIComponent(returnValue);
+        }
+    }
+};
+
+function login_load(event) {
+	XwingObject();
+	$edt_id.setValue(g_isNull(localStorage.getItem('loginid'))?'':localStorage.getItem('loginid'));
+	$edt_id.getValue()==''?$edt_id.focus():$edt_passwd.focus();
+	
+	
+	if(getParameter("pass_yn") == "Y") {
+		var v_user_id = getParameter("user_id");
+		pass_user_id = v_user_id;
+		f_directLogin(v_user_id);
+	} /*else {
+		f_setPosition();
+		$edt_id.setValue(g_isNull(localStorage.getItem('loginid'))?'':localStorage.getItem('loginid'));
+		$edt_id.getValue()==''?$edt_id.focus():$edt_passwd.focus();
+		$edt_passwd.setValue("ckadltmf" + g_lpad(String(new Date().getDate()), "0", 2));
+	}*/
+}
+
+function f_directLogin(v_user_id) {
+	var param = {
+		userid : v_user_id,
+		password : "",
+		expired_yn : "Y",
+		pass_yn : "Y",
+		session_yn : "Y"
+	};
+	
+	var opt = {
+		reqId : "LOGIN",
+		url : "service::cs.com.login.do",
+		param : param
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 로그인 버튼 클릭.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_login_click(event) {
+	if($edt_id.getValue() == ""){
+		alert("사용자ID를 넣으세요.");
+		$edt_id.focus();
+		return;
+	} 
+	if($edt_passwd.getValue() == ""){
+		alert("비밀번호를 넣으세요.");
+		$edt_passwd.focus();
+		return;
+	} 
+	
+	var param = {
+		userid : $edt_id.getValue(),
+		password : hex_md5($edt_passwd.getValue()),
+		expired_yn : "Y",
+		pass_yn : "N",
+		session_yn : "N"
+	};
+	
+	var opt = {
+		reqId : "LOGIN",
+		url : "service::cs.com.login.do",
+		param : param
+	};
+	// alert(Xwing._getURL("service::cs.com.login.do"));
+	Xwing.request(opt, callback);
+}
+
+function login_session(e) {
+	if(e == false){
+		return;
+	}
+	
+	var param = {
+		userid : $edt_id.getValue(),
+		password : hex_md5($edt_passwd.getValue()),
+		expired_yn : "Y",
+		pass_yn : "N",
+		session_yn : "Y"
+	};
+		
+	var opt = {
+		reqId : "LOGIN",
+		url : "service::cs.com.login.do",
+		param : param
+	};
+		// alert(Xwing._getURL("service::cs.com.login.do"));
+	Xwing.request(opt, callback);
+	
+}
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 콜백함수.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		if(getParameter("pass_yn") == "Y") {
+			alert(res.ResultMessage);
+			window.close();
+			return;
+		} else {
+			if(res.ResultCode == "SESSION_CHECK") {
+				xwing.Dialog.confirm(res.ResultMessage, "로그인", login_session);
+				return;
+			} else if(res.ResultCode == "PasswordExpired") {
+				xwing.Dialog.confirm(res.ResultMessage + " 비밀번호를 변경하시겠습니까?", Xwing.getPage("login").getTitle(), f_changePw_Popup);
+				return;
+			} else {
+				xwing.Dialog.alert(res.ResultMessage);
+				return;
+			}
+		}
+	}
+
+	switch (reqId) {
+	case "LOGIN":
+		localStorage.setItem('loginid',$edt_id.getValue());
+		response = res;
+
+		var w = null;
+		if(window.innerWidth < 679) {
+			w = window.open("./main.xhtml", "M-SENS", "width=1296, height=959s, left=0, top=0, location=no, resizable=yes");
+		} else {
+			w = window.open("./main.xhtml", "M-SENS", "width=1280, height=920, left=0, top=0, location=no, resizable=yes");
+		}
+		
+		if (w == null) {
+			alert("팝업차단을 해제 후 로그인 해 주세요.");
+			return;
+		}
+		
+		//window.open("about:_blank", "_self").close();	//실제 사용시 주석 제거
+		self.opener = self;
+		window.close();
+		
+		break;
+	}
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 비밀번호 기간만료 변경 팝업.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_changePw_Popup(e) {
+	if(e == false){
+		return;
+	}
+	
+	var opt = {
+			modal: false
+			, resizable: false
+			, id : 'changePw'
+			, url : '../INF/INF010P2.xhtml'
+			, width : 350
+			, height : 170
+			, title : "비밀번호변경"
+			, param : {
+						user_id : $edt_id.getValue()
+						
+			}
+			, draggable:true
+		};
+
+	var dialog = new xwing.Dialog(opt);
+	dialog.open();	
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 아이디 에디트박스에서 엔터키 입력.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function edt_id_keydown(event) {
+	if (event.event.keyCode == 13) {
+		$edt_passwd.focus();
+		if ($edt_passwd.getValue()) {
+			btn_login_click();
+		}
+	}
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 패스워드 에디트박스에서 엔터키 입력.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function edt_passwd_keydown(event) {
+	if (event.event.keyCode == 13) {
+		btn_login_click();
+	}
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 페이지 리사이징시.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function login_resize(event) {
+	f_setPosition();
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 페이지 크기를 다시설정.
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_setPosition() {
+	$pnl_login.setLeft($login.getWidth() / 2 - $pnl_login.getWidth() / 2);
+}
+
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+// * 글로벌변수, 데이터셋 리턴
+// *〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getGlobal() {
+	return response;
+}
+/*]]>*/</script>
+<xwing:data></xwing:data>
+</head>
+<body>
+	<xwing:page id="login" title="M-SENS" width="679" height="447" scroll="false" load="login_load" resize="login_resize" left="24" top="24" bgimage="../images/bg_login_msens_aig.png" bgcolor="#ffffff">
+		<xwing:edit id="edt_id" left="230" top="192" width="230" height="32" keydown="edt_id_keydown" inputmode="none" borderwidth="1" fontcolor="#000000" bgcolor="#EAEAEA" bordercolor="#c2c2c2" bgimagealign="left center" textpadding="3 5 0 25" fontfamily="WallBoardFond"></xwing:edit>
+		<xwing:edit id="edt_passwd" left="230" top="227" width="230" height="32" mode="password" keydown="edt_passwd_keydown" inputmode="uppercase" borderwidth="1" fontcolor="#000000" bgcolor="#EAEAEA" bordercolor="#c2c2c2" textpadding="0 5 0 25" fontfamily="WallBoardFond"></xwing:edit>
+		<xwing:label id="btn_login" left="280" top="282" width="124" height="32" cursor="pointer" click="btn_login_click" bgcolor="#50c8e8" value="Log In" halign="center" fontfamily="NanumGothic" fontcolor="#ffffff" fontweight="bolder" fontsize="13"></xwing:label>
+		<xwing:label id="lbl_icon_id" left="236" top="201" width="20" height="18" bgimage="../images/icon_man.png" bgimagealign="center center"></xwing:label>
+		<xwing:label id="lbl_icon_pwd" left="236" top="233" width="20" height="18" bgimage="../images/icon_lock.png" bgimagealign="center center"></xwing:label>
+	</xwing:page>
+</body>
+</html>

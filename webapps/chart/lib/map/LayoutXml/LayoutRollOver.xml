@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="false">
+		<series>
+			<MapSeries id="mapseries">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+<!--
+롤오버시 표현된 색상을 rollOverFill, rollOverStroke에 넣어줍니다
+-->
+				<rollOverFill>
+					<LinearGradient angle="-45">
+						<entries>
+							<GradientEntry color="0xF3D3DB" ratio="0.0"/>
+							<GradientEntry color="0xB15C9B" ratio="0.5"/>
+							<GradientEntry color="0x6B6BB1"/>
+						</entries>
+					</LinearGradient>
+				</rollOverFill>
+				<rollOverStroke>
+					<Stroke color="0x444444" weight="0.25" alpha="0.25"/>
+				</rollOverStroke>
+
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

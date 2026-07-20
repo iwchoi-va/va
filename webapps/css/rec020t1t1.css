@@ -1,0 +1,68 @@
+@CHARSET "utf-8";
+
+	*{
+		font-family:'Dotum', '돋움','NanumBarunGothic','Malgun Gothic';
+	}
+	
+	/**테이블 동적으로 그리는 부분 ***/
+	#div_mrsls,#div_rec {
+		width : 100%;
+		/*overflow: auto;*/
+	}
+
+	
+	/*jqgrid 디자인 수정*/
+	#div_mrsls .ui-jqgrid tr.ui-row-ltr td {
+		/*white-space :  normal !important;*/
+		text-overflow : ellipsis;
+	}
+	
+	#div_rec .ui-jqgrid tr.ui-row-ltr td {
+		white-space :  pre-line !important;
+		
+	}
+	
+	#div_mrsls .ui-jqgrid tr.ui-row-ltr td{
+		white-space: nowrap !important;
+	}
+	
+	.ui-jqgrid-labels th {
+		background-color : #d0d8dd;
+		border-top: 1px solid #acacac !important;
+		border-right: 1px solid #acacac;
+    	border-bottom: 1px solid #acacac !important;
+    	color : #636363;
+	}
+	
+	.ui-jqgrid-labels th:FIRST-CHILD{
+		border-left: 1px solid #acacac !important;
+	}
+	
+	
+	.ui-jqgrid-btable tbody tr {
+		border : 1px solid #acacac;
+		cursor : pointer;
+	}
+	
+	.ui-jqgrid-btable tbody tr td:FIRST-CHILD{
+		border-left : 1px solid #acacac;
+	}
+
+	#div_mrsls .ui-state-highlight,
+	#div_rec .ui-state-highlight{
+		background-color : #E2ECF3 !important;
+	}
+	
+	.ui-jqgrid .ui-jqgrid-htable .ui-th-div,
+	.ui-jqgrid tr.ui-row-ltr td{
+		font-size : 11px;
+	}
+	
+	#div_mrsls .ui-jqgrid-sdiv table{
+		border-top : 1.5px solid #c5c5c5;
+		border-right : 1px solid #acacac;
+		border-left : 1px solid #acacac;
+		border-bottom : 1px solid #acacac;
+		background-color: #fdfae7;
+	}
+

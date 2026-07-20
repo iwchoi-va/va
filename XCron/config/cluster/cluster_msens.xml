@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<!--
+	Node 에 설정된 XCronServer 가 클러스터의 노드로 등록됩니다.
+	동일 네트웍에서의 클러스터는 Id 로 구분합니다.
+	IP Address 입력시 127.0.0.1 또는 localhost 가 아닌 IPv4 형식의 실제 IP Address 를 입력하세요.
+-->
+<ClusterConfig>
+	<Cluster Id="XCronClusterView">
+		<Node IpAddress="10.48.241.41" Port="7800"/>
+		<Node IpAddress="10.48.241.42" Port="7800"/>
+	</Cluster>
+</ClusterConfig>

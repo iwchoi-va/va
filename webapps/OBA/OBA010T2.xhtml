@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+
+<link href="data:image/gif;" rel="icon" type="image/x-icon" />
+<link rel="shortcut icon" href="../msens_icon.ico" />
+
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var dataset = [];
+var qst_cd = "", qst_cdnm="";
+var ban_cd= "", ban_keyword="";
+var ced_no = "";
+
+var v_url = "service::oba.oba010t2.getDetail.sel.do";
+
+function page_load(event) {
+	try{
+		XwingObject();
+		
+		ced_no = parent.ced_no;
+		getScriptRes();
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+
+/*
+ * 2018.12.18 수정항목
+ * 준수율 제거로 인한 쿼리 수정
+ * 쿼리명 : oba.oba010t2.getVrsRes.sel(이전 버전은 sql_oba.20181218로 백업 해둠) - 29 line
+ * */
+function getScriptRes(){
+	var opt = {
+			reqId: "getVrsRes",
+			url: v_url,
+			param: {
+				//_sqlName  : 'oba.oba010t2.getVrsRes.sel,oba.oba010t2.getBanRes.sel',
+				_sqlName  : 'oba.oba010t2.getVrsRes.sel',
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+function getChartData(){
+	var opt = {
+			reqId: "getChartData",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t2.getVrsRes.groupbyDate.sel',
+				//_sqlName  : 'oba.oba010t2.getVrsRes.groupbyDate.sel,oba.oba010t2.getBanRes.groupbyDate.sel',
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	/*
+	 * 2018.12.18 수정항목
+	 * 화면에서 준수율 제거하고, 미준수개수/전체문장개수 형태로 보여지도록 수정함 - 66~102 line
+	 * */
+	switch (reqId) {
+		case "getVrsRes":
+			$DS_SCRIPT_RES_COPY.setData(res.DS_SCRIPT_RES.column, res.DS_SCRIPT_RES.record);
+			//$DS_BAN_RES.setData(res.DS_BAN_RES.column, res.DS_BAN_RES.record);
+			
+			//console.log($DS_SCRIPT_RES_COPY);
+			for(var i = 0; i< $DS_SCRIPT_RES_COPY.size();i++){
+				var idx = $DS_SCRIPT_RES.indexOfRow("SCLF_CD",$DS_SCRIPT_RES_COPY.getValue(i,"SCLF_CD"));
+				if(idx == -1){
+					$DS_SCRIPT_RES.addRow();
+					$DS_SCRIPT_RES.setValue($DS_SCRIPT_RES.size()-1,"LCLF_CD",$DS_SCRIPT_RES_COPY.getValue(i,"LCLF_CD"));
+					$DS_SCRIPT_RES.setValue($DS_SCRIPT_RES.size()-1,"LCLF_NM",$DS_SCRIPT_RES_COPY.getValue(i,"LCLF_NM"));
+					$DS_SCRIPT_RES.setValue($DS_SCRIPT_RES.size()-1,"SCLF_CD",$DS_SCRIPT_RES_COPY.getValue(i,"SCLF_CD"));
+					$DS_SCRIPT_RES.setValue($DS_SCRIPT_RES.size()-1,"SCLF_NM",$DS_SCRIPT_RES_COPY.getValue(i,"SCLF_NM"));
+					idx =  $DS_SCRIPT_RES.size()-1;
+				}
+				
+				var insa_clcd = $DS_SCRIPT_RES_COPY.getValue(i,"CTRA_INSA_CLCD");
+				
+				switch(insa_clcd){
+					case "A" :
+					case "B" :
+					case "E" :
+						$DS_SCRIPT_RES.setValue(idx,"REGU_Y_CNT_1",$DS_SCRIPT_RES_COPY.getValue(i,"REGU_Y_CNT"));
+						$DS_SCRIPT_RES.setValue(idx,"REGU_SCORE_1",$DS_SCRIPT_RES_COPY.getValue(i,"AVG_SCORE"));
+						$DS_SCRIPT_RES.setValue(idx,"REGU_CLCD_1",insa_clcd);
+						//$DS_SCRIPT_RES.setValue(idx,"REGU_N_CNT_2","-");
+						
+						if($DS_SCRIPT_RES.getValue(idx,"REGU_Y_CNT_2") == '') $DS_SCRIPT_RES.setValue(idx,"REGU_Y_CNT_2","-");
+						if($DS_SCRIPT_RES.getValue(idx,"REGU_SCORE_2") == '') $DS_SCRIPT_RES.setValue(idx,"REGU_SCORE_2","-");
+						break;
+					case "C" :
+					case "D" :
+						//$DS_SCRIPT_RES.setValue(idx,"REGU_N_CNT_1","-");
+						$DS_SCRIPT_RES.setValue(idx,"REGU_Y_CNT_2",$DS_SCRIPT_RES_COPY.getValue(i,"REGU_Y_CNT"));
+						$DS_SCRIPT_RES.setValue(idx,"REGU_SCORE_2",$DS_SCRIPT_RES_COPY.getValue(i,"AVG_SCORE"));
+						$DS_SCRIPT_RES.setValue(idx,"REGU_CLCD_2",insa_clcd);
+						
+						if($DS_SCRIPT_RES.getValue(idx,"REGU_Y_CNT_1") == '') $DS_SCRIPT_RES.setValue(idx,"REGU_Y_CNT_1","-");
+						if($DS_SCRIPT_RES.getValue(idx,"REGU_SCORE_1") == '') $DS_SCRIPT_RES.setValue(idx,"REGU_SCORE_1","-");
+						break;
+				}
+				
+			}
+			//tab 이동시 이전 셀렉트 유지되게.
+			$grd_vrs_list.setSelection(parent.vrsRowNum);
+			//$grd_ban_list.setSelection(parent.banRowNum);
+			//getChartData();
+		break;
+		
+		case "getChartData":
+			$DS_UD_VRS.setData(res.DS_UD_VRS.column, res.DS_UD_VRS.record);
+			$DS_UD_BAN.setData(res.DS_UD_BAN.column, res.DS_UD_BAN.record); //ban쪽은 데이터가 없어도 모든 날짜데이터 가져옴
+			
+			for(var i=0; i<parent.$DS_UCID.size(); i++){
+				var date = parent.$DS_UCID.getValue(i,"UCID_DATE");
+				dataset.push(date);
+			}
+			
+//			for(var i =0; i< $DS_SCRIPT_RES.size();i++){
+//				var date = $DS_SCRIPT_RES.getValue(i, "DATE");
+//				var qst_cd = $DS_SCRIPT_RES.getValue(i, "QST_CD");
+//				var qst_nm = $DS_SCRIPT_RES.getValue(i, "QST_CDNM");
+//				
+//				if(date == "") continue;
+//				
+//				if(dataset.indexOf(date) == -1) dataset.push(date);
+//				
+//				var obj = Xwing.createDataset(qst_cd);
+//				obj.setColumnInfo([ 'DATE', 'QST_CD', 'QST_CDNM', 'COUNT' ]);
+//				
+//				
+//				obj.addRow();
+//				obj.setValue(obj.size()-1,"DATE", date);
+//				obj.setValue(obj.size()-1,"QST_CD", qst_cd);
+//				obj.setValue(obj.size()-1,"QST_CDNM", qst_nm);
+//				obj.setValue(obj.size()-1,"COUNT", 1);
+//				
+//				for(var j =0; j< dataset.length; j++){
+//					if(obj.indexOfRow("DATE", dataset[j]) == -1){
+//						obj.addRow();
+//						obj.setValue(obj.size()-1,"DATE", dataset[j]);
+//						obj.setValue(obj.size()-1,"QST_CD", qst_cd);
+//						obj.setValue(obj.size()-1,"QST_CDNM", qst_nm);
+//						obj.setValue(obj.size()-1,"COUNT", 0);
+//					}
+//				}
+//				
+//				obj.sort("DATE");
+//				
+//			}
+//			
+//			
+			$pnl_chart.setUrl('../chart/line-stackbar-OBA010T2.html');
+//			
+		break;
+	}
+}
+
+//*********************************************************************************************************
+//* 클릭이벤트
+//*********************************************************************************************************/
+function grd_vrs_list_click(event) {
+//	parent.cic= $DS_SCRIPT_RES.getValue(event.rowIdx,'CIC');
+	parent.sclf_cd= $DS_SCRIPT_RES.getValue(event.rowIdx,'SCLF_CD');
+	parent.sclf_nm= $DS_SCRIPT_RES.getValue(event.rowIdx,'SCLF_NM');
+	
+	if($DS_SCRIPT_RES.getValue(event.rowIdx,'REGU_SCORE_1') >= 0){
+		parent.cic= $DS_SCRIPT_RES.getValue(event.rowIdx,'REGU_CLCD_1');
+	}else{
+		parent.cic= $DS_SCRIPT_RES.getValue(event.rowIdx,'REGU_CLCD_2');
+	}
+	parent.vrsRowNum = $grd_vrs_list.getSelection();
+	
+	parent.lbl_sub3_click();
+}
+
+function grd_ban_list_click(event) {
+	parent.ban_cd= $DS_BAN_RES.getValue(event.rowIdx,'BAN_CD');
+	parent.ban_keyword= $DS_BAN_RES.getValue(event.rowIdx,'BAN_KEYWORD');
+	
+	parent.banRowNum = $grd_ban_list.getSelection();
+	
+	parent.lbl_sub4_click();
+}
+
+
+function label_ban_all_click(event) {
+	parent.ban_cd="";
+	parent.ban_keyword="";
+	parent.banRowNum="0";
+	
+	parent.lbl_sub4_click();
+}
+
+function label_vrs_all_click(event) {
+	parent.sclf_cd="";
+	parent.sclf_nm="";
+	parent.vrsRowNum="0";
+	
+	parent.lbl_sub3_click();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SCRIPT_RES" description="스크립트 결과">
+		<xwing:dataset-column id="LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="LCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_Y_CNT_1"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_Y_CNT_2"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_SCORE_1"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_SCORE_2"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_CLCD_1"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_CLCD_2"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_BANNED_RES" description="금지어결과">
+		<xwing:dataset-column id="BAN_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>01</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>금지어1</xwing:dataset-cell>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>02</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>금지어2</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>03</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>금지어3</xwing:dataset-cell>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>04</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>금지어4</xwing:dataset-cell>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>05</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>금지어5</xwing:dataset-cell>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_VRS_RES" description="콜 추이 테스트용">
+		<xwing:dataset-column id="DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020110</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750036</xwing:dataset-cell>
+			<xwing:dataset-cell>수익자 보장 내용 1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020110</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750038</xwing:dataset-cell>
+			<xwing:dataset-cell>특약 1 장기간병비</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020115</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750041</xwing:dataset-cell>
+			<xwing:dataset-cell>특약 4 항암방사선약물치료비</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020115</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750047</xwing:dataset-cell>
+			<xwing:dataset-cell>특약11 암사망</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020115</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750058</xwing:dataset-cell>
+			<xwing:dataset-cell>만기 및 갱신 1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020118</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750065</xwing:dataset-cell>
+			<xwing:dataset-cell>계약 후 알릴의무/기타 1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2018020118</xwing:dataset-cell>
+			<xwing:dataset-cell>100001750069</xwing:dataset-cell>
+			<xwing:dataset-cell>보험금 지급계좌</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_BAN_RES" description="콜추이 금칙어 건수 테스트">
+		<xwing:dataset-column id="BAN_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UD_VRS"></xwing:dataset>
+	<xwing:dataset id="DS_UD_BAN"></xwing:dataset>
+	<xwing:dataset description="스크립트 결과" id="DS_SCRIPT_RES_COPY">
+		<xwing:dataset-column id="LCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="LCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="SCLF_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CTRA_INSA_CLCD"></xwing:dataset-column>
+		<xwing:dataset-column id="REGU_N_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="콜청취" width="752" height="667" load="page_load" scroll="false">
+		<xwing:datagrid id="grd_vrs_list" left="10" top="48" width="740" height="609" rownum="true" checkbox="false" binddataset="DS_SCRIPT_RES" anchor="all" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap" dblclick="grd_vrs_list_click">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="120"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="대분류"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="소분류" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="준수율(계)"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="준수개수(계)" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="준수율(피/대)"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="준수개수(피/대)"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell halign="left" suppress="true" bindcolumn="LCLF_NM"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="left" bindcolumn="SCLF_NM"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REGU_SCORE_1" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REGU_Y_CNT_1" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REGU_SCORE_2" halign="right"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REGU_Y_CNT_2" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle2" value="VRS준수결과" left="0" top="0" width="752" height="40" styles="label_boxtitle" halign="left" anchor="top right left" bggradientdir="horizontal" bgimagealign="left center"></xwing:label>
+		<xwing:label id="label_vrs_all" value="전체보기" left="691" top="10" fontfamily="WallBoardFond" fontsize="13" fontdecoration="underline" cursor="pointer" width="50" anchor="right" click="label_vrs_all_click" visible="true" halign="center"></xwing:label>
+	</xwing:page>
+</body>
+</html>

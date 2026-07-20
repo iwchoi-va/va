@@ -1,0 +1,597 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript"	charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/xwing.dataset.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+* FormID(명) :
+* Form 설명  :
+* 작성자     :
+* 작성일     :
+=================================================================
+* 변경내역 :
+* * YYYYMMDD 담당자명 변경내용(Why?,What?)
+* =================================================================
+*******************************************************************************/
+//xwing.util.importJSFile("../js/wfm.dataset.js");
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	전역변수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+var v_flag 				= null;
+var v_validate 			= null;
+var v_url               = "service::wfm.info.inf100m.do";
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 페이지 로드합수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function page_load(event) {
+	XwingObject();
+	v_flag 			= "INSERT";
+	f_getCodes();
+	f_getMenu();
+	Xwing.createContextMenu("DS_CONTEXT", "tre_menu", {
+		beforeShow : function() {
+			f_contxtMenuStatus();
+		}
+	});
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	콜백함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '<br/>' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case "GETCODES" :
+			$DS_SYS001.setData(res.SYS001.column, res.SYS001.record);
+			//$DS_COM036.setData(res.COM036.column, res.COM036.record);
+			$DS_AUTHORITY.clear();
+			for(var i = 0, j = 1 ; i < $DS_SYS001.size() ; i ++ ){
+				j = (i % 1);
+				var codeId = $DS_SYS001.getValue(i, "CODEID");
+				var codeName = $DS_SYS001.getValue(i, "CODENAME");
+				var bindcol = "CHK_"+codeId;
+				$DS_AUTHORITY.addColumn(bindcol);
+				var chk = Xwing.createCheckbox({
+					id   : "chk_" + codeId,
+					left : (110 * j) + 12,
+					width: 150,
+					top  : Math.floor(i / 1) * 20 +7 ,
+					label : codeName,
+					truevalue : "Y",
+					falsevalue : "N",
+					value : "N",
+					binddataset: "DS_AUTHORITY",
+					bindcolumn : bindcol,
+					fontcolor : "#084B8A",
+					fontsize : 12,
+					click : "common_auth_click"
+				});
+				$pnl_auth.appendChild(chk);
+			}
+			$DS_AUTHORITY.addRow();
+			break;
+		case "MENU_SCH" :
+
+			var sel_menu = Xwing.getTree('tre_menu').getSelection();
+
+			$DS_MENU.setData(res.DS_MENU.column, res.DS_MENU.record);
+			$DS_MENU_COPY.setColumnInfo(res.DS_MENU.column);
+
+			Xwing.getTree('tre_menu').setSelection(sel_menu, true);
+			tre_menu_select();
+			//setTree();
+			//f_addContext(); //이거 왜 하는거임??
+
+			break;
+		case "MENU_ISR" :
+			xwing.Dialog.alert("저장되었습니다.");
+			f_getMenu();
+			setTree();
+			parent.f_menu_sel();
+			break;
+
+		case "MENU_UPD" :
+			xwing.Dialog.alert("저장되었습니다.");
+			f_getMenu();
+			setTree();
+			parent.f_menu_sel();
+			break;
+
+		case "MENU_DEL" :
+			xwing.Dialog.alert("삭제되었습니다.");
+			f_getMenu();
+			setTree();
+			parent.f_menu_sel();
+			break;
+	}
+}
+
+function setTree(){
+	//이전 설정 상태로 보여주기
+	if($btn_expand.getValue()=="접어보기"){ //펼침 상태
+		$tre_menu.expandAll();
+	} else if($btn_expand.getValue()=="펼쳐보기"){ //접힘 상태
+		$tre_menu.collapseAll();
+	}
+}
+
+function chk_all_click(event) {
+	var v_chk_value = $chk_all.getValue();
+	var v_col_info = $DS_AUTHORITY.getColumnInfo();
+	for(var i = 0 ; i < v_col_info.length ; i++ ){
+		$DS_AUTHORITY.setValue(0, v_col_info[i], v_chk_value);
+	}
+}
+
+function common_auth_click(evant){
+
+}
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 컨텍스트 메뉴 상태체크 및 변경 함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_contxtMenuStatus() {
+
+	var v_idx 	= $DS_MENU.getCursor();
+	var v_del 	= false;
+	// 하위메뉴 추가
+	$DS_CONTEXT.setValue(1, "disabled", ($DS_MENU.getValue(v_idx, "LEAF_YN") == "Y"));
+	$DS_CONTEXT.setValue(3, "disabled", v_del);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 트리메뉴 선택시.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function tre_menu_select(event) {
+	v_flag = "UPDATE";
+	$DS_MENU_COPY.copyRowFrom(0, $DS_MENU, $DS_MENU.getCursor());
+	//$DS_MENU_COPY.copyRowFrom(0, $DS_MENU, $tre_menu.getSelection());
+	f_create_auth_chk($DS_MENU_COPY.getValue(0, "AUTHORITY_CD"));
+	//$edt_caption.focus();
+}
+
+
+function f_create_auth_chk(strAuthCd){
+	var v_auth = strAuthCd.split(",");
+	var v_col_info = $DS_AUTHORITY.getColumnInfo();
+	for(var i = 0 ; i < v_col_info.length ; i++ ){
+		$DS_AUTHORITY.setValue(0, v_col_info[i], "N");
+	}
+	for(var i = 0 ; i < v_auth.length ; i++){
+		$DS_AUTHORITY.setValue(0, "CHK_"+v_auth[i], "Y");
+	}
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 분기여부 변경시.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function rdo_isFolder_change(event) {
+	//g_enabledObjects([$edt_action1, $rdo_wintype, $pnl_popSize], $rdo_leaf_yn.getValue() == "Y");
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 출력구분 변경시.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function rdo_wintype_change(event) {
+	//g_visibleObjects(g_getChildNodes("pnl_popSize"), $rdo_wintype.getValue() == "popup");
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 컨텍스트 대메뉴 추가.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_addContext(parentId) {
+	parentId = g_nvl(parentId, "0");
+	var v_id = 0;
+	var v_menu_seq = 0;
+	var v_authority_cd = g_nvl($DS_MENU.lookUp("MENU_ID", parentId, "AUTHORITY_CD"), "");
+
+	if (parentId == "0") {
+		v_id = parseInt($DS_MENU.max("MENU_ID", "[PARENT_ID =='" + parentId + "']"),10) + 10000;
+		v_menu_seq = parseInt($DS_MENU.max("MENU_SEQNO", "[PARENT_ID=='" + parentId + "']"),10) + 1;
+	} else {
+		var v_max_menu_id = $DS_MENU.max("MENU_ID", "[PARENT_ID^='" + g_substr(parentId, 0, 3) + "']");
+		if(g_isNull(v_max_menu_id) || g_isEmpty(v_max_menu_id)){
+			v_max_menu_id = parentId;
+		}
+		v_id = parseInt(v_max_menu_id) + 1;
+		var v_max_menu_seq = $DS_MENU.max("MENU_SEQNO", "[PARENT_ID=='" + parentId + "']");
+		if (g_isNull(v_max_menu_seq) || g_isEmpty(v_max_menu_seq)){
+			v_max_menu_seq = 0;
+		}
+		v_menu_seq = parseInt(v_max_menu_seq) + 1;
+	}
+	v_flag 	= "INSERT";
+	$DS_MENU_COPY.clearData();
+	$DS_MENU_COPY.addRow();
+	$DS_MENU_COPY.setValue("MENU_ID"   , v_id       );
+	$DS_MENU_COPY.setValue("PARENT_ID" , parentId   );
+	$DS_MENU_COPY.setValue("MENU_SEQNO", v_menu_seq );
+	$DS_MENU_COPY.setValue("WINTYPE"   , "main"     );
+	$DS_MENU_COPY.setValue("LEAF_YN"   , "Y"        );
+	$DS_MENU_COPY.setValue("WIDTH"     , "0"        );
+	$DS_MENU_COPY.setValue("HEIGHT"    , "0"        );
+	$DS_MENU_COPY.setValue("USE_YN"    , "Y"        );
+	$DS_MENU_COPY.setValue("AUTHORITY_CD", v_authority_cd);
+	f_create_auth_chk(v_authority_cd);
+	//$edt_caption.focus();
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 컨텍스트 대메뉴 추가.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function ctx_rootAdd_click() {
+	f_addContext();
+	$edt_caption.focus();
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 컨텍스트 하위메뉴 추가.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function ctx_childAdd_click() {
+	//$DS_MENU_COPY.setValue("PARENT_ID", $DS_MENU.getValue("MENU_ID"));
+	f_addContext($DS_MENU.getValue("MENU_ID"));
+	$edt_caption.focus();
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 저장버튼 클릭시.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_save_click(event) {
+
+	if($DS_MENU_COPY.getValue("LEAF_YN") == "N") {
+
+		$DS_MENU_COPY.setValue("WINTYPE", "main");
+	}
+
+	var v_authority = "";
+	var v_col_info = $DS_AUTHORITY.getColumnInfo();
+	for(var i = 0 ; i < v_col_info.length ; i++ ){
+		var v_chk_val = $DS_AUTHORITY.getValue(0, v_col_info[i]);
+		if(v_chk_val == "Y"){
+			v_authority += ","+ g_substr(v_col_info[i], 4);
+		}
+	}
+	$DS_MENU_COPY.setValue("AUTHORITY_CD", g_substr(v_authority, 1));
+
+	if(v_flag == "INSERT") {
+		f_addMenu();
+	}
+
+	if(v_flag == "UPDATE") {
+		f_updMenu();
+	}
+
+	//$edt_caption.focus();
+	v_flag = "UPDATE";
+}
+
+function ctx_del_click() {
+
+	f_delMenu();
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 메뉴 로드 함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getMenu() {
+
+	var useyn="Y";
+	if($chk_useyn.isChecked() == true) useyn="";
+
+	var param	= {
+			useyn : useyn,
+			_sqlName: "cs.info.info100m.menu.sel"
+	};
+
+	var opt 	= {
+			reqId: "MENU_SCH",
+			url: v_url,
+			param: param,
+			indicator : false
+	};
+
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 메뉴 로드 함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getCodes() {
+
+	var param	= {
+			cmd : "getCodes",
+			codeType : "SYS001",
+			useyn : "Y"
+	};
+
+	var opt 	= {
+
+			reqId: "GETCODES",
+			url: "service::cs.com.codeutil.do",
+			param: param,
+			indicator : false
+	};
+
+	Xwing.request(opt, callback);
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 메뉴 추가.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_addMenu() {
+
+	xwing.Dialog.confirm("저장하시겠습니까?", $page.getTitle(), function(e){
+		if(e){
+			var param	= {
+					_sqlName: "wfm.info.info100m.menu.ins"
+				};
+				g_dsToParam("", $DS_MENU_COPY, 0, param);
+				var opt 	= {
+					reqId: "MENU_ISR",
+					url: v_url,
+					param: param
+				};
+
+				Xwing.request(opt, callback);
+			}
+		});
+
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 메뉴 수정.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_updMenu() {
+	//if(!confirm("수정하시겠습니까?")) return false;
+
+	xwing.Dialog.confirm("저장하시겠습니까?", $page.getTitle(), function(e){
+		if(e){
+			var param	= {
+					_sqlName: "wfm.info.info100m.menu.upd"
+				};
+				g_dsToParam("", $DS_MENU_COPY, 0, param);
+
+				var opt 	= {
+					reqId: "MENU_UPD",
+					url: v_url,
+					param: param
+				};
+				Xwing.request(opt, callback);
+			}
+		});
+
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 메뉴 삭제.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_delMenu() {
+
+	xwing.Dialog.confirm("삭제하시겠습니까?", $page.getTitle(), function(e){
+		if(e){
+			var param	= {
+					_sqlName: "wfm.info.info100m.menu.del",
+					MENU_ID: $DS_MENU.getValue("MENU_ID")
+				};
+
+				var opt 	= {
+
+						reqId: "MENU_DEL",
+						url: v_url,
+						param: param
+				};
+
+				Xwing.request(opt, callback);
+			}
+		});
+}
+
+function chk_useyn_click(){
+	f_getMenu();
+}
+
+function btn_expand_click(event) {
+	var value = $btn_expand.getValue();
+	if(value == "펼쳐보기"){
+		$tre_menu.expandAll();
+		$btn_expand.setValue("접어보기");
+	}else if(value == "접어보기"){
+		$tre_menu.collapseAll();
+		$btn_expand.setValue("펼쳐보기");
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_POPUP_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>popup</xwing:dataset-cell>
+			<xwing:dataset-cell>예</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>main</xwing:dataset-cell>
+			<xwing:dataset-cell>아니오</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>사용</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>사용안함</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MENU">
+		<xwing:dataset-column id="TREE_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_ORDER"></xwing:dataset-column>
+		<xwing:dataset-column id="MENU_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="ACTION1"></xwing:dataset-column>
+		<xwing:dataset-column id="ICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="REVERSE_ICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="SUBICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="TARGET"></xwing:dataset-column>
+		<xwing:dataset-column id="WINTYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="MENU_SEQNO"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="V_CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="EXPLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="WIDTH"></xwing:dataset-column>
+		<xwing:dataset-column id="HEIGHT"></xwing:dataset-column>
+		<xwing:dataset-column id="SUMMARY"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_CONTEXT">
+		<xwing:dataset-column id="separator"></xwing:dataset-column>
+		<xwing:dataset-column id="label"></xwing:dataset-column>
+		<xwing:dataset-column id="icon"></xwing:dataset-column>
+		<xwing:dataset-column id="onclick"></xwing:dataset-column>
+		<xwing:dataset-column id="disabled"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>대메뉴 추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_rootAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>하위메뉴 추가</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_childAdd_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>true</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>메뉴삭제</xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell>ctx_del_click</xwing:dataset-cell>
+			<xwing:dataset-cell>false</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FOLDER_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>예</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>아니오</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset description="" id="DS_MENU_COPY">
+		<xwing:dataset-column id="TREE_LEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="SORT_ORDER"></xwing:dataset-column>
+		<xwing:dataset-column id="MENU_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="ACTION1"></xwing:dataset-column>
+		<xwing:dataset-column id="ICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="REVERSE_ICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="SUBICON_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="TARGET"></xwing:dataset-column>
+		<xwing:dataset-column id="WINTYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="MENU_SEQNO"></xwing:dataset-column>
+		<xwing:dataset-column id="LEAF_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="V_CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="EXPLAN"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="WIDTH"></xwing:dataset-column>
+		<xwing:dataset-column id="HEIGHT"></xwing:dataset-column>
+		<xwing:dataset-column id="SUMMARY"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS001"></xwing:dataset>
+	<xwing:dataset id="DS_COM036"></xwing:dataset>
+	<xwing:dataset id="DS_AUTHORITY"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="메뉴관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:group id="grp_menuInfo" left="418" top="40" width="633" height="740" scroll="false" anchor="top right bottom" enabled="true" visible="true" styles="div_perform" bgcolor="#fdfdf5" borderstyle="none" borderwidth="0">
+			<xwing:panel id="bg_btn" left="0" top="681" width="633" height="60" bgcolor="#E7EBEE" anchor="bottom">
+				<xwing:button id="btn_save" value="저 장" left="555" top="17" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_save_click" borderstyle="none"></xwing:button>
+			</xwing:panel>
+			<xwing:label id="lbl_menuId" value="메뉴ID" left="15" top="50" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_menuName" value="메뉴명" left="15" top="80" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_parnetId" value="상위메뉴ID" left="15" top="110" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_isFolder" value="분기여부" left="340" top="325" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_menuURL" value="Action" left="15" top="140" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_menuDesc" value="메뉴 설명" left="15" top="200" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_menuSort" value="출력순서" left="15" top="295" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:label id="lbl_menuPop" value="팝업여부" left="320" top="620" halign="right" width="63" styles="label_lititle" height="30" visible="false"></xwing:label>
+			<xwing:label id="lbl_museUse" value="사용여부" left="15" top="325" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_menu_id" left="115" top="50" width="500" binddataset="DS_MENU_COPY" bindcolumn="MENU_ID" enabled="true" readonly="true" halign="left" height="25"></xwing:edit>
+			<xwing:edit id="edt_caption" left="115" top="80" width="500" binddataset="DS_MENU_COPY" bindcolumn="CAPTION" halign="left" height="25"></xwing:edit>
+			<xwing:edit id="edt_parent_id" left="115" top="110" width="500" binddataset="DS_MENU_COPY" bindcolumn="PARENT_ID" halign="left" height="25"></xwing:edit>
+			<xwing:edit id="edt_action1" left="115" top="140" width="500" binddataset="DS_MENU_COPY" bindcolumn="ACTION1" halign="left" height="25"></xwing:edit>
+			<xwing:spin id="spn_menu_seqno" left="115" top="295" height="25" width="175" binddataset="DS_MENU_COPY" bindcolumn="MENU_SEQNO" enabled="true" editable="true"></xwing:spin>
+			<xwing:radio id="rdo_leaf_yn" left="440" top="325" width="175" height="25" domaindataset="DS_FOLDER_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_MENU_COPY" bindcolumn="LEAF_YN" change="rdo_isFolder_change" styles="radio"></xwing:radio>
+			<xwing:radio id="rdo_wintype" left="420" top="620" width="175" height="30" domaindataset="DS_POPUP_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_MENU_COPY" bindcolumn="WINTYPE" textpadding="0 0 0 5" change="rdo_wintype_change" styles="radio" visible="false"></xwing:radio>
+			<xwing:radio id="rdo_use_yn" left="115" top="325" width="175" height="25" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_MENU_COPY" bindcolumn="USE_YN" textpadding="0 0 0 5" styles="radio"></xwing:radio>
+			<xwing:label id="lbl_museUse_0" value="권한코드&#10;(SYS001)" left="15" top="350" halign="left" width="100" styles="label_lititle" height="60"></xwing:label>
+			<xwing:panel id="pnl_auth" left="115" top="355" width="500" height="307" borderstyle="double" borderwidth="1" bordercolor="#c0c0c0" anchor="top right bottom" scroll="true"></xwing:panel>
+			<xwing:checkbox id="chk_all" left="42" top="401" width="14" halign="center" truevalue="Y" falsevalue="N" value="N" click="chk_all_click" height="20"></xwing:checkbox>
+			<xwing:textarea id="txt_agent_value" left="115" top="200" height="90" width="500" readonly="false" anchor="none" fontweight="normal" visible="true" binddataset="DS_MENU_COPY" bindcolumn="EXPLAN"></xwing:textarea>
+			<xwing:checkbox id="chk_all_0" left="-23" top="-24" width="14" halign="center" truevalue="Y" falsevalue="N" value="N" click="chk_all_click" height="20"></xwing:checkbox>
+			<xwing:label id="lbl_page_title_0" left="15" top="0" value="메뉴 정보" fontweight="bold" height="39" width="600" style="titletext" styles="lbl_grid_title" anchor="none" fontfamily="WallBoardFond" shadow="#B8C4D1 0 1 0 0"></xwing:label>
+			<xwing:label id="lbl_menu_dis" value="메뉴 요약" left="15" top="170" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:edit id="edt_summary" left="115" top="170" width="500" binddataset="DS_MENU_COPY" bindcolumn="SUMMARY" halign="left" height="25"></xwing:edit>
+		</xwing:group>
+		<xwing:panel id="grp_menu" left="0" top="40" width="418" height="740" scroll="false" anchor="all" enabled="true" visible="true" borderwidth="0" bgcolor="transparent" shadow="#bdcad6 2 0 0 0">
+			<xwing:tree id="tre_menu" left="0" top="55" binddataset="DS_MENU" idcolumn="MENU_ID" pidcolumn="PARENT_ID" textcolumn="CAPTION" leafyncolumn="LEAF_YN" mouseover="tree_mouseover" mouseout="tree_mouseout" height="685" width="418" borderwidth="0" borderstyle="none" textpadding="0 0 0 0" fontfamily="WallBoardFond" treeline="true" leafmargin="0" opacity="1" bgimagerepeat="no-repeat" anchor="all" multiselectable="true" checkable="false" bgcolor="transparent" select="tre_menu_select" cursor="default" fontsize="12" shadow="#bdcad6 0 -2 0 0"></xwing:tree>
+		</xwing:panel>
+		<xwing:label id="lbl_subtitle" value="메뉴관리" left="0" top="0" width="1050" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+		<xwing:checkbox id="chk_useyn" left="15" top="55" width="101" halign="left" truevalue="Y" falsevalue="N" value="N" click="chk_useyn_click" height="25" label="미사용포함" anchor="left" fontsize="13" fontfamily="WallBoardFond"></xwing:checkbox>
+		<xwing:button id="btn_expand" value="펼쳐보기" left="313" top="55" width="90" fontfamily="WallBoardFond" anchor="top right" styles="btn_normal" height="25" textpadding="0 0 0 5" icon="../images/ico_folder_open.png" iconmargin="-3 0 0 0" click="btn_expand_click"></xwing:button>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,39 @@
+.xw-richtext-shell {
+	margin: 0;
+	padding: 0;
+}
+
+.xw-richtext {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border: 0;
+}
+
+.xx-small {
+	font-size: 9px;	
+}
+
+.x-small {
+	font-size: 10px;	
+}
+
+.small {
+	font-size: 12px;	
+}
+
+.medium {
+	font-size: 14px;	
+}
+
+.large {
+	font-size: 16px;	
+}
+
+.x-large {
+	font-size: 18px;	
+}
+
+.xx-large {
+	font-size: 24px;	
+}

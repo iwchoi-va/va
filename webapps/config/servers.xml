@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<server-config>
+	  <rmi-agent-enabled>false</rmi-agent-enabled>
+
+      <server name="Server1" self="true">
+        <host-name>Server1</host-name>
+        <ip>localhost</ip>
+        <rmi-port>10101</rmi-port>
+      </server>
+
+
+<!--
+
+
+	<server name="Server1" self="false" >
+		<host-name>Server1</host-name>
+		<ip>localhost</ip>
+		<rmi-port>10101</rmi-port>
+                <INITIAL_CONTEXT_FACTORY>default</INITIAL_CONTEXT_FACTORY>
+                <PROVIDER_URL>default</PROVIDER_URL>
+	</server>
+
+       configuration for BEA WebLogic
+	<server name="Server2" self="false" >
+		<host-name>Server2</host-name>
+		<ip>10.1.13.212</ip>
+		<rmi-port>10101</rmi-port>
+                <INITIAL_CONTEXT_FACTORY>weblogic.jndi.WLInitialContext</INITIAL_CONTEXT_FACTORY>
+                <PROVIDER_URL>"t3://10.1.13.212:7001</PROVIDER_URL>
+	</server>
+
+       configuration for IBM WebSphere
+	<server name="Server3" self="false" >
+		<host-name>Server3</host-name>
+		<ip>10.1.13.212</ip>
+		<rmi-port>10101</rmi-port>
+                <INITIAL_CONTEXT_FACTORY>com.ibm.websphere.naming.WsnInitialContextFactory</INITIAL_CONTEXT_FACTORY>
+                <PROVIDER_URL>"t3://10.1.13.212:7001</PROVIDER_URL>
+	</server>
+
+-->
+
+
+</server-config>

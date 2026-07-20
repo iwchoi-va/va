@@ -1,0 +1,171 @@
+
+#grd_pos .xw-datagrid-area-header,
+#grd_neg .xw-datagrid-area-header,
+#grd_neg_0 .xw-datagrid-area-header,
+#grd_pos_0 .xw-datagrid-area-header,
+#grd_aspect .xw-datagrid-area-header,
+#grd_social_list .xw-datagrid-area-header{border:none;}
+
+#grd_pos .xw-datagrid, 
+#grd_neg .xw-datagrid, 
+#grd_pos_0 .xw-datagrid, 
+#grd_neg_0 .xw-datagrid,
+#check_list .xw-datagrid,
+#grd_aspect .xw-datagrid,
+#grd_social_list .xw-datagrid{border:none !important; }
+
+#grd_pos .xw-datagrid-area-body td, 
+#grd_neg .xw-datagrid-area-body td, 
+#grd_neg_0 .xw-datagrid-area-body td, 
+#grd_pos_0 .xw-datagrid-area-body td,
+#grd_aspect .xw-datagrid-area-body td,
+#grd_social_list .xw-datagrid-area-body td{border:none !important; }
+
+#grd_pos .xw-datagrid-area-body tbody tr.select, 
+#grd_neg .xw-datagrid-area-body tbody tr.select, 
+#grd_pos_0 .xw-datagrid-area-body tbody tr.select, 
+#grd_neg_0 .xw-datagrid-area-body tbody tr.select,
+#grd_aspect .xw-datagrid-area-body tbody tr.select,
+#grd_social_list .xw-datagrid-area-body tbody tr.select{/*background:#fff !important;*/ }
+
+#grd_etc_memo .xw-datagrid-area-header,
+#grid_etc_category .xw-datagrid-area-header,
+#check_list .xw-datagrid-area-header,
+#grd_aspect .xw-datagrid-area-header,
+#grd_social_list .xw-datagrid-area-header{border:none;}
+
+#check_list .xw-datagrid-area-body{background:none;}
+
+#grd_etc_memo .xw-datagrid, 
+#grid_etc_category .xw-datagrid,
+#grd_aspect .xw-datagrid{border:none !important; }
+
+#check_list .xw-datagrid-body-fix.xw-mod table td:last-child{border-right:0px !important;}
+
+#check_list .xw-datagrid-area-body td,
+#grd_aspect .xw-datagrid-area-body td{border-bottom:0px !important;}
+
+#grd_etc_memo .xw-datagrid-area-body td, 
+#grid_etc_category .xw-datagrid-area-body td,
+#grd_aspect .xw-datagrid-area-body td{border:none !important; }
+
+#grd_etc_memo .xw-datagrid-area-body tbody tr.select, 
+#grid_etc_category .xw-datagrid-area-body tbody tr.select,
+#grd_aspect .xw-datagrid-area-body tbody tr.select{background:none !important; }
+
+#grid_etc_category .xw-datagrid-area-body tbody tr.select td span{font-weight:bold !important;}
+
+/*�����м� ��� ��ü���� ��ư*/
+#btn_pie .xw-label-cell, #etc_category .xw-label-cell{border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;}
+
+/*��������-���м�*/
+#bg_memo1 .xw-container, #bg_memo2 .xw-container{background-size:100% 100%;
+}
+
+#grid_etc_category .xw-datagrid-area-body{background:none;}
+#grid_etc_coaching .xw-datagrid-area-body{background:#fff;}
+#grid_etc_coaching .xw-datagrid-area-body table{background:#fff;}
+#grid_etc_coaching .xw-datagrid{border:1px solid #2F3F4F !important;}
+
+#grd_etc_memo1 .xw-datagrid, #grd_etc_memo2 .xw-datagrid{border:0px !important;}
+#grd_etc_memo1 .xw-datagrid-area-header, #grd_etc_memo2 .xw-datagrid-area-header {border-bottom:0px !important;}
+#grd_etc_memo1 .xw-datagrid-area-body td, #grd_etc_memo2 .xw-datagrid-area-body td  {
+	border-right: 0px !important;
+	border-bottom: 1px solid #d2d2d2;
+}
+#grd_etc_memo1 .xw-datagrid-area-body tbody tr.select,
+#grd_etc_memo2 .xw-datagrid-area-body tbody tr.select{background:#FCFADB !important; }
+#grd_etc_memo1 .xw-datagrid-area-summary,
+#grd_etc_memo2 .xw-datagrid-area-summary,
+#check_list .xw-datagrid-area-summary{border-top:0px !important;}
+#grd_etc_memo1 .xw-datagrid-area-body tbody tr td,
+#grd_etc_memo2 .xw-datagrid-area-body tbody tr td{padding-bottom:5px;}
+
+#lbl_coaching .xw-label-cell{
+	-moz-border-radius: 4px 4px 0px 0px;
+	-webkit-border-radius: 4px 4px 0px 0px;
+	border-radius: 4px 4px 0px 0px;}
+	
+	
+	
+/*================================================grid*/
+#grd_pos .xw-grid-area-header,
+#grd_neg .xw-grid-area-header,
+#grd_neg_0 .xw-grid-area-header,
+#grd_pos_0 .xw-grid-area-header,
+#grd_aspect .xw-grid-area-header{border:none;}
+
+#grd_pos .xw-grid, 
+#grd_neg .xw-grid, 
+#grd_pos_0 .xw-grid, 
+#grd_neg_0 .xw-grid,
+#check_list .xw-grid,
+#grd_aspect .xw-grid{border:none !important; }
+
+#grd_pos .xw-grid-area-body td, 
+#grd_neg .xw-grid-area-body td, 
+#grd_neg_0 .xw-grid-area-body td, 
+#grd_pos_0 .xw-grid-area-body td,
+#grd_aspect .xw-grid-area-body td{border:none !important; }
+
+#grd_pos .xw-grid-area-header .xw-mod,
+#grd_neg .xw-grid-area-header .xw-mod,
+#grd_aspect .xw-grid-area-header .xw-mod{border:none !important;}
+
+#grd_pos .xw-grid-area-body tbody tr.select, 
+#grd_neg .xw-grid-area-body tbody tr.select, 
+#grd_pos_0 .xw-grid-area-body tbody tr.select, 
+#grd_neg_0 .xw-grid-area-body tbody tr.select,
+#grd_aspect .xw-grid-area-body tbody tr.select{/*background:#fff !important;*/ }
+
+
+#grd_etc_memo .xw-grid-area-header,
+#grid_etc_category .xw-grid-area-header,
+#check_list .xw-grid-area-header{border:none;}
+#check_list .xw-grid-area-body{background:none;}
+#grd_etc_memo .xw-grid, 
+#grid_etc_category .xw-grid{border:none !important; }
+#check_list .xw-grid-body-fix.xw-mod table td:last-child{border-right:0px !important;}
+#check_list .xw-grid-area-body td{border-bottom:0px !important;}
+#grd_etc_memo .xw-grid-area-body td, 
+#grid_etc_category .xw-grid-area-body td{border:none !important; }
+
+#grd_etc_memo .xw-grid-area-body tbody tr.select, 
+#grid_etc_category .xw-grid-area-body tbody tr.select{background:none !important; }
+#grid_etc_category .xw-grid-area-body tbody tr.select td span{font-weight:bold !important;}
+
+/*�����м� ��� ��ü���� ��ư*/
+#btn_pie .xw-label-cell, #etc_category .xw-label-cell{border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;}
+
+/*��������-���м�*/
+#bg_memo1 .xw-container, #bg_memo2 .xw-container{background-size:100% 100%;
+}
+
+#grid_etc_category .xw-grid-area-body{background:none;}
+#grid_etc_coaching .xw-grid-area-body{background:#fff;}
+#grid_etc_coaching .xw-grid-area-body table{background:#fff;}
+#grid_etc_coaching .xw-grid{border:1px solid #2F3F4F !important;}
+
+#grd_etc_memo1 .xw-grid, #grd_etc_memo2 .xw-grid{border:0px !important;}
+#grd_etc_memo1 .xw-grid-area-header, #grd_etc_memo2 .xw-grid-area-header {border-bottom:0px !important;}
+#grd_etc_memo1 .xw-grid-area-body td, #grd_etc_memo2 .xw-grid-area-body td  {
+	border-right: 0px !important;
+	border-bottom: 1px solid #d2d2d2;
+}
+#grd_etc_memo1 .xw-grid-area-body tbody tr.select,
+#grd_etc_memo2 .xw-grid-area-body tbody tr.select{background:#FCFADB !important; }
+#grd_etc_memo1 .xw-grid-area-summary,
+#grd_etc_memo2 .xw-grid-area-summary,
+#check_list .xw-grid-area-summary{border-top:0px !important;}
+#grd_etc_memo1 .xw-grid-area-body tbody tr td,
+#grd_etc_memo2 .xw-grid-area-body tbody tr td{padding-bottom:5px;}
+
+#lbl_coaching .xw-label-cell{
+	-moz-border-radius: 4px 4px 0px 0px;
+	-webkit-border-radius: 4px 4px 0px 0px;
+	border-radius: 4px 4px 0px 0px;}
+	

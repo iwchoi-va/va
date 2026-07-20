@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="IS-STAT" default="menu" basedir=".">
+	<property environment="env" />
+	<property name="jedi.home" value="${env.JEDI_HOME}" />
+	<property name="was.lib" value="${env.WAS_LIB}" />
+	<property name="ant.home" value="${env.ANT_HOME}" />
+	<property file="build.properties" />
+
+
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${was.lib}">
+			<include name="*.jar" />
+		</fileset>
+
+		<pathelement path="${common.dir}" />
+
+
+	</path>
+
+
+	<!-- start of target menu select number -->
+	<target name="1">
+		<antcall target="compile" />
+	</target>
+	<target name="2">
+		<antcall target="copy-web" />
+	</target>
+	<!-- end of target menu select number -->
+
+
+
+	<!-- start of target "menu" , this task show the menu -->
+	<target name="menu">
+		<echo>+------------------------------------------------+
++ IS-STAT -
+Contact Center Develper Tool +
++------------------------------------------------+
+1.[compile] :
+compile *.java file of src dir of target dir
+2.[copy-web] : copy all
+file of webapps dir of target dir
+ctrl-c.[exit] -- exit this Builder
+program</echo>
+		<input message="please enter the target number you want : "
+			addproperty="no" validargs="1,2" />
+		<antcall target="${no}" />
+	</target>
+	<!-- end of target "menu" -->
+
+
+
+	<!-- start of target "compile" , compile component source file -->
+	<target name="compile">
+		<input message="please input target dir: " addproperty="targetdir" />
+		<javac srcdir="${src.dir}" destdir="${common.dir}" deprecation="off"
+			debug="on" encoding="UTF-8" optimize="on" includeantruntime="false">
+			<include name="**/*.java" />
+			<exclude name="**/*Bean.java" />
+			<exclude name="**/*EJB.java" />
+			<exclude name="**/applet/**/*.java" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+	<!-- end of target "compile" -->
+
+	<!-- start of target "copy-web" -->
+	<target name="copy-web">
+		<input message="please input target dir: " addproperty="targetdir" />
+		<taskdef name="dirloop" classname="DirLoop" classpath="${jedi.home}/buildxml" />
+		<dirloop calltarget="copy-web2" keyname="directory">
+			<dirset dir="${work.dir}/${targetdir}">
+				<include name="**" />
+			</dirset>
+		</dirloop>
+	</target>
+	<target name="copy-web2">
+		<echo
+			message="copy ${work.dir}/${targetdir}/${directory} to ${webapps.dir}/${targetdir}/${directory}" />
+		<copy todir="${webapps.dir}/${targetdir}/${directory}">
+			<fileset dir="${work.dir}/${targetdir}/${directory}" />
+		</copy>
+	</target>
+
+	<!-- end of target "copy-web" -->
+
+
+</project>

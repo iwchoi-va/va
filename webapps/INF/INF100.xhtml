@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/xwing.dataset.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src='../js/orgutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*///*********************************************************************************************************
+// Global Variable
+//********************************************************************************************************/
+var _auth_User = [];//화면 사용 권한
+var v_url = "service::inf.inf100.sel.do";
+var param = {};
+//*********************************************************************************************************
+//Page Action
+//********************************************************************************************************/
+function page_load(event) {
+	XwingObject();
+	f_init();
+	$searchChkSttFlag.setValue("true");
+	//$btn_upload.setVisible(true);
+	
+	//$btn_upload_0.setVisible(false);
+	//$btn_upload.setVisible(false);
+	f_codebook_sel();
+	fnUploadLimit();
+}
+
+function fnUploadLimit(){
+	
+	
+	var opt = {
+			reqId: "getUploadLimit",
+			url: v_url,
+			param: {
+				_sqlName  : 'inf.inf100.getUploadLimit.sel' 
+				
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+function f_init() {
+	//$panel_stt.setUrl("./INF100P1.xhtml");
+	
+	$searchRecStartDateFrom.setValue(g_addDate("m", -1, g_toDate(), ""));
+	$searchRecStartDateTo.setValue(g_toDate());
+	$searchRegDateFrom.setValue(g_addDate("m", -1, g_toDate(), ""));
+	$searchRegDateTo.setValue(g_toDate());
+	
+	$recStartTime.setValue(g_toDate());
+	
+	g_createOrg("pan_dept", 3, "Y", "Y", "Y", "", "전체", false, true);
+	
+	browserCheck();
+
+	if(browser == "ie") $pan_player.setUrl('../PLY_IE/init.html'); //player 초기화 상태로 set
+	else if(browser == "chrome") $pan_player.setUrl('../player_html5/init.html'); //player 초기화 상태로 set
+}
+
+
+function f_codebook_sel(){
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS150", //서버정보,화면권한 ID
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+
+
+//*********************************************************************************************************
+//UI Action
+//********************************************************************************************************/
+
+function btn_sel_click(event) {
+	
+	var iframe = document.getElementById('if::panel1');
+
+	var fDoc = null;
+
+	if(iframe) {
+		var frm = iframe.contentWindow || iframe.contentDocument;
+		
+		if (frm.document) {
+		    fDoc = frm.document;
+		}
+	}
+	
+
+	if(!g_checkDate($searchRecStartDateFrom.getValue(),$searchRecStartDateTo.getValue())) return;
+	if(!g_checkDate($searchRegDateFrom.getValue(),$searchRegDateTo.getValue())) return;
+	
+	
+	var params = {};
+	
+	params.searchRecStartDateFrom = $searchRecStartDateFrom.getValue();
+	params.searchRecStartDateTo = $searchRecStartDateTo.getValue();
+	params.searchRegDateFrom = $searchRegDateFrom.getValue();
+	params.searchRegDateTo = $searchRegDateTo.getValue();
+	params.searchOrgFileNm = $searchOrgFileNm.getValue();
+	var chk ="N";
+	if($searchChkSttFlag.getValue() == "true") chk= "Y"; 
+	params.searchChkSttFlag = chk;
+	
+	g_orgToParam("", params);
+	
+	frm.search(params);
+	
+	//$panel_stt.setUrl('');
+	/*
+	var param = {
+		_sqlName : 'inf.inf100.getCallList.sel',
+		SDATE : sdate+'000000',
+		EDATE : edate+'235959',
+		CEDNO : ced_no
+	};
+
+	var opt = {
+		reqId : "f_get_callList",
+		url : v_url,
+		param : param,
+		indicator : null,
+		showError : true
+	};
+	Xwing.request(opt, callback);*/
+}
+
+function grid_click(param) {
+	
+	/*
+	var ucid= $DS_CALLLIST.getValue(event.rowIdx,'UCID');
+	param={
+			ucid : ucid
+	};
+*/
+	
+	//$panel_stt.setUrl("./INF100P1.xhtml");
+	play(param, 'pan_player', 'N');
+	
+	
+}
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return false;
+	}
+	
+	switch (reqId) {
+		case "f_codebook_sel" :
+			
+			$DS_SYS150.setData(res.SYS150.column, res.SYS150.record);
+			for(var i = 0; i< $DS_SYS150.size(); i++){
+				_auth_User.push($DS_SYS150.getValue(i,"CODENAME"));
+			}
+			
+			var bool = false;
+			var bool1 = false;
+			if(_auth_User.indexOf(global("G_USER_ID")) != -1 && global("G_USER_GRADE") == "24") bool = true;
+			
+			$btn_upload_0.setVisible(bool);
+			$btn_upload.setVisible(bool);
+			
+			
+			if(_auth_User.indexOf(global("G_USER_ID")) != -1) bool1 = true; 
+			$btn_fileUpload_sch.setVisible(bool1);
+			
+		break;
+		case "insertFile":
+			alert("저장되었습니다");
+			$DS_FILE.clearData();
+			$file_upload_icon.removeFile();
+			$recStartTime.setValue(g_toDate());
+		break;
+		case "getUploadLimit":
+			$DS_LIMIT.setData(res.DS_LIMIT.column, res.DS_LIMIT.record);
+		break;
+		default: break;	
+	} 
+}
+
+
+
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_sel_click();
+	}
+}
+
+function btn_fileUpload_sch_click(event) {
+	
+	if($DS_LIMIT.getValue(0,"CNT") > 100){
+		xwing.Dialog.alert("당일 수동 업로드 건수는 100건입니다."); 
+		$DS_FILE.clearData();
+		$file_upload_icon.removeFile();
+		return;
+	}
+	
+	var MAX_SIZE 		= 1024 * 1024 * 100;
+
+	if($DS_FILE.size() == 0) {
+		
+		xwing.Dialog.alert("업로드할 파일을 선택해 주세요."); return;
+	}
+	
+	if(!/.wav$/.test($DS_FILE.getValue("FILE_NAME")) ) { 
+		
+		xwing.Dialog.alert("업로드할 파일의 확장자는 *.wav만 가능합니다."); 
+		$DS_FILE.clearData();
+		$file_upload_icon.removeFile();
+		return;
+	}
+	
+	if(parseInt($DS_FILE.getValue("FILE_SIZE")) > MAX_SIZE) {
+		
+		xwing.Dialog.alert("업로드할 파일의 용량이 "+ MAX_SIZE/1024/1024 +"Mb 를 초과하였습니다."); 
+		$DS_FILE.clearData();
+		$file_upload_icon.removeFile();
+		return;
+	}
+	
+	var param = {
+			
+			LIST: "01"
+	};
+	$file_upload_icon.send(param, file_callback);	
+}
+
+
+function file_callback(response) {
+	
+	var res = eval("("+response+")"); // String 으로 받은 데이터를 JSON으로 파싱.
+	
+	if (res.Error != '0') {
+		
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return; 
+	}
+
+	// 업로드한 파일경로를 데이터셋에 담음.
+	//$DS_SCRIPT_LIST.setValue("FILE_PATH", res.FilePath);
+	//$DS_SCRIPT_LIST.setValue("SCRIPT_FILE", $DS_FILE.getValue("FILE_NAME"));
+	/*
+	var fileGubun = "";
+	if(/.xlsx$/.test($DS_FILE.getValue("FILE_NAME"))){
+		fileGubun = "xlsx";	
+		
+	}else if(/.xls$/.test($DS_FILE.getValue("FILE_NAME"))){
+		fileGubun = "xls";	
+		
+	}else if(/.csv$/.test($DS_FILE.getValue("FILE_NAME"))) { 		
+		fileGubun = "csv";	
+	}
+*/
+	var drive = getDriveTxt();
+	var param = {
+			_sqlName : 'inf.inf100.insertFile.ins',
+			REC_START_TIME : $recStartTime.getValue(),
+			ORGFILEFULLPATH: drive+res.FilePath+$DS_FILE.getValue("FILE_NAME"),
+			ORGFILENAME : $DS_FILE.getValue("FILE_NAME"),
+			REQ_ID : $reqId.getValue(),
+			BATCH_YN : "N",
+			REG_ID : global("G_USER_ID")
+		};
+
+		var opt = {
+			reqId : "insertFile",
+			url : v_url,
+			param : param,
+			indicator : null,
+			showError : true
+		};
+	
+	Xwing.request(opt, callback);	
+}
+
+
+function getDriveTxt(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "E:/";
+	}else if(hostname[0] == "vauat"){
+		url = "E:/";
+	}else if(hostname[0] == "va"){
+		url = "H:/";
+	}else{
+		url = "E:/";
+	}
+	
+	return url;
+}
+
+
+function btn_upload_click(event) {
+	
+	var opt = {
+		id : 'script_upload',
+		url : "./INF100P3.xhtml",
+		width : 615,
+		height : 428,
+		draggable : true,
+		resizable : false,
+		modal : true,
+		title : "액셀 업로드",
+	};
+
+	var user_upload = new xwing.Dialog(opt);
+	user_upload.open();
+}
+
+function btn_upload_0_click(event) {
+	Xwing.getGrid('grd_List').exportData('Sample', '../jsp/export2.jsp', true);
+}
+
+
+function file_upload_icon_click(event) {
+	$DS_FILE.clearData();
+	$file_upload_icon.removeFile();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_CALLLIST">
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FILE">
+		<xwing:dataset-column id="FILE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_SIZE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SYS150"></xwing:dataset>
+	<xwing:dataset id="DS_SAMPLE">
+		<xwing:dataset-column id="A"></xwing:dataset-column>
+		<xwing:dataset-column id="B"></xwing:dataset-column>
+		<xwing:dataset-column id="C"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>20190101</xwing:dataset-cell>
+			<xwing:dataset-cell>E:/SponsorRec/UPLOAD/test/test.wav</xwing:dataset-cell>
+			<xwing:dataset-cell>999999</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIMIT"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="수동배치" width="1050" height="850" load="page_load" scroll="false" left="24" top="24">
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="98" styles="div_search" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false">
+			<xwing:label id="lbl1" left="10" top="15" value="녹취일시" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:datepicker id="searchRecStartDateFrom" left="75" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_1" left="175" top="15" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:datepicker id="searchRecStartDateTo" left="190" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_0" left="0" top="50" value="업로드일시" height="25" width="72" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:datepicker id="searchRegDateFrom" left="75" top="50" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_1_0" left="175" top="50" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:datepicker id="searchRegDateTo" left="190" top="50" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="stc_02_0" value="파일명" left="260" top="50" height="25" halign="right" width="80" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="searchOrgFileNm" left="345" top="50" width="159" height="25" binddataset="DS_SCH" bindcolumn="SCH_TEXT" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:checkbox id="searchChkSttFlag" label="Stt완료여부" left="519" top="51" styles="label_subtitle" halign="right" width="90" height="22" value="true&#10;" falsevalue="false" truevalue="true"></xwing:checkbox>
+			<xwing:panel id="pan_dept" left="345" top="15" width="420" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="lbl12" left="280" top="15" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar0" left="558" top="99" width="6" visible="true" height="747" anchor="top bottom" cursor="w-resize" styles="split_h" bindwidget="r:panel0,r:pan_player"></xwing:splitbar>
+		<xwing:button id="btn_sel" value="조 회" left="790" top="16" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sel_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+		<xwing:panel id="pan_player" left="564" top="99" width="486" height="751" anchor="all"></xwing:panel>
+		<xwing:panel id="panel0" left="1" top="98" width="557" height="753" scroll="false">
+			<xwing:label id="lbl_subtitle" value="콜정보" left="9" top="3" width="541" height="40" styles="label_boxtitle" halign="left" anchor="none" visible="true"></xwing:label>
+			<xwing:label id="lbl_subtitle_0" value="콜등록" left="10" top="588" width="540" height="40" styles="label_boxtitle" halign="left" anchor="none" visible="true"></xwing:label>
+			<xwing:button id="btn_upload" value="엑셀업로드" left="462" top="595" anchor="bottom left" width="80" tabindex="4" height="28" iconalign="left" borderwidth="1" shadow="1 1 2 0 #d0d0d0" borderstyle="solid" click="btn_upload_click" bordercolor="#C6C6C6" visible="false"></xwing:button>
+			<xwing:panel id="panel1" left="2" top="48" url="INF100_1.jsp" width="555" height="537" scroll="false" anchor="right left">
+				<xwing:datagrid id="grd_List" left="27" top="132" width="241" height="145" rownum="false" anchor="all" resizable="false" sortable="true" cursor="pointer" textwrap="prewrap" visible="false" binddataset="DS_SAMPLE">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column width="150"></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="녹취일자"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="파일명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="요청자ID"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell bindcolumn="A"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="B"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="C"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+			</xwing:panel>
+			<xwing:panel id="search_box_0" left="10" top="635" width="540" height="112" styles="div_search" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false">
+				<xwing:label id="lbl_user_id_0" left="282" top="19" value="요청자 ID" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:datepicker id="recStartTime" left="70" top="20" anchor="none" width="100" height="25"></xwing:datepicker>
+				<xwing:label id="lbl_user_id" left="-9" top="20" value="녹취일시" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_menuName" value="파일" left="15" top="60" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+				<xwing:edit id="edit_file" left="71" top="60" width="339" height="25" anchor="right left" styles="edit_mand_readonly" binddataset="DS_FILE" bindcolumn="FILE_NAME" enabled="true" readonly="true"></xwing:edit>
+				<xwing:file id="file_upload_icon" left="415" top="60" width="28" height="25" action="../jsp/fileUpload3.jsp " anchor="right" borderwidth="1" bordercolor="#C6C6C6" binddataset="DS_FILE" filenamecolumn="FILE_NAME" filesizecolumn="FILE_SIZE" shadow="1 1 2 0 #d0d0d0" styles="btn_normal" visible="true" click="file_upload_icon_click"></xwing:file>
+				<xwing:button id="btn_fileUpload_sch" left="450" top="60" height="27" width="29" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_upload.png" bgimagealign="center center" click="btn_fileUpload_sch_click" visible="false"></xwing:button>
+				<xwing:edit id="reqId" left="371" top="18" height="25" width="110" fontsize="11" enabled="true" binddataset="DS_INFO" bindcolumn="CON_P_CONT_NAME"></xwing:edit>
+			</xwing:panel>
+			<xwing:button id="btn_upload_0" value="엑셀양식다운" left="368" top="595" anchor="bottom left" width="89" tabindex="4" height="28" iconalign="left" borderwidth="1" shadow="1 1 2 0 #d0d0d0" borderstyle="solid" bordercolor="#C6C6C6" visible="false" click="btn_upload_0_click"></xwing:button>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

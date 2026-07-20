@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+backgroundColor 배경색
+borderColor 테두리 색
+borderThickness 테두리 두께 (기본값 1)
+borderStyle 테두리의 형태 (none,solid,inset,outset중 택일, 기본 none)
+cornerRadius 모서리 반지름 (기본값 0)
+horizontalAlign 수평정렬 (left,right,center중 택일, 기본 center)
+horizontalGap 객체들의 가로 간격 사이 여백 (기본값 8)
+paddingLeft 왼쪽 끝과 컨텐츠 영역 왼쪽 사이의 픽셀 수 (기본 0)
+paddingRight 오른쪽 끝과 컨텐츠 영역 오른쪽 사이의 픽셀 수 (기본 0)
+paddingTop 윗쪽 끝과 컨텐츠 영역 윗쪽 사이의 픽셀 수 (기본 0)
+paddingBottom 아랫쪽 끝과 컨텐츠 영역 아랫쪽 사이의 픽셀 수 (기본 0)
+vertivalAlign 수직정렬 (top,middle,bottom중 택일, 기본 middle)
+verticalGap 객체들의 세로 간격 사이 여백 (기본값 6)
+-->
+<rMateMapChart backgroundColor="0xEEEEEE" borderStyle="solid" cornerRadius="8">
+	<MapChart id="mainMap">
+		<series>
+			<MapSeries id="mapseries">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

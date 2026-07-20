@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="./css/line-bar.css">
+    <script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	
+	
+	</head>
+	
+	<body>
+		<script type='text/javascript' src='./lib/echarts.min.js'></script>	
+
+		<div id="container" style="padding-top:15px;"></div>
+		
+		<script>//<![CDATA[ 
+
+	var width, height,option;
+	var chart = echarts.init(document.getElementById('container'));
+	$( window ).bind("resize", function(){
+		width = parent.$pnl_multi_chart.getAttribute("width");
+		height = parent.$pnl_multi_chart.getAttribute("height");
+		
+		$("#container").width( width ); 
+	    $("#container").height(height-20); // 55: padding-top
+	    chart.resize(width+60, height-20, true);
+	});
+	
+	window.onload = function(){
+		document.body.oncontextmenu = function(){return false;};
+	}
+	
+	$(function () {
+		var date = new Array(); 
+		var ced_cnt = new Array(); 
+		var script_score = new Array(); 
+		var avg_ban_cnt = new Array();
+		var avg_men_cnt = new Array();
+		var secret_score = new Array();
+		var focus_score = new Array();
+		var grade_score = new Array();
+		var bef_score = new Array();
+		
+		//dataset 데이터 셋팅
+		
+		var dsObj = parent.$DS_MULTI_RES;
+		
+		for(var i=0; i<dsObj.size(); i++){ 
+			date[i] = dsObj.getValue(i,"WORK_MONTH_NM"); 
+			ced_cnt.push({
+				value: Number(dsObj.getValue(i,"CED_CNT")),	
+				label:{show:Number(dsObj.getValue(i,"CED_CNT"))!=0?true:false}
+			});
+		
+		
+		script_score.push({
+				value: Number(dsObj.getValue(i,"VRS_SCORE")),	
+				label:{show:Number(dsObj.getValue(i,"VRS_SCORE"))!=0?true:false}
+			});
+			
+	
+		avg_ban_cnt.push({
+				value: Number(dsObj.getValue(i,"AVG_BAN_CNT")),	
+				label:{show:Number(dsObj.getValue(i,"AVG_BAN_CNT"))!=0?true:false}
+
+		});
+	
+		avg_men_cnt.push({
+				value: Number(dsObj.getValue(i,"AVG_MEN_CNT")),	
+				label:{show:Number(dsObj.getValue(i,"AVG_MEN_CNT"))!=0?true:false}
+			});
+		
+		secret_score.push({
+			value: Number(dsObj.getValue(i,"SEC_SCORE")),	
+			label:{show:Number(dsObj.getValue(i,"SEC_SCORE"))!=0?true:false}
+		});
+			
+		
+		
+		focus_score.push({
+			value: Number(dsObj.getValue(i,"FOC_SCORE")),	
+			label:{show:Number(dsObj.getValue(i,"FOC_SCORE"))!=0?true:false}
+		});
+		
+		
+		grade_score.push({
+				value: Number(dsObj.getValue(i,"GRADE_SCORE")),	
+				label:{show:Number(dsObj.getValue(i,"GRADE_SCORE"))!=0?true:false}
+			});
+	
+		
+		bef_score.push({
+				value: Number(dsObj.getValue(i,"BEF_SCORE")),	
+				label:{show:Number(dsObj.getValue(i,"BEF_SCORE"))!=0?true:false}
+			});
+		}
+		
+		function getData(ds){
+			
+			switch(ds){
+				case "ced_cnt" :
+					return ced_cnt;
+				break;
+				case "script_score":
+				 	return script_score;
+				break;
+				
+				case "avg_ban_cnt":
+					 return avg_ban_cnt;
+				break;
+				case "avg_men_cnt" :
+					return avg_men_cnt;
+				break;
+				
+				case "secret_score" :
+					return secret_score;
+				break;
+				
+				case "focus_score" :
+					return focus_score;
+				break;
+				
+				case "grade_score" :
+					return grade_score;
+				break;
+				case "bef_score" :
+					return bef_score;
+				break;
+				
+				
+			}
+		}
+		
+		function getDateName(value) {
+			//var value = params[i].name;
+			if(parent.gubun == 'D'){
+				var str = value.substring(0,4)+'-'+value.substring(4,6)+'-'+value.substring(6,8);
+				return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1\n$2');
+			}
+			else if(parent.gubun == 'M') return value.substring(0,4)+"-"+value.substring(4,6);
+			else if(parent.gubun == 'H') return value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8)+" ("+value.substring(8,10)+'시)';
+		}
+
+		
+		option = {
+			    tooltip: {
+			        trigger: 'axis',
+			        position: function (point, params, dom, rect, size) { //tooltip 위치 지정
+			            return [point[0], '10%'];
+			        },
+			        padding : [5,10,5,10],
+			        textStyle:{
+			        	fontSize : 12
+			        },
+			        formatter: function (params, ticket, callback) {
+					//	params[0].name = getDateName(params[0].name);
+			        	var res = params[0].name;
+			            for (var i = 0, l = params.length; i < l; i++) {
+			            	switch(params[i].seriesName){
+	            				case "금칙어평균건수" :
+				          //  	case "필수멘트" :
+				            	case "설계건수" :
+			            			res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "건";
+		           				break;
+			            		case "전월평가평균점수" :		
+			            		case "Grade평균점수" :
+			            			res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "점";
+			            		break;
+				            	case "준수율" :
+			            		case "개인정보처리율" :
+			            	//	case "집중관리처리율" :	
+				            			res += '<br/>' + params[i].seriesName + ' : ' + params[i].value + "%";
+				            		break;
+			            	}
+			            }
+			            return res;
+			        }
+			    },
+			    toolbox: {
+			        feature: {
+			            restore: {show: true,title:'새로고침'}
+			        }
+			    },
+			    legend: {
+			    	type : "scroll", //만약에 legend가 짤리면 scroll로 변경
+			    //	top : "3%",
+			    	zlevel:1,
+			        //data:['설계건수','금칙어','필수멘트','준수율','집중관리처리율','개인정보처리율','전월평가점수','Grade점수']
+			    	data:['설계건수','금칙어평균건수','준수율','개인정보처리율','전월평가평균점수','Grade평균점수']
+			    },
+			    xAxis: [
+			        {
+			            type: 'category',
+			            data: date,
+			            nameGap: 15,
+			       //     boundaryGap: ['00%', '20%'],
+			            axisLabel: {
+			                formatter: function (value, index) {
+			                	var str = value.split("~");
+			                	
+			                	if(str[1]==undefined) str=str[0]; else str=str[0]+"~"+'\n'+str[1];
+                			    return str;
+			                }
+		            	},
+			            axisPointer: {
+			                type: 'shadow'
+			            }
+			        
+			        }
+			    ],
+			    yAxis: [
+						{
+						    type: 'value',
+						    name: '건수',
+						    min: 0,
+						   // interval: 10,
+						    axisLabel: {
+						        formatter: '{value}'
+						    }
+						},
+						{
+				            type: 'value',
+				            name: '점수',
+				            min: 0,
+				            max: 100,
+				            interval: 30,
+				            axisLabel: {
+				                formatter: '{value}'
+				            }
+				        }
+				    ],
+				    series: [
+								{
+								    name:'설계건수',
+								    type:'bar',
+								    data:getData("ced_cnt"),
+								    itemStyle: {
+								    	color: ['#4CC8E9']
+								    		//['#7CB5EC']
+											//['#337B9D']
+								    },
+								    label: {
+								    	show:true,
+								    	position:'top'
+								
+								    }
+								},
+								{
+								    name:'금칙어평균건수',
+								    type:'bar',
+								    data:getData("avg_ban_cnt"),
+								    itemStyle: {
+								    	color:  ['#0073AE']
+								    		//['#6F7A84']
+											//['#338FBE']
+								    },
+								    label: {
+								    	show:true,
+								    	position:'top'
+								
+								    }
+								},
+								/* {
+						            name:'필수멘트',
+						            type:'bar',
+						            data:getData("avg_men_cnt"),
+						            itemStyle: {
+						            	color: ['#33B6E9']
+						            		//['#7CB5EC']
+						            },
+						            label: {
+						            	show:true,
+						            	position:'top'
+						    
+						            }
+						        }, */
+								{
+								    name:'준수율',
+								    type:'line',
+								    yAxisIndex: 1,
+								    data:getData("script_score"),
+								    itemStyle: {
+								    	color: ['#EDB937']
+								    		//['#7CB5EC']
+						        			//['#E1907D']
+								    },
+								    label: {
+								    	show:true,
+								    	position:'top'
+								
+								    }
+								},		             
+							
+							/* {
+							    name:'집중관리처리율',
+							    type:'line',
+							    data:getData("focus_score"),
+							    itemStyle: {
+							    	color:  ['#ACE174']
+							    		//['#6F7A84']
+							    },
+							    label: {
+							    	show:true,
+							    	position:'top'
+							
+							    }
+							},     */
+							{
+							    name:'개인정보처리율',
+							    type:'line',
+							    yAxisIndex: 1,
+							    data:getData("secret_score"),
+							    itemStyle: {
+							    	color:  ['#D25649'] 
+							    		//['#6F7A84']
+						    			//['#F2BA81']
+							    },
+							    label: {
+							    	show:true,
+							    	position:'top'
+							
+							    }
+							},
+					        
+					        {
+					            name:'전월평가평균점수',
+					            type:'line',
+					            yAxisIndex: 1,
+					            data:getData("bef_score"),
+					            itemStyle: {
+					            	color: ['#D98FB2']
+					            		//['#7CB5EC']
+										//['#FEDF8F']
+					            },
+					            label: {
+					            	show:true,
+					            	position:'top'
+					    
+					            }
+					        },
+					        
+					        {
+					            name:'Grade평균점수',
+					            type:'line',
+					            yAxisIndex: 1,
+					            data:getData("grade_score"),
+					            itemStyle: {
+					            	color: ['#A2BC4F']
+					            		//['#7CB5EC']
+					        			//['#D98FB2']
+					            },
+					            label: {
+					            	show:true,
+					            	position:'top'
+					    
+					            }
+					        }
+					    ]
+					};
+			if (option && typeof option === "object") {
+				chart.setOption(option,true);
+			}
+			
+		/*
+	    setTimeout(function () {
+		    	$('#container').highcharts({
+		        chart: {
+		            zoomType: 'xy'
+		        },
+		        
+		        title: { 
+		        	text: '' 
+		        },
+		        
+		        credits: {
+		            enabled: false
+		        },
+		        
+		        subtitle: {
+		            //text: 'Source: WorldClimate.com'
+		        },
+		        
+		        xAxis: [{
+		        	categories: date,
+		            labels: {
+		            	staggerLines: 1,
+		                //step: date.length>60 ? 10: date.length>40 ? 8: date.length>20 ? 6 : date.length>10 ? 3 : 1,
+                		formatter: function () {
+                			if(parent.gubun == 'D'){
+                				var str = this.value;
+	                            return str;
+                			}
+		                }
+		            }
+		        }],
+		        
+		        yAxis: [
+		          { // Primary yAxis
+		            labels: {
+		                //format: '{value}',
+		                formatter:function(){
+		                    return (this.value) + ' %';
+		                },
+		                style: {
+		                    color: ['#7CB5EC']
+		                }
+		            },
+		            title: {
+		                text: '비율',
+		                style: {
+		                    color: ['#7CB5EC']
+		                }
+		            },
+		            min: 0,
+		            //max: 100,
+		            opposite: false,
+		            //tickInterval: 10
+		        	}
+	          	, { // Secondary yAxis
+	        	   labels: {
+		                format: '{value}',
+		                style: {
+		                	color: ['#6F7A84']
+		                }
+		            },
+		            title: {
+		                text: '건수',
+		                style: {
+		                	color: ['#6F7A84']
+		                }
+		            }, 
+		            opposite: true,
+		         }
+		        ],
+		        
+		        tooltip: {
+		        	 formatter: function() {
+		        	        var s = '<b>'+ this.x +'</b>';
+		        	        var chart = this.points[0].series.chart; //get the chart object
+		        	        var categories = chart.xAxis[0].categories; //get the categories array
+		        	        var index = 0;
+		        	        while(this.x !== categories[index]){index++;} //compute the index of corr y value in each data arrays           
+		        	        $.each(chart.series, function(i, series) { //loop through series array
+		        	        	s += '<br/>'+ series.name +': ' +
+		        	                series.data[index].y ;
+		        	            s += i%2!=0?'건':'%';     //use index to get the y value
+		        	        });           
+		        	        return s;
+		        	    },
+		        	    shared: true
+	            },
+	            
+		        legend: {
+		            layout: 'horizontal',
+		            floating: false,
+		            align: 'center',
+		            verticalAlign: 'bottom',
+		            //height: 40,
+		            y: 10,
+		            borderWidth: 0,
+		            itemDistance: 3,
+		            backgroundColor: '#EEEEEE'
+		        },
+		        
+		        plotOptions: {
+		            line: {
+		                dataLabels: {
+		                    enabled: true
+		                }
+		            },
+		            column: {
+		                dataLabels: {
+		                    enabled: true
+		                }
+		            }
+		        },
+		        
+		        series: [{
+						    name: '준수율',
+						    type: 'line',
+						    color: '#7CB5EC',
+						    data: getData("script_score"),
+						    cursor:'pointer',
+						    point: {
+						        events: {
+						            click: function () {
+						            	parent.bar_click(this.category);
+						            }
+						        }
+						    },
+						    marker: { 
+						        lineWidth: 2,
+						        lineColor: '#7CB5EC',
+						        fillColor: 'white',
+						        radius : 3
+						    },
+						    shadow : true,
+						    dataLabels: {
+						    	style: {
+						    		fontSize: 13,
+						    		color: '#388DE2',
+						            fontWeight: 'bold'
+						        }
+						    }	
+						}
+		                ,{
+			            name: '금칙어',
+			            type: 'column',
+			            yAxis: 1,
+			            colorByPoint: true, //false: default, true: user-color
+			            colors: ['#6F7A84'],
+			            data: getData("ban_score"),
+			            cursor:'pointer',
+		                point: {
+		                    events: {
+		                        click: function () {
+		                        	parent.bar_click(this.category);
+		                        }
+		                    }
+		                },
+			            dataLabels: {
+			            	style: {
+			            		fontSize: 13,
+			            		color: '#59626A',
+		                        fontWeight: 'bold'
+		                    	}
+			            }
+		        	}]
+		    	});
+		}, 500);
+		*/
+	});
+	//]]>  
+	
+	</script>
+	</body>
+
+</html>
+

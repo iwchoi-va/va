@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  	<style>
+		html {
+			overflow:hidden;
+			resize: both;
+			height: 100%;
+		}
+		body {
+			/*background: #fff;*/
+			background:#434343;
+			color: #fafafa;
+			font-family: 'Dotum','돋움', "NanumBarunGothic", Helvetica, Arial, sans-serif;
+			overflow: hidden;
+			height: 100%;
+			width: 100%;
+			margin: 0 auto;
+		}
+		#container{
+			height: 100%;
+			width:  100%;
+			color: #fff;
+		}
+		svg{ 
+			padding: 12px 5px 0 0; 
+		}
+		/*
+		.highcharts-tooltip>span {
+		    background: rgba(255,255,255,0.85);
+		    border: 1px solid silver;
+		    border-radius: 3px;
+		    box-shadow: 1px 1px 2px #888;
+		    padding: 5px;
+		    width: 400px;
+		    height: 45px;
+		}
+		*/
+		
+    </style>
+  	<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+  	<script type='text/javascript' src='../chart/lib/echarts.min.js'></script>	
+	<script type='text/javascript' src='../js/servicemanager.js'></script>
+	<script type='text/javascript' src='../js/dateutil.js'></script>
+	</head>
+	
+	<body onLoad="calling()">
+	  
+		<div id="container"></div>
+		
+		<script>
+	   		var xhr = new XMLHttpRequest();
+	   		var date=[], count=[], rec=[], summary=[], duration=[], file_path=[], icon_rec="";
+	   		var rec_key = parent.meta.rec_key;
+	   		
+		 	function calling(){
+		 		//constContext(); //브라우저 우측 메뉴 막아.
+				document.body.oncontextmenu = function(){return false;};
+		 		
+		 		var host = parent.host;
+		 		//var regist_no = parent.meta.regist_no;
+		 		
+		 		var ced_no =  parent.meta.ced_no;
+
+	    		xhr.onreadystatechange = loader;
+	    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=contact_history&ced_no="+ ced_no),false);
+	    		xhr.send(null);
+		 	}
+		 	
+		 	function loader(){
+	   			if(xhr.readyState == 4 && xhr.status == 200) {
+		        	result = JSON.parse(xhr.responseText);
+		        	var data = result.DATA;
+		        	for(var i=data.record.length; i>0; i--) {
+		        		rec.push(data.record[i-1][0]);
+		        		date.push(data.record[i-1][1]);
+		        		duration.push(data.record[i-1][2]);
+		        		file_path.push(data.record[i-1][3]);//query 순
+		        		
+		        		if(rec_key == data.record[i-1][0]){
+		        			icon_rec = data.record[i-1][0];//해당날짜 -> 차후 렉키로 변경
+		        		}
+		        	}
+
+		        	
+		        	createChart();
+		        }
+		   	}
+		 	
+	function createChart(){	 	
+			var width, height, option;
+			 var chart = echarts.init(document.getElementById('container'));
+			$( window ).bind("resize", function(){
+				width = document.getElementById('container').getAttribute("width");
+				height = document.getElementById('container').getAttribute("height");
+
+				$("#container").width( width - 40 ); // 10: padding-right
+			    $("#container").height( height - 60 ); // 55: legend-y
+				    
+			   chart.resize(width - 40, height - 60, true);
+			});
+
+			window.onload = function(){
+				document.body.oncontextmenu = function(){return false;};
+			}
+		
+			// 차트 series 생성
+			function getSeries() {
+		        var seriesArray = [];
+		        var series = null;
+		        var dsObj = null;
+		     	var number=0;
+		     for(var i=0; i<rec.length; i++) {
+					var strDate = date[i].substring(4,6)+'/'+date[i].substring(6,8)+' '+date[i].substring(8,10)+':'+date[i].substring(10,12);
+						series = {
+								type: 'line',
+				            	name: rec[i],
+				                data:[]
+				        };
+					
+					
+					 for ( var j=0; j<duration.length; j++ ) {
+			                series.data.push(Number(duration[j]))
+			            }
+					if(rec[i] == icon_rec){
+						 series.markPoint= {
+				                data: [
+				                       {name: rec[i], value: '현재녹취', xAxis: date[i], yAxis: duration[i]}
+				                   ]
+				               };
+					}
+						
+					 
+					seriesArray.push(series);
+				}
+		        return seriesArray;
+		    }
+			
+			function getLegend(){
+				var legend = [];
+				for(var i=0; i<rec.length; i++) {
+					  legend.push(date[i].substring(4,6)+'/'+date[i].substring(6,8)+' '+date[i].substring(8,10)+':'+date[i].substring(10,12));
+				}
+				
+				return legend;
+			}
+			
+			function getAxispointer(){
+				
+			}
+			
+			$(function () {
+				option = {
+							color: ['#FE7785','#FEC641','#D04159','#94B558','#E98D4C','#337B9D','#338FBE','#33B6E9','#70D3ED','#BDE6F3','#ACE174','#FAD16F','#FC6E51','#9D81E1','#809FC3','#A288E5','#949494','#909085','#F0F0F0','#FF9E7E'], 
+						    toolbox: {
+						        feature: {
+						            restore: {show: true, title:'새로고침'}
+						        }
+						    },
+						    textStyle: {
+						        color: 'rgba(255, 255, 255, 0.9)'
+						    },
+						    tooltip: {
+						        trigger: 'axis',
+						        position: function (point, params, dom, rect, size) {
+						            return [point[0],0];
+						        },
+						        textStyle:{
+			    		        	fontSize : 12
+			    		        },
+			    		        padding : [5,10,5,10],
+			    		        formatter: function (params, ticket, callback) {
+			    		        	var strDate = params[0].name.substring(4,6)+'/'+params[0].name.substring(6,8)+' '+params[0].name.substring(8,10)+':'+params[0].name.substring(10,12);
+			    		        	var res = strDate;
+			    		            	res += '<br/> 녹취키 : ' + params[0].seriesName + '<br/> 통화시간 : ' + params[0].value + "분";
+			    		           
+			    		            return res;
+			    		        }
+						    },
+						    legend: {
+						        data:getLegend()
+						    },
+						    grid: {
+						        left: '3%',
+						        right: '4%',
+						        bottom: '3%',
+						        containLabel: true
+						    },
+						    yAxis: {
+						        type: 'value',
+						        name: '통화시간(분)',
+						        min: 0
+						    },
+						    xAxis: {
+						        type: 'category',
+						        boundaryGap: false,				     
+						        axisLabel: {
+					                formatter: function (value, index) {
+					                	value =  value.toString();
+					                	  return value.substring(4,6)+'/'+value.substring(6,8)+' '+value.substring(8,10)+':'+value.substring(10,12);
+					                }
+				            	},
+						        data: date
+						    },
+						   
+						    series: getSeries()
+						};
+					
+			if (option && typeof option === "object") {	    
+				chart.setOption(option,true);
+				chart.on('click', function(e) {
+					setTimeout(function(){
+					 var idx = date.indexOf(e.name);
+					 parent.reloadPlayer(rec[idx], file_path[idx], date[idx]);
+					},100);
+				})
+			}	 
+		});		
+	} 	
+		 
+		 	
+	    </script>
+	    
+	</body>
+
+</html>
+

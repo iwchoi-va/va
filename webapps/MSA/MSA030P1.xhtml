@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/// 사진은 hr/hrm130m.xml 에서 등록한 사진이 보임.
+
+var _url = "service::msa.msa030p1.user.info.sel.do";
+var _panel_size = -1;
+function page_load(event) {
+
+	XwingObject();
+	g_createOrg("pnl_dept", 3, "N", "Y", "Y", "", "전체",false,true);
+
+//	$DS_USER.copyFrom(parent.$DS_USER);
+	$DS_VSS160.copyFrom(parent.$DS_VSS160);
+	$cmb_grade.setValue("1");
+
+	$edit_rowcnt.setValue($DS_USER.size());
+}
+
+// ---조회버튼클릭.
+function btn_sel_click(event) {
+
+	if($cmb_org2.getValue() == ""){
+		xwing.Dialog.alert("센터까지 조회해야합니다.");
+		return;
+	}
+	/*
+	if (g_orgValue(2) == "" && Xwing.getEdit("edt_user").getValue() == "") {
+		alert("소속3 or 사원명/사번을 입력해 주십시오.");
+		return;
+	}
+*/
+	f_search_user();
+
+}
+
+function f_search_user() {
+	var v_param = {
+		_sqlName : "msa.msa030p1.getUser.sel",
+	};
+
+	g_orgToParam("", v_param);
+
+	var opt = {
+		reqId : "getList",
+		url : _url,
+		param : v_param,
+		indicator : null,
+		showError : true
+	};
+
+	Xwing.request(opt, callback);
+
+}
+
+// ---callback
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : '
+				+ res.ResultMessage);
+		return;
+	}
+	switch (reqId) {
+
+	case "getList":
+		Xwing.getDataset("DS_LIST").setData(res.DS_USER.column,res.DS_USER.record);
+
+		$edit_rowcnt_all.setValue($DS_LIST.size());
+
+
+		break;
+
+	}
+}
+
+function edt_user_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_sel_click();
+	}
+
+}
+
+function btn_save_click(event) {
+
+	for(var i=0; i< $DS_USER.size();i++){
+		if($DS_USER.getValue(i,"GRADE") == undefined || $DS_USER.getValue(i,"GRADE") == ""){
+			xwing.Dialog.alert("모든 상담사에게 등급을 지정해야합니다.");
+			return;
+		}
+	}
+
+	parent.$DS_USER.appendDataset($DS_USER);
+	parent.Xwing.getDialog("MSA030P1").close();
+}
+
+function rdo_useyn_change(event) {
+	if($rdo_useyn.getValue() =="N"){
+		$stc_date.setVisible(true);
+		$cal_sdate.setVisible(true);
+		$stc_wave.setVisible(true);
+		$cal_edate.setVisible(true);
+	}else{
+		$stc_date.setVisible(false);
+		$cal_sdate.setVisible(false);
+		$stc_wave.setVisible(false);
+		$cal_edate.setVisible(false);
+	}
+}
+
+function btn_add_click(event) {
+
+	var n_cnt = $grd_list.getCheckedCnt();
+	var a_chk = $grd_list.getCheckedIdx();
+
+	//항목추가
+	var arrUSER =Xwing.getDataset('DS_USER').getData().concat([]);
+	for(var i=0; i< n_cnt; i++){
+		arrUSER.push($DS_LIST.getRow(a_chk[i]).concat([]));
+		//아래처럼 하면 속도 느림.
+		//$DS_USER.addRow();
+		//Xwing.getDataset('DS_USER').copyRowFrom($DS_USER.size()-1, "DS_LIST", a_chk[i]);
+	}
+	$DS_USER.setData($DS_LIST.getColumnInfo(),arrUSER);
+	//전체리스트에서 삭제
+	for(var i=n_cnt; i> 0; i--){
+		$DS_LIST.removeRow(a_chk[i-1]);
+	}
+
+	$edit_rowcnt.setValue($DS_USER.size());
+	$edit_rowcnt_all.setValue($DS_LIST.size());
+
+}
+
+function btn_del_click(event) {
+
+	var n_cnt = $grd_user.getCheckedCnt();
+	var a_chk = $grd_user.getCheckedIdx();
+
+	//전체리스트에항목추가
+	var arrLIST =Xwing.getDataset('DS_LIST').getData().concat([]);
+	for(var i=0; i< n_cnt; i++){
+		arrLIST.push($DS_USER.getRow(a_chk[i]).concat([]));
+		//아래처럼 하면 속도 느림.
+		//$DS_LIST.addRow();
+		//Xwing.getDataset('DS_LIST').copyRowFrom($DS_LIST.size()-1, "DS_USER", a_chk[i]);
+
+	}
+	$DS_LIST.setData(arrLIST);
+	//항목 삭제
+	for(var i=n_cnt; i> 0; i--){
+		$DS_USER.removeRow(a_chk[i-1]);
+	}
+
+	$edit_rowcnt.setValue($DS_USER.size());
+	$edit_rowcnt_all.setValue($DS_LIST.size());
+}
+
+function btn_apply_click(event) {
+	var grade = $cmb_grade.getValue();
+	var reason = $edt_reason.getValue();
+
+	if(grade == null || grade == ""){
+		xwing.Dialog.alert("일괄적용할 등급을 선택해주세요");
+		return;
+	}
+
+	if(reason == null || reason == ""){
+		xwing.Dialog.alert("예외등급 설정 사유를 입력해주세요");
+		return;
+	}
+
+	//$DS_USER.addColumn("CHG_COMMENT");
+
+	for(var i =0; i< $DS_USER.size(); i++){
+		$DS_USER.setValue(i, "GRADE", grade);
+		$DS_USER.setValue(i, "CHG_COMMENT", reason);
+	}
+
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_USER">
+		<xwing:dataset-column id="VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_COMMENT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_VSS160">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="user_info" width="950" height="540" scroll="false" load="page_load" left="24" top="24">
+		<xwing:panel id="search_box" left="0" top="0" width="950" height="55" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false" styles="div_search">
+			<xwing:label id="stc_02_0_0" value="소속" left="15" top="15" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:button id="btn_sel" value="조 회" left="505" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="1 1 2 0 #d0d0d0" click="btn_sel_click"></xwing:button>
+			<xwing:panel id="pnl_dept" left="80" top="15" width="420" height="25" visible="true">
+			</xwing:panel>
+		</xwing:panel>
+		<xwing:button id="btn_del" left="470" top="260" height="20" width="20" bgimage="../images/arrow_left.png" bgimagealign="center center" click="btn_del_click"></xwing:button>
+		<xwing:button id="btn_add" left="470" top="235" height="20" width="20" bgimage="../images/arrow_right.png" bgimagealign="center center" click="btn_add_click"></xwing:button>
+		<xwing:button id="btn_save" value="저 장" left="883" top="503" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click"></xwing:button>
+		<xwing:datagrid id="grd_list" left="3" top="93" width="460" height="400" autofit="false" anchor="top bottom" binddataset="DS_LIST" borderwidth="1" borderstyle="solid" emptymessage="조회된 데이터가 없습니다." editsuppress="false" rownum="true" virtual="true" checkbox="true" sortable="true" resizable="true">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="75"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell text="본부"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="팀"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상담사" bindcolumn="USER_NAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="사번" bindcolumn="EMP_NO"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="25">
+					<xwing:datagrid-cell bindcolumn="ORG1_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="normal" bindcolumn="ORG2_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG3_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_ID" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:edit id="edt_reason" left="588" top="94" width="290" height="25" halign="left" anchor="top right" fontsize="12"></xwing:edit>
+		<xwing:datagrid id="grd_user" left="500" top="153" width="444" height="339" autofit="false" anchor="top right bottom" borderwidth="1" borderstyle="solid" emptymessage="조회된 데이터가 없습니다." editsuppress="false" rownum="true" virtual="true" checkbox="true" binddataset="DS_USER" sortable="true" resizable="true" editwhen="dblclick">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="75"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="140"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell text="본부"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="팀"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상담사"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="사번"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="등급"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="예외사유"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="25">
+					<xwing:datagrid-cell bindcolumn="ORG1_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell fontweight="normal" bindcolumn="ORG2_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG3_NM" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_ID" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell edittype="combo" bindcolumn="GRADE" domaindataset="DS_VSS160" domaincodecolumn="CODEID" domaintextcolumn="CODENAME"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CHG_COMMENT" edittype="edit"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:edit id="edit_rowcnt" left="899" top="124" width="45" height="25" halign="right" anchor="top right" readonly="true" fontsize="12"></xwing:edit>
+		<xwing:label id="lbl_copy" value="등급일괄적용" left="500" top="65" height="25" halign="right" width="83" styles="label_lititle" visible="true" anchor="top right"></xwing:label>
+		<xwing:combo id="cmb_grade" left="588" top="64" height="25" domaindataset="DS_VSS160" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" anchor="top right"></xwing:combo>
+		<xwing:button id="btn_apply" value="적 용" left="884" top="94" anchor="top right" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_apply_click"></xwing:button>
+		<xwing:edit id="edit_rowcnt_all_0" left="419" top="64" width="45" height="25" halign="right" anchor="top left" readonly="true" fontsize="12"></xwing:edit>
+		<xwing:label id="lbl_copy_0" value="예외사유" left="500" top="94" height="25" halign="right" width="83" visible="true" styles="label_lititle" anchor="top right"></xwing:label>
+	</xwing:page>
+</body>
+</html>

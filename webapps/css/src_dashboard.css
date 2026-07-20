@@ -1,0 +1,52 @@
+@CHARSET "utf-8";
+#grd_grade_info .xw-datagrid-area-body tbody tr.select{ background:none !important; }
+
+
+/*#7E97AF*/
+
+#grd_grade_info .xw-datagrid-area-header .xw-mod { border:none; background-color: #009edd !important; }
+
+
+#grd_grade_info .xw-datagrid-area-header .xw-mod {border-radius : 10px 10px 0px 0px;}
+#grd_grade_info .xw-datagrid-area-body {border-bottom:3px solid #009edd;}
+
+#grd_grade_info .xw-datagrid-area-header .xw-mod .xw-datagrid-font { font-family:'Dotum','돋움';color: #eee; font-size:15px !important; }
+
+#grd_grade_info .xw-datagrid-area-body td .xw-datagrid-font {font-size:14px;  color:rgba(0,0,0,0.7); font-weight:bold;}
+
+#grd_grade_info .xw-datagrid-body-area {background-color :#fff !important; overflow:hidden;}
+/*#grd_inter_key .xw-datagrid-body-area .xw-mod { width:100% !important; }
+#grd_detect_key .xw-datagrid-body-area .xw-mod { width:100% !important;}*/
+
+#grd_grade_info .xw-datagrid-font { font-family:'Dotum','돋움'; font-size:12px; }
+
+#grd_grade_info .xw-datagrid-area-body td { border : 2px solid #eee; }
+#grd_grade_info .xw-datagrid-area-header th { font-size:17px; border-right: 2px solid #eff0f1 !important; border-bottom: 2px solid #eff0f1 !important;background-color: #009edd !important; }
+
+.xw-datagrid-area-summary{border-top:none;}
+.xw-datagrid-area-header{border-bottom:none;}
+
+#lbl_vrs_now .xw-label-cell,#lbl_vrs_yester .xw-label-cell,#lbl_vrs_avg .xw-label-cell,
+#lbl_ban_now .xw-label-cell,#lbl_ban_yester .xw-label-cell,#lbl_ban_avg .xw-label-cell,
+#lbl_men_now .xw-label-cell,#lbl_men_yester .xw-label-cell,#lbl_men_avg .xw-label-cell,
+#lbl_sec_now .xw-label-cell,#lbl_sec_yester .xw-label-cell,#lbl_sec_avg .xw-label-cell,
+#lbl_foc_now .xw-label-cell,#lbl_foc_yester .xw-label-cell,#lbl_foc_avg .xw-label-cell,
+#lbl_bef_now .xw-label-cell,#lbl_bef_yester .xw-label-cell,#lbl_bef_avg .xw-label-cell
+ {border-radius : 10px;}
+
+/*
+#grd_inter_key .xw-datagrid-area-body td.grd_inter_key-b-r0c1:hover:after,
+#grd_detect_key .xw-datagrid-area-body td.grd_detect_key-b-r0c1:hover:after{content:"검색 이동";position:absolute;color:#6c6c6c;font-size:10px;}
+*/
+/*위 아래로 같이 늘어날때*/
+/*#pan_inter{}
+#pan_inter{ bottom: 15px !important; position: relative !important; }*/
+
+/*#pan_inter, #pan_detect{ height: 44% !important; }*/
+
+/*그리드 높이 자동으로*/
+#grd_grade_info .xw-datagrid-area-body div:nth-of-type(2) table {height:100% !important;}
+
+#grd_grade_info .xw-datagrid-area-body tbody tr {height:10% !important;}
+
+

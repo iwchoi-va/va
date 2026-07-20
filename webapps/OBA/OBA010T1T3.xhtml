@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba030p1.sel.do";
+var ced_no="", browser="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		ced_no= parent.ced_no;
+		//alert(ced_no);
+		fnCallWebService();
+}
+
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+function getInfo(){
+	var opt = {
+			reqId: "getInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1.getInfo.sel', 
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getHistDtlIvstInfoList":
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			break;
+		default: break;	
+	}
+}
+
+function fnCallWebService(){
+	//"https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}";
+	//var url = "https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}";
+	
+	var url = getWebServiceURL();
+	var serviceName ="LTTMINFR0090";
+	var reqJson ="{planNo:"+ ced_no +"}";
+	//var reqJson ="{\"planNo\":\""+ '941802602612' +"\"}";
+	
+	var opt = {
+			reqId: "getHistDtlIvstInfoList",
+			url: "service::oba.oba010T3.getHistDtlIvstInfoList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "uwHistoryDetailIvstInfoVOList",
+				reqJson :reqJson,
+				DS_RES: $DS_RES
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+	
+	//$panel0.setUrl("https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0090&_reqJson={\"planNo\":\"941802602612\"}");
+
+
+
+}
+
+function getWebServiceURL(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}else if(hostname[0] == "vauat"){
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "va"){
+		url = "https://ts.aig.co.kr/tmMciService.do";
+	}else{//로컬도 개발url로.
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+		//url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}
+	
+	return url;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_INFO">
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="CUST_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DEPT_FULLNM"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="MONTH_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="FIN_GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BEF_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="APPY_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="CALL_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="DURATION"></xwing:dataset-column>
+		<xwing:dataset-column id="VRS_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="SEC_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="FOC_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="MEN_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BEF_GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_COMMENT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_VERSION"></xwing:dataset-column>
+		<xwing:dataset-column id="P_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="NAB_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="INSUR_AMT"></xwing:dataset-column>
+		<xwing:dataset-column id="BASIC_PREM"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DMBO">
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="BASIC_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="INSUR_AMT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_RES">
+		<xwing:dataset-column id="UNDERWRITERDEPT"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTOUWSEQNUM"></xwing:dataset-column>
+		<xwing:dataset-column id="UNITPOLICYNUMBER"></xwing:dataset-column>
+		<xwing:dataset-column id="UNITPLANNUMBER"></xwing:dataset-column>
+		<xwing:dataset-column id="REQACCEPTOPINION"></xwing:dataset-column>
+		<xwing:dataset-column id="IVSTRSNNM"></xwing:dataset-column>
+		<xwing:dataset-column id="UNDERWRITERNAME"></xwing:dataset-column>
+		<xwing:dataset-column id="UWOPINION"></xwing:dataset-column>
+		<xwing:dataset-column id="INVESTLEVEL"></xwing:dataset-column>
+		<xwing:dataset-column id="UWSTEPSEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="DECISIONDATE"></xwing:dataset-column>
+		<xwing:dataset-column id="IVSTRSCD"></xwing:dataset-column>
+		<xwing:dataset-column id="UNDERWRITERID"></xwing:dataset-column>
+		<xwing:dataset-column id="UWRESULT"></xwing:dataset-column>
+		<xwing:dataset-column id="UNDERWRITERDEPTNAME"></xwing:dataset-column>
+		<xwing:dataset-column id="UWRESULTNAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="true">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="400" anchor="all" bgcolor="#eee" scroll="false">
+			<xwing:panel id="pan_base_info" left="0" top="-5" scroll="true" width="769" height="400" anchor="all">
+				<xwing:label id="lbl_title1" value=" UW 심사이력" left="10" top="10" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+				<xwing:datagrid id="grd_list" left="10" top="36" width="476" height="354" rownum="true" checkbox="false" binddataset="DS_RES" anchor="top bottom left" sortable="true" resizable="true" pageable="false" autofit="true" borderwidth="1" styles="table_border" textwrap="prewrap">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="151"></xwing:datagrid-column>
+						<xwing:datagrid-column width="145"></xwing:datagrid-column>
+						<xwing:datagrid-column width="185"></xwing:datagrid-column>
+						<xwing:datagrid-column width="144"></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="심사결과" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="심사의견사유" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="심사일시"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="UW 심사자"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell halign="left" bindcolumn="UWRESULTNAME"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="IVSTRSNNM" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="DECISIONDATE" mask="datetime"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="UNDERWRITERNAME"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:label id="lbl_title1_0" value=" UW 심사자 의견" left="490" top="34" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+				<xwing:textarea id="txtOpinion" left="489" top="57" width="260" height="140" readonly="false" binddataset="DS_RES" bindcolumn="UWOPINION"></xwing:textarea>
+				<xwing:label id="lbl_title1_0_0" value=" 인수요청의견" left="490" top="227" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+				<xwing:textarea id="textarea0_0" left="489" top="249" width="260" height="140" binddataset="DS_RES" bindcolumn="REQACCEPTOPINION"></xwing:textarea>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

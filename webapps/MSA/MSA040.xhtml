@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url = "service::msa.msa010.sqlservice.do";
+var _auth_User = [];//화면 사용 권한			
+var _serverName="";
+function page_load(event) {
+	XwingObject();
+	f_codebook_sel();
+}
+
+function f_tabEnabled(){
+
+	var hostname = window.location.hostname.split(".");
+	_serverName = hostname[0];
+	
+	if(_serverName == "vauat"){
+		$lbl_sub1.setVisible(true);
+		lbl_sub1_click();
+	}else if(_serverName == "va"){
+		$lbl_sub2.setVisible(true);
+		lbl_sub2_click();
+	//	$lbl_sub2.setEnabled(true);
+	}else{//개발에선 둘다 볼려고 ^^
+		lbl_sub1_click();
+		$lbl_sub1.setVisible(true);
+		$lbl_sub3.setVisible(true);
+	}
+	
+}
+
+function f_codebook_sel(){
+
+	var param = {
+		cmd : "getCodes",
+		codeType : "SYS020,SYS130", //서버정보,화면권한 ID
+		useyn : "Y"
+	};
+	var opt = {
+		reqId : "f_codebook_sel",
+		url : "service::cs.com.codeutil.do",
+		param : param
+	};
+	Xwing.request(opt, callback);
+}
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case "f_codebook_sel" :
+			$DS_SYS020.setData(res.SYS020.column, res.SYS020.record);
+			$DS_SYS130.setData(res.SYS130.column, res.SYS130.record);
+			for(var i = 0; i< $DS_SYS130.size(); i++){
+				_auth_User.push($DS_SYS130.getValue(i,"CODENAME"));
+			}
+			if(_auth_User.indexOf(global("G_USER_ID")) != -1){
+				f_tabEnabled();
+			}else{
+				xwing.Dialog.alert('화면 권한이 없습니다. 관리자에게 문의하세요.');
+			}
+		break;
+	}
+}
+
+function lbl_sub1_click(event) {
+	Xwing.getLabel('lbl_sub2').setFontweight('normal');
+	Xwing.getLabel('lbl_sub2').setBgcolor('');
+	Xwing.getLabel('lbl_sub2').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('normal');
+	Xwing.getLabel('lbl_sub3').setBgcolor('');
+	Xwing.getLabel('lbl_sub3').setFontcolor('');
+	
+	Xwing.getLabel('lbl_sub1').setFontweight('bold');
+	Xwing.getLabel('lbl_sub1').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub1').setFontcolor('#fff');
+	
+	$pan_tab1.setVisible(true);
+	$pan_tab2.setVisible(false);
+	
+	$pan_tab1.setUrl("./MSA040T1.xhtml");
+}
+
+function lbl_sub2_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub2').setFontweight('bold');
+	Xwing.getLabel('lbl_sub2').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub2').setFontcolor('#fff');
+	
+	$pan_tab1.setVisible(false);
+	$pan_tab2.setVisible(true);
+	
+	$pan_tab2.setUrl("./MSA040T2.xhtml");
+}
+
+function lbl_sub3_click(event) {
+	Xwing.getLabel('lbl_sub1').setFontweight('normal');
+	Xwing.getLabel('lbl_sub1').setBgcolor('');
+	Xwing.getLabel('lbl_sub1').setFontcolor('');
+
+	Xwing.getLabel('lbl_sub3').setFontweight('bold');
+	Xwing.getLabel('lbl_sub3').setBgcolor('#58728d');
+	Xwing.getLabel('lbl_sub3').setFontcolor('#fff');
+	
+	$pan_tab1.setVisible(false);
+	$pan_tab2.setVisible(true);
+	
+	$pan_tab2.setUrl("./MSA040T2.xhtml");
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SYS020"></xwing:dataset>
+	<xwing:dataset id="DS_SYS130"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="Xcron관리" left="0" top="0" height="740" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:panel id="pan_subtitle" left="0" top="0" width="1050" height="35" anchor="top right left" scroll="false" bgcolor="#fff" bggradientcolor="#f1f1f1" shadow="#58728d 0 5 0 0">
+			<xwing:label id="lbl_sub1" value="UAT" left="0" top="0" fontsize="14" fontweight="bold" visible="false" halign="center" height="35" shadow="0 0 0 0" cursor="pointer" click="lbl_sub1_click" fontfamily="WallBoardFond" bgcolor="#58728d" fontcolor="#ffffff"></xwing:label>
+			<xwing:label id="lbl_sub2" value="운영" left="0" top="0" fontsize="14" visible="false" height="35" halign="center" cursor="pointer" click="lbl_sub2_click" fontfamily="WallBoardFond" enabled="true"></xwing:label>
+			<xwing:label id="lbl_sub3" value="운영(^^)" left="100" top="0" fontsize="14" visible="false" height="35" halign="center" cursor="pointer" click="lbl_sub3_click" fontfamily="WallBoardFond" enabled="true"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pan_tab2" left="0" top="41" width="1050" height="705" anchor="all">
+		</xwing:panel>
+		<xwing:panel id="pan_tab1" left="0" top="41" width="1050" height="705" anchor="all">
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

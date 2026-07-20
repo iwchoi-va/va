@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="./css/liquid-pie.css">
+<head>
+
+  	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+  	<script>
+  	$(document).ready(function(){
+  		document.body.oncontextmenu = function(){return false;};
+  		
+  		//660,180	
+  		$( window ).bind("resize", function(){
+  			
+  			draw();		
+  			
+  		});
+  		
+  	});
+  	
+  	//$(function () {
+		
+		function draw() {
+			$("#container").html("<svg style='margin: 20px 15px 50px 15px;' id='fillgauge0' ></svg><svg style='margin: 20px 15px 50px 15px;' id='fillgauge1' ></svg><svg style='margin: 20px 15px 50px 15px;' id='fillgauge2' ></svg>");
+			var colors = ['#6182AB','#354F74','#96A0A9','#3F4C5C','#6E77B0','#446B70','#A2B6AB','#799A8F','#4D787E','#758868','#95958B','#343C27','#3778BA','#2A8C8B','#C0B7B0','#5C4F3F','#704944'];
+			
+			for(var i=0; i < 3; i++){
+				//var config = "config+i";
+		    	eval( "config = document.getElementById('config" + i + "')"); 
+		    	config= liquidFillGaugeDefaultSettings();
+		    	config.circleColor = colors[i];
+		    	//config.circleColor = "#FF7777";
+		    	config.textColor = "#FF4444";
+		    	config.waveTextColor = "#FFAAAA";
+		    	config.waveColor = "#FFDDDD";
+		    	config.circleThickness = 0.2;
+		    	config.textVertPosition = 0.2;
+		    	config.waveAnimateTime = 1000;
+			    
+			    var value = 0;
+		
+			    
+			    if(parent.$DS_COUNT.getValue(i,"TOTALCOUNT") != 0 || parent.$DS_COUNT.getValue(i,"TOTALCOUNT") == null) {
+			    	value = Math.round((parent.$DS_COUNT.getValue(i,"COUNT") / parent.$DS_COUNT.getValue(i,"TOTALCOUNT")) * 1000) / 10;
+			    }
+			    
+			    var fillgauge_id = 'fillgauge'+i;
+			    var p_width = parent.$pan_liquid_pie.getAttribute("width");
+			    var p_height = parent.$pan_liquid_pie.getAttribute("height");
+			    var width = Math.round(p_width/3 - 35);//180
+			    var height = p_height - 45;//125
+			    $("#fillgauge0").css('width', width); 
+	  			$("#fillgauge0").css('height', height); 
+	  			$("#fillgauge1").css('width', width); 
+	  			$("#fillgauge1").css('height', height); 
+	  			$("#fillgauge2").css('width', width); 
+	  			$("#fillgauge2").css('height', height); 
+	  		    
+			    var gauge1 = loadLiquidFillGauge(fillgauge_id, value, config);
+			   
+			    // var div = document.createElement('div');
+			    var id = 'count'+i;
+			    //var div = document.getElementById('count'+i);
+			    //var div.id = 'count'+i;
+			    //document.body.appendChild(div);
+			    document.getElementById(id).style.position = "absolute";
+			    document.getElementById(id).style.top = height+"px";//"140px";
+			    document.getElementById(id).style.left = Math.round(width/2)+Math.round(p_width/3*i)-30 +"px";
+			    //document.getElementById(div.id).style.left = "15px";
+			    document.getElementById(id).style.fontSize = "15px";
+			    document.getElementById(id).style.fontcolor = "#444";
+			    document.getElementById(id).style.fontweight = "bold";
+			    document.getElementById(id).style.fontfamily = "맑은고딕";
+			    document.getElementById(id).innerHTML = parent.$DS_COUNT.getValue(i,"COUNT") + " 건  / " + parent.$DS_COUNT.getValue(i,"TOTALCOUNT") + " 건"
+			    + "<br>&nbsp;&nbsp;<strong>접촉" + (i+3) + "회</strong>";
+		    }
+		}
+	//});
+  	</script>
+</head>
+
+<body style="margin-top: 0px;">
+    <script src="./lib/d3_v3_min.js"></script>
+    <script src="./js/liquidFillGauge.js"></script>
+    <div id="container"></div>
+	<div id="count0"></div>
+	<div id="count1"></div>
+	<div id="count2"></div>	
+	
+</body>

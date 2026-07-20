@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<request-config>
+    <default-url>main.do</default-url>
+
+    <admin-default-url>admin.index.do</admin-default-url>
+
+    <request name="sqlservice" login="false">
+        <description>sql-service 공통 Url</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="hostservice" login="false">
+        <description>sql-service 공통 Url</description>
+        <action-class>com.locus.tobe.webaction.HostXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.index" login="false">
+        <description>로그인 폼페이지</description>
+        <action-class></action-class>
+        <page type='default'>index.jsp</page>
+    </request>
+
+    <request name="cs.com.login" login="false">
+        <description>로그인</description>
+        <action-class>cs.com.login.LoginWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.refresh.main" login="false">
+        <description>메인화면 새로고침</description>
+        <action-class>cs.com.login.SessionCheckWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.logout" login="false">
+        <description>로그아웃</description>
+        <action-class>cs.com.login.LogoutWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.logout.chk" login="false">
+        <description>로그아웃</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.session_timout" login="false">
+        <description>세션 TimeOut 메시지</description>
+        <action-class></action-class>
+        <page type='default'>/common/session_timeout.jsp</page>
+    </request>
+    
+    <request name="cs.com.menu" login="false">
+        <description>메뉴</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.codeutil" login="false">
+        <description>공통코드조회</description>
+        <action-class>cs.com.webaction.CodeUtilWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.codeutil.refresh" login="false">
+        <description>메뉴</description>
+        <action-class>cs.com.webaction.CodeUtilWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.orgutil" login="false">
+        <description>공통 조직구조 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.anlstatutil" login="false">
+        <description>공통 분석진행상태 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.userinfo" login="false">
+        <description>공통 사원 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.scmng" login="false">
+        <description>공통 대분류소분류 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.exceldownload" login="true">
+        <description>공통엑셀다운로드</description>
+        <action-class>cs.com.webaction.ExcelDownloadWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    <request name="cs.com.com100m" login="false">
+        <description>프로젝트 관리</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.fileupload" login="false">
+        <description>파일업로드</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.user.info" login="false">
+        <description>사원정보조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+
+    <request name="cs.com.mymenu" login="false">
+        <description>마이메뉴</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>    
+    
+   	<request name="cs.com.memo" login="false">
+		<description>메모</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>   
+	
+	<request name="cs.com.recentMemo" login="false">
+		<description>최근 메모</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>   
+	
+	<request name="cs.com.help" login="true">
+		<description>도움말</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="cs.com.notice" login="false">
+        <description>공지사항</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>	
+    
+	<request name="cs.com.scorecard" login="false">
+        <description>SCORE CARD</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>	
+    
+    <request name="cs.com.message" login="false">
+        <description>쪽지함</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.com110p" login="false">
+		<description>비밀번호변경</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="cs.com.com110p.changepassword" login="false">
+		<description>비밀번호 변경</description>
+		<action-class>cs.com.webaction.ChangePasswordWebaction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>	
+	
+    <request name="cs.com.digitutil" login="false">
+        <description>공통 digit 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="cs.com.slide" login="false">
+	    <description>장애 차트 그리기 </description> 
+	    <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+	    <page type="default">/common/Xwing.jsp</page>
+    </request> 
+    
+    <request name="com.mypage.sel" login="false">
+	    <description>마이페이지 조회 </description> 
+	    <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+	    <page type="default">/common/Xwing.jsp</page>
+    </request> 
+    
+    <request name="sens.common.alarmmonitoringwebaction.sel" login="false">
+	    <description>알람리스트 조회 </description> 
+	    <action-class>sens.src.alarm.monitoring.AlarmMonitoringWebAction</action-class>
+	    <page type="default">/common/Xwing.jsp</page>
+    </request> 
+    
+    <request name="cs.com.dateutil" login="false">
+        <description>휴일 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="com.dashboard.dashboardsearch" login="true">
+        <description>dashboard 조회</description>
+        <action-class>sens.src.dashboard.DashBoardCacheWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="com.stt.excelDownload" login="true">
+        <description>STT 엑셀 다운로드</description>
+        <action-class>sens.util.ExcelExport</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="com.common.product.sel" login="false">
+        <description>보험종목 및 상품조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="com.common.qcOrg.sel" login="false">
+        <description>QC 조직 정보 조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+</request-config>

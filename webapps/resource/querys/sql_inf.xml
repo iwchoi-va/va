@@ -1,0 +1,1002 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+<!-- 녹취청취이력 -->
+<sql-service name="cs.inf050.rec_user.player.log.sel" datasource='is_stat' type='simple'>
+		<description>녹취청취이력 - 조회(청취자 기준)</description>
+		<result-name>DS_PLAYER_LOG</result-name>
+		<query><![CDATA[
+			  SELECT 
+			  		distinct
+			  		REC.PLAY_DATE DD,
+					REC.PLAY_TIME TT,
+			  		format(CONVERT(date, REC.PLAY_DATE), 'yyyyMMdd') AS PLAY_DATE
+			  		   ,CASE WHEN REC.LOG_GUBUN='L' THEN '녹취청취' WHEN REC.LOG_GUBUN='S' THEN '녹취내용조회' END AS LOG_GUBUN
+				      ,REC.PLAY_TIME
+				      ,ORG1_NAME
+                      ,ORG2_NAME
+                      ,ORG3_NAME
+				      ,ORG.USER_NAME+'('+ORG.USER_ID+')' USER_NAME
+				      ,(SELECT TOP(1) UCID_DATE FROM ms_stt_meta A where A.UCID = REC.UCID ORDER BY A.REG_DATE DESC) AS REC_START_TIME
+				      ,(SELECT MAX(USER_NAME) FROM ms_stt_meta a, ms_usermaster b where a.UCID = REC.UCID and a.USER_ID=b.USER_ID GROUP BY UCID) AS REC_USER_NAME
+				      ,REC.CONTACT_USER_IP
+				      ,REC.UCID
+				      ,REC.CON_ENT_DGN_NO CED_NO
+				      ,(SELECT TOP(1) FILE_FULL_PATH FROM ms_stt_meta A WHERE REC.UCID=A.UCID ORDER BY A.REG_DATE DESC) FILE_PATH 
+				FROM ms_player_log REC,
+					(SELECT USER_ID,USER_NAME,ORG1_CD, ORG1_NAME, ORG2_CD, ORG2_NAME, ORG3_CD,ORG3_NAME
+					 FROM vw_usermaster vw 
+					 WHERE 1=1
+					  ?user_id
+				      ?org1_cd
+				      ?org2_flag
+				      ?org3_cd
+				    ) ORG
+				WHERE 1=1
+				AND REC.PLAY_USER_ID = ORG.USER_ID
+				AND REC.PLAY_TIME BETWEEN '?stime' AND '?etime'
+				?play_date
+				?ucid
+				?log_gb
+				ORDER BY REC.PLAY_DATE DESC, REC.PLAY_TIME DESC
+		]]></query>
+		<parameter name='play_date'  value="AND REC.PLAY_DATE = '?play_date'" default=""/>
+		<parameter name='ucid' value="AND REC.UCID = '?ucid'" default=""/>
+		<parameter name='log_gb' value="AND REC.LOG_GUBUN = '?log_gb'" default="" />
+		<parameter name='user_id' value="AND VW.USER_ID in (?user_id)" default="" />
+		<parameter name='org1_cd' value="AND VW.ORG1_CD = '?org1_cd'" default="" />
+		<parameter name='org2_flag' value="" default="" >
+				<condition key="M" value="AND VW.ORG2_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+				<condition key="O" value="AND VW.ORG2_CD = '?ORG2_CD'"/>
+				<condition key="A" value=""/>
+			</parameter> 
+		<parameter name='org3_cd' value="AND VW.ORG3_CD = '?org3_cd'" default="" />
+	</sql-service>
+	
+	<sql-service name="cs.inf050.play_user.player.log.sel" datasource='is_stat' type='simple'>
+		<description>녹취청취이력 - 조회(상담사 기준)</description>
+		<result-name>DS_PLAYER_LOG</result-name>
+		<query><![CDATA[
+			   SELECT
+			   		 RE.*
+			        , UM1.USER_NAME+'('+UM1.USER_ID+')' USER_NAME
+			        , (SELECT CD2.DEPT_NAME FROM ms_dept CD2 WHERE CD2.DEPT_CD = CD1.ORG1_CD) AS ORG1_NAME
+			        , (SELECT CD2.DEPT_NAME FROM ms_dept CD2 WHERE CD2.DEPT_CD = CD1.ORG2_CD) AS ORG2_NAME
+			        , (SELECT CD2.DEPT_NAME FROM ms_dept CD2 WHERE CD2.DEPT_CD = CD1.ORG3_CD) AS ORG3_NAME
+				FROM 
+					(
+						SELECT 
+							distinct
+								format(CONVERT(date, REC.PLAY_DATE), 'yyyyMMdd') AS PLAY_DATE
+							  ,CASE WHEN REC.LOG_GUBUN='L' THEN '녹취청취' WHEN REC.LOG_GUBUN='S' THEN '녹취내용조회' END AS LOG_GUBUN
+						      ,REC.PLAY_TIME
+						      ,(SELECT TOP(1) UCID_DATE FROM ms_stt_meta A where A.UCID = REC.UCID ORDER BY A.REG_DATE DESC) AS REC_START_TIME
+						      ,ORG.USER_NAME AS REC_USER_NAME
+						      ,REC.CONTACT_USER_IP
+						      ,REC.UCID
+		                      ,REC.PLAY_USER_ID
+		                      ,REC.CON_ENT_DGN_NO CED_NO
+		                      ,(SELECT TOP(1) FILE_FULL_PATH FROM ms_stt_meta A WHERE REC.UCID=A.UCID ORDER BY A.REG_DATE DESC) FILE_PATH 
+						FROM ms_player_log REC,
+							(SELECT UM.USER_ID,UM.USER_NAME 
+							 FROM ms_usermaster UM, ms_dept CD 
+							 WHERE UM.DEPT_CD = CD.DEPT_CD
+							 ?user_id
+						     ?org1_cd
+						     ?org2_flag
+						     ?org3_cd) ORG
+						WHERE 1=1
+						AND REC.REC_USER_ID = ORG.USER_ID
+						AND REC.PLAY_TIME BETWEEN '?stime' AND '?etime'
+						?play_date
+						?ucid 
+						?log_gb
+					) RE,
+				    ms_dept CD1, ms_usermaster UM1 
+                WHERE RE.PLAY_USER_ID = UM1.USER_ID AND UM1.DEPT_CD = CD1.DEPT_CD
+                ORDER BY RE.PLAY_DATE DESC
+		]]></query>
+		<parameter name='play_date'  value="AND REC.PLAY_DATE = '?play_date'" default=""/>
+		<parameter name='ucid' value="AND REC.UCID = '?ucid'" default=""/>
+		<parameter name='log_gb' value="AND REC.LOG_GUBUN = '?log_gb'" default="" />
+		<parameter name='user_id' value="AND UM.USER_ID IN (?user_id)" default="" />
+		<parameter name='org1_cd' value="AND CD.ORG1_CD = '?org1_cd'" default="" />
+		<parameter name='org2_flag' value="" default="" >
+				<condition key="M" value="AND CD.ORG2_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+				<condition key="O" value="AND CD.ORG2_CD = ?ORG2_CD"/>
+				<condition key="A" value=""/>
+			</parameter> 
+		<parameter name='org3_cd' value="AND CD.ORG3_CD = '?org3_cd'" default="" />
+	</sql-service>
+
+	<sql-service name="cs.info.info070m.codebook.SYS020.recbatchtime.sel" datasource='is_stat' type='prepared'>
+		<description>녹취배치작업마지막 시간</description>
+		<result-name>DS_BATCHTIME</result-name>
+		<query><![CDATA[
+			   SELECT
+			   (SELECT ETC4  FROM ms_codebook WHERE CODE_TYPE = 'SYS020' AND CODE_ID = '05') AS BATCH_TIME,
+			   (SELECT MIN(START_TIME) FROM vs_stt_integ_info WHERE TA_FLAG = 'Y') AS TA_BATCH_TIME
+		]]></query>
+	</sql-service>
+
+	<!-- INF100M 메뉴-->
+	<sql-service name="cs.info.info100m.menu.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>메뉴조회</description>
+		<result-name>ds_menu</result-name>
+		<query><![CDATA[
+		  	SELECT MENU_LEVEL TREE_LEVEL
+				  ,MENU_ID
+				  ,AUTHORITY_CD
+				  ,CAPTION
+				  ,ACTION1
+				  ,EXPLAN
+				  ,SUMMARY
+				  ,WINTYPE
+				  ,PARENT_ID
+				  ,MENU_SEQNO
+				  ,LEAF_YN
+				  ,USE_YN
+				  ,CAPTION V_CAPTION
+			 FROM MS_MENU_LIST
+			 ?useYn
+			 ORDER BY PARENT_ID ASC, CONVERT(int, MENU_SEQNO) asc
+		]]></query>
+		<parameter name="useYn" value="where USE_YN=?useyn" default="" /> 
+	</sql-service>
+	
+	<sql-service name="wfm.info.info100m.menu.del" datasource="is_stat" paging="false" type="prepared">
+		<description>메뉴삭제</description>
+		<query><![CDATA[
+			DELETE FROM MS_MENU_LIST
+			WHERE menu_id = ?menu_id or parent_id = ?menu_id
+		]]></query>
+	</sql-service>
+
+	<sql-service name="wfm.info.info100m.menu.ins" datasource="is_stat" paging="false" type="prepared">
+		<description>메뉴추가</description>
+		<query><![CDATA[
+			INSERT INTO MS_MENU_LIST(
+				 MENU_ID								
+				,AUTHORITY_CD
+				,CAPTION
+				,ACTION1
+				,EXPLAN
+				,SUMMARY
+				,WINTYPE
+				,PARENT_ID
+				,MENU_SEQNO
+				,LEAF_YN
+				,USE_YN
+			) VALUES (
+				?menu_id
+				,?authority_cd
+				,?caption
+				,?action1
+				,?explan
+				,?summary
+				,?wintype
+				,?parent_id
+				,CASE WHEN ?menu_seqno != '' THEN ?menu_seqno
+					  ELSE (CASE WHEN ?menu_seqno IS NULL THEN 0 END) END 
+				,?leaf_yn
+				,?use_yn
+			)
+		]]></query>
+	</sql-service>
+
+	<sql-service name="wfm.info.info100m.menu.upd" datasource="is_stat" paging="false" type="prepared">
+		<description>메뉴삭제</description>
+		<query><![CDATA[
+			UPDATE MS_MENU_LIST
+				SET AUTHORITY_CD = ?authority_cd
+					,CAPTION 	  = ?caption
+					,ACTION1 	  = ?action1
+					,EXPLAN		  = ?explan
+					,SUMMARY	  = ?summary
+					,WINTYPE 	  = ?wintype
+					,PARENT_ID	  = ?parent_id
+					,MENU_SEQNO   = CASE WHEN ?menu_seqno != '' THEN ?menu_seqno
+					  					 ELSE (CASE WHEN ?menu_seqno IS NULL THEN 0 END) END 
+					,LEAF_YN 	  = ?leaf_yn
+					,USE_YN 	  = ?use_yn
+			 WHERE MENU_ID = ?menu_id
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="cs.info.info200m.auth.upd" datasource="is_stat" paging="false" type="prepared" batch="true">
+		<description>메뉴별 권한 변경</description>
+		<batch-name>ds_sav_auth</batch-name>
+		<query><![CDATA[
+			UPDATE ms_menu_list
+				SET AUTHORITY_CD = ?AUTHORITY_CD
+			 WHERE MENU_ID = ?MENU_ID
+		]]></query>
+	</sql-service>
+	
+	<!-- INF040 코드북-->
+	<sql-service name="wfm.info.inf040.codetype.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 대분류 조회</description>
+		<result-name>DS_CODETYPE</result-name>
+		<query><![CDATA[
+				SELECT  ROW_NUMBER() OVER( ORDER BY CODE_ID DESC) AS  NO
+					  ,A.CODE_TYPE
+					  ,A.CODE_NAME
+					  ,A.CODE_ID
+					  ,SUBSTRING(A.CODE_TYPE, 1, 3) AS CODE_GROUP
+					  ,A.ETC1
+					  ,A.ETC2
+					  ,A.ETC3
+					  ,A.ETC4
+					  ,A.ETC5
+					  ,A.PARENT_TYPE
+					  ,A.PARENT_ID
+					  ,A.CENTER_CD
+					  ,A.USE_YN
+					  ,(SELECT CODE_NAME
+							FROM ms_codebook
+						  WHERE CODE_ID IN ('00', 'KB00')
+							 AND CODE_TYPE = A.PARENT_TYPE) AS PARENT_NAME
+					  ,A.REG_ID
+					  ,A.REG_TIME
+					  ,(SELECT T.USER_NAME
+							FROM ms_usermaster T
+						  WHERE A.CHG_ID = T.USER_ID) AS CHG_ID
+					  ,(	 SUBSTRING(A.CHG_TIME, 1, 4)
+						 + '-'
+						 + SUBSTRING(A.CHG_TIME, 5, 2)
+						 + '-'
+						 + SUBSTRING(A.CHG_TIME, 7, 2)
+						 + '-'
+						 + SUBSTRING(A.CHG_TIME, 9, 2)
+						 + ':'
+						 + SUBSTRING(A.CHG_TIME, 11, 2)) AS CHG_TIME
+				FROM ms_codebook A
+				WHERE A.CODE_ID IN ('00', 'KB00')
+				  AND ((?p_sch_code_type IS NOT NULL
+					 AND '1' = ?p_sch_code_type
+					 AND A.CODE_TYPE LIKE CONCAT('%',?p_sch_text,'%')
+					  OR ?p_sch_code_type IS NULL)
+					 OR (?p_sch_code_type IS NOT NULL
+					 AND '2' = ?p_sch_code_type
+					 AND A.CODE_NAME LIKE CONCAT('%',?p_sch_text,'%')
+					  OR ?p_sch_code_type IS NULL))
+			     AND ?p_module_type
+			ORDER BY A.CODE_TYPE
+			]]></query>
+		<parameter name="p_sch_text" value="?p_sch_text" default="LTRIM(' ')" />
+		<parameter name="p_sch_code_type" value="?p_sch_code_type" default="" />
+		<parameter name="p_module_type" value="CHARINDEX(SUBSTRING(A.CODE_TYPE, 1, 3),?p_module_type) > 0" default="1=1" />
+	</sql-service>
+	
+	<sql-service name="wfm.info.inf040.code.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 소분류 조회</description>
+		<result-name>DS_CODE</result-name>
+		<query><![CDATA[
+			  SELECT  ROW_NUMBER() OVER( ORDER BY T.CODE_ID DESC)  AS NO
+					  ,T.CODE_ID
+					  ,T.CODE_NAME
+					  ,T.CODE_TYPE
+					  ,T.ETC1 
+					  ,T.ETC2 
+					  ,T.ETC3 
+					  ,T.ETC4 
+					  ,T.ETC5 		  
+					  ,T.PARENT_ID
+					  ,T.PARENT_TYPE
+					  ,T.USE_YN
+					  ,T.CENTER_CD
+					  ,T.SORT_KEY
+					  ,T.REG_ID
+					  ,T.REG_TIME
+					  ,T.CHG_ID
+					  ,T.CHG_TIME
+				 FROM ms_codebook T
+				WHERE T.CODE_TYPE = ?p_code_type
+				  AND T.CODE_ID NOT IN ('00', 'KB00')
+				  AND (?p_use_yn='' OR ?p_use_yn IS NULL OR T.USE_YN = ?p_use_yn)
+			ORDER BY T.CODE_TYPE, CONVERT(INT,T.SORT_KEY),T.CODE_ID 
+		]]></query>
+		<parameter name="s_code_type" value="?s_code_type" default="" />
+	</sql-service>
+
+	<sql-service name="wfm.info.inf040.parentcode.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 소분류 조회</description>
+		<result-name>DS_PARENT</result-name>
+		<query><![CDATA[
+		    SELECT CODE_ID AS CODEID
+				  ,CODE_NAME AS CODENAME
+				  ,CHG_ID
+				  ,CHG_TIME
+				  ,CENTER_CD
+			 FROM ms_codebook
+			WHERE CODE_TYPE = ?p_parent_type
+			  AND ('' IS NOT NULL
+				AND CENTER_CD = ''
+				 OR '' IS NULL)
+			  AND CODE_ID NOT IN ('00', 'KB00')
+			  AND (?p_use_yn IS NOT NULL
+				AND USE_YN = ?use_yn
+				 OR ?p_use_yn IS NULL)
+			ORDER BY CODE_TYPE, CODE_ID
+		]]></query>
+		<parameter name="parent_type" value="?parent_type" default="" />
+	</sql-service>
+	
+	<sql-service name="wfm.info.inf040.codebook.ins" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 대,소분류 등록</description>
+		<query><![CDATA[
+			INSERT INTO ms_codebook(
+								   CODE_ID
+								  ,CODE_NAME
+								  ,CODE_TYPE
+								  ,ETC1
+								  ,ETC2
+								  ,ETC3
+								  ,ETC4
+								  ,ETC5
+								  ,PARENT_ID
+								  ,PARENT_TYPE
+								  ,USE_YN
+								  ,SORT_KEY
+								  ,REG_ID
+								  ,REG_TIME
+								  ,CHG_ID
+								  ,CHG_TIME
+								  )
+			VALUES (
+				   RTRIM(LTRIM(?code_id))
+				  ,RTRIM(LTRIM(?code_name))
+				  ,RTRIM(LTRIM(?code_type))
+				  ,RTRIM(LTRIM(?etc1))
+				  ,RTRIM(LTRIM(?etc2))
+				  ,RTRIM(LTRIM(?etc3))
+				  ,RTRIM(LTRIM(?etc4))
+				  ,RTRIM(LTRIM(?etc5))
+				  ,RTRIM(LTRIM(?parent_id))
+				  ,RTRIM(LTRIM(?parent_type))
+				  ,RTRIM(LTRIM(?use_yn))
+				  ,RTRIM(LTRIM(?sort_key))
+				  ,RTRIM(LTRIM(?reg_id))
+				  ,FORMAT(GETDATE(),'yyyyMMddHHmmss')
+				  ,RTRIM(LTRIM(?chg_id))
+				  ,FORMAT(GETDATE(),'yyyyMMddHHmmss')
+				  )
+		]]></query>
+	</sql-service>
+
+	<sql-service name="wfm.info.inf040.codebook.upd" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 대,소분류 수정</description>
+		<query><![CDATA[
+			UPDATE ms_codebook
+				SET CODE_NAME	  = RTRIM(LTRIM(?code_name))
+					,ETC1 		  = RTRIM(LTRIM(?etc1))
+					,ETC2 		  = RTRIM(LTRIM(?etc2))
+					,ETC3 		  = RTRIM(LTRIM(?etc3))
+					,ETC4 		  = RTRIM(LTRIM(?etc4))
+					,ETC5 		  = RTRIM(LTRIM(?etc5))
+					,PARENT_ID	  = RTRIM(LTRIM(?parent_id))
+					,PARENT_TYPE  = RTRIM(LTRIM(?parent_type))
+					,USE_YN		  = RTRIM(LTRIM(?use_yn))
+					,SORT_KEY	  = RTRIM(LTRIM(?sort_key))
+					,CHG_ID		  = RTRIM(LTRIM(?chg_id))
+					,CHG_TIME	  = FORMAT(GETDATE(),'yyyyMMddHHmmss')
+			 WHERE CODE_TYPE = RTRIM(LTRIM(?code_type))
+				AND CODE_ID = RTRIM(LTRIM(?code_id))
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="wfm.info.inf040.init.sortkey" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 소분류 정렬키 초기화</description>
+		<result-name>resultlist</result-name>
+		<query><![CDATA[
+			update ms_codebook
+			set sort_key = ''
+			where code_type = ?code_type
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="wfm.info.inf040.create.sortkey" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 소분류 정렬키 생성</description>
+		<result-name>resultlist</result-name>
+		<query><![CDATA[
+			update ms_codebook a
+			set sort_key = lpad((select count(*) from ms_codebook where code_type = a.code_type and code_id != '00' and code_id <= a.code_id),
+								(select len(count(*)) from ms_codebook where code_type = a.code_type),
+								'0')
+			where code_type = ?code_type
+			  and code_id != '00'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="wfm.info.info040.product.mapping.ins" datasource="is_stat" paging="false" type="prepared" batch="true">
+		<description>코드북_상품_보종 매핑</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+	--	IF EXISTS (SELECT 1 FROM ms_codebook WHERE CODE_TYPE = 'COM004' and CODE_ID = ?PROD_CD) 
+		UPDATE ms_codebook 
+			SET 
+				CODE_NAME=(select p.PROD_NM from ms_product p where PROD_CD = ?PROD_CD) 		-- insert당시 product에 없었을 경우 다시 update해줌.  
+				,ETC1=?ISTP_CD
+				,ETC2=(select CODE_NAME from ms_codebook where CODE_TYPE='COM003' and CODE_ID = ?ISTP_CD)
+				,CHG_ID = ?REG_ID
+				,CHG_TIME = FORMAT(GETDATE(),'yyyyMMddHHmmss')
+			WHERE code_type='COM004' and CODE_ID = ?PROD_CD;
+	--	ELSE
+	IF @@ROWCOUNT=0
+		INSERT INTO ms_codebook(CODE_TYPE,CODE_ID,CODE_NAME,ETC1,ETC2,USE_YN,REG_ID,REG_TIME) 
+		 values ('COM004',
+		 		?PROD_CD,
+		 		(select p.PROD_NM from ms_product p where PROD_CD = ?PROD_CD),
+		 		?ISTP_CD,
+		 		(select CODE_NAME from ms_codebook where CODE_TYPE='COM003' and CODE_ID = ?ISTP_CD),
+		 		'Y',
+		 		?REG_ID,
+		 		FORMAT(GETDATE(),'yyyyMMddHHmmss'));
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="wfm.info.info040.getistp.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 엑셀업로드, 지금사용중인 보종코드 가져옴</description>
+		<result-name>DS_ISTP</result-name>
+		<query><![CDATA[
+			select CODE_ID CODEID
+			from ms_codebook
+			where code_type = 'COM003'
+			  and code_id != '00'
+			  and USE_YN = 'Y'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="wfm.info.info040.getproduct.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>코드북 엑셀업로드, 지금사용중인 상품 가져옴</description>
+		<result-name>DS_PRODUCT</result-name>
+		<query><![CDATA[
+			select PROD_CD CODEID
+			from ms_product
+			where
+			  USE_YN = 'Y'
+		]]></query>
+	</sql-service>
+	
+	
+	<!-- 메뉴별권한 -->
+	<sql-service name="cs.info.info200m.menu.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>메뉴별 권한 조회를 위한 메뉴 조회</description>
+		<result-name>ds_menu</result-name>
+		<query><![CDATA[
+				SELECT 
+						CHILD.MENU_ID MENU_ID
+						,CHILD.AUTHORITY_CD AUTHORITY_CD
+                        ,PARENT.CAPTION PARENT_CAPTION
+						,CASE CHILD.PARENT_ID WHEN 0 THEN '' ELSE CHILD.CAPTION END CAPTION				  
+						,CHILD.CHILD_SEQNO
+				   	,CASE PARENT.MENU_SEQNO WHEN '' THEN CHILD.MENU_SEQNO ELSE  PARENT.MENU_SEQNO END PARENT_SEQNO
+				FROM 
+					(
+						SELECT 
+							  MENU_ID
+							 ,AUTHORITY_CD
+							 ,CAPTION
+							 ,PARENT_ID
+							 ,MENU_SEQNO
+						  FROM 
+							  ms_menu_list 
+					    WHERE
+							    LEAF_YN='N'
+						   AND USE_YN = 'Y' ?useYn
+					) PARENT
+					RIGHT OUTER JOIN 
+					(
+						SELECT 
+					 		  MENU_ID
+							 ,AUTHORITY_CD
+							 ,CAPTION
+							 ,PARENT_ID
+							 ,MENU_SEQNO
+							 ,CASE PARENT_ID WHEN 0 THEN MENU_ID ELSE PARENT_ID END PARENT
+							 ,CASE LEAF_YN WHEN 'N' THEN 0 ELSE MENU_SEQNO end as CHILD_SEQNO
+						  FROM
+						  	  ms_menu_list 
+						 WHERE
+						       USE_YN = 'Y' ?useYn
+					) CHILD
+					ON CHILD.PARENT = PARENT.MENU_ID
+					WHERE 1=1 
+					?caption
+				ORDER BY PARENT_SEQNO ,CHILD_SEQNO
+		]]></query>
+		<parameter name="useYn" value="OR USE_YN=?useyn" default="" />
+		<parameter name="caption" value="AND CHILD.CAPTION LIKE CONCAT('%',?caption,'%') OR PARENT.CAPTION LIKE CONCAT('%',?caption,'%')" default="" />
+	</sql-service>
+	
+	
+	<sql-service name="inf.inf100.getCallList.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>수동배치위한 콜리스트 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			select 
+				UCID_DATE
+				,CON_ENT_DGN_NO CED_NO 
+				,UCID
+			from ms_stt_meta
+			where UCID_DATE between ?SDATE and ?EDATE
+			and BATCH_YN = 'Y'  --수동으로 배치 넣은 경우.
+			?cedno
+		]]></query>
+		<parameter name="cedno" value="and CON_ENT_DGN_NO =?CEDNO" default="" />
+	</sql-service>
+	
+	
+	<sql-service name='inf.inf100p1.getSttContent.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>녹취록(STT) 원문 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT CONTENT,
+					UCID,
+					(SELECT UCID_DATE FROM ms_stt_meta WHERE UCID = R.UCID) AS UCID_DATE,
+					ENC_FLAG
+			FROM ms_stt_rslt_merge R
+			WHERE 1=1
+			?ucid
+		]]></query>
+		<parameter name='ucid'  value="AND UCID = ?ucid" default=""/>
+	</sql-service>
+	<!-- 
+	<sql-service name='inf.inf070.getUsedCPU.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>cpu사용량 조회</description>
+		<result-name>DS_CPU</result-name>
+		<query><![CDATA[
+			SELECT  
+					A.DEVICE_ID, 
+					MAX(C.DEVICE_DESC) DEVICE_DESC,
+					MAX(A.LAST_UPDATED) LAST_DATE,
+					C.OS_GU,
+					ISNULL(ROUND(AVG(CASE WHEN B.OID_NAME = 'hrProcessorLoad' THEN CONVERT(FLOAT,B.VALUE) END),1),0) CPU_USED_RATE,
+				    AVG(CASE WHEN B.OID_NAME = 'ssCpuIdle' THEN 100-CONVERT(decimal(10),B.VALUE) END) CPU_LOAD_LINUX,
+				    MAX(CASE WHEN B.OID_NAME = 'systemUserCPU'   THEN B.VALUE END) USER_CPU,
+				    MAX(CASE WHEN B.OID_NAME = 'systemSysCPU'    THEN B.VALUE END) SYS_CPU,
+				    MAX(CASE WHEN B.OID_NAME = 'systemIdleCPU'   THEN B.VALUE END) IDLE_CPU,
+				    MAX(CASE WHEN B.OID_NAME = 'systemNiceCPU'   THEN B.VALUE END) NICE_CPU							
+				FROM  MS_MIB A,MS_RT_PROCESS B, MS_DEVICE C
+				WHERE  A.DEVICE_ID = B.DEVICE_ID
+					AND  B.DEVICE_ID = C.DEVICE_ID
+					AND  C.DEVICE_ID = A.DEVICE_ID
+					AND  A.OID_TYPE  = 'M'
+					AND  A.OID_GROUP IN ('hrProcessorLoad', 'systemStats')				  
+				GROUP BY A.DEVICE_ID,  C.OS_GU ;
+		]]></query>
+	</sql-service> -->
+	
+	<sql-service name='inf.inf070.getUsedCPU.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>cpu사용량 조회</description>
+		<result-name>DS_CPU</result-name>
+		<query><![CDATA[
+			SELECT BB.DEVICE_ID,
+					BB.DEVICE_DESC,
+					AA.LAST_DATE,
+					AA.OS_GU,
+					ISNULL(AA.CPU_USED_RATE,0) CPU_USED_RATE,
+					AA.CPU_LOAD_LINUX,
+					AA.USER_CPU,
+					AA.SYS_CPU,
+					AA.IDLE_CPU,
+					AA.NICE_CPU
+				 FROM (
+						SELECT  
+											A.DEVICE_ID, 
+											MAX(C.DEVICE_DESC) DEVICE_DESC,
+											MAX(A.LAST_UPDATED) LAST_DATE,
+											C.OS_GU,
+											ROUND(AVG(CASE WHEN B.OID_NAME = 'hrProcessorLoad' THEN CONVERT(FLOAT,B.VALUE) END),1) CPU_USED_RATE,
+										    AVG(CASE WHEN B.OID_NAME = 'ssCpuIdle' THEN 100-CONVERT(decimal(10),B.VALUE) END) CPU_LOAD_LINUX,
+										    MAX(CASE WHEN B.OID_NAME = 'systemUserCPU'   THEN B.VALUE END) USER_CPU,
+										    MAX(CASE WHEN B.OID_NAME = 'systemSysCPU'    THEN B.VALUE END) SYS_CPU,
+										    MAX(CASE WHEN B.OID_NAME = 'systemIdleCPU'   THEN B.VALUE END) IDLE_CPU,
+										    MAX(CASE WHEN B.OID_NAME = 'systemNiceCPU'   THEN B.VALUE END) NICE_CPU							
+										FROM  MS_MIB A,MS_RT_PROCESS B, MS_DEVICE C
+										WHERE  A.DEVICE_ID = B.DEVICE_ID
+											AND  B.DEVICE_ID = C.DEVICE_ID
+											AND  C.DEVICE_ID = A.DEVICE_ID
+											AND  A.OID_TYPE  = 'M'
+											AND  A.OID_GROUP IN ('hrProcessorLoad', 'systemStats')				  
+											
+										GROUP BY A.DEVICE_ID,  C.OS_GU 
+				) AA RIGHT OUTER JOIN  ms_device BB ON AA.DEVICE_ID=BB.DEVICE_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='inf.inf070.getUsedMemory.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>memory사용량 조회</description>
+		<result-name>DS_MEM</result-name>
+		<query><![CDATA[
+			SELECT BB.DEVICE_ID,
+					AA.MEM_REG_TIME,
+					AA.MEM_REG_DATE,
+					AA.STORAGE_USED,
+					AA.STORAGE_SIZE,
+					ISNULL(AA.MEMORY_USED_RATE ,0) MEMORY_USED_RATE
+			FROM (
+			SELECT  B.DEVICE_ID,
+						        REG_TIME AS MEM_REG_TIME,
+								REG_DATE AS MEM_REG_DATE,
+								ROUND(STORAGE_USED, 2) AS STORAGE_USED,
+								ROUND(STORAGE_SIZE, 2) AS STORAGE_SIZE,
+						        IsNULL(HR_MEMORY_SIZE, 0 ) AS HR_MEMORY_SIZE,
+								ISNULL(round((convert(float,STORAGE_USED)/convert(float,STORAGE_SIZE)*100),1),0) MEMORY_USED_RATE
+						 FROM (
+			                 SELECT DEVICE_ID, 
+								         format(A.LAST_UPDATED,'%H:%I') AS REG_TIME,
+										   format(A.LAST_UPDATED,'%Y-%m-%d') AS REG_DATE,
+										   (A.STORAGE_USED - BUFFERS_USED - A.CACHED_USED) AS STORAGE_USED,
+										   A.STORAGE_SIZE AS STORAGE_SIZE,
+										   CASE WHEN A.STORAGE_SIZE = 0
+									            THEN 0
+									            ELSE ROUND(((A.STORAGE_USED - A.BUFFERS_USED - A.CACHED_USED) / A.STORAGE_SIZE) * 100, 2)
+									            END HR_MEMORY_SIZE			
+									FROM
+									(
+										 SELECT  A.device_id AS DEVICE_ID,
+										         MAX(A.LAST_UPDATED) AS LAST_UPDATED,
+												 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'SYSTEM RAM') THEN B.STORAGE_USED ELSE 0 END) AS STORAGE_USED,
+												 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'SYSTEM RAM') THEN B.STORAGE_SIZE ELSE 0 END) AS STORAGE_SIZE,
+												 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) = ('MEMORY BUFFERS') THEN B.STORAGE_USED ELSE 0 END) AS BUFFERS_USED,
+												 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) = ('CACHED MEMORY') THEN B.STORAGE_USED ELSE 0 END) AS CACHED_USED
+										 FROM    MS_MIB      A,
+									             MS_RT_USAGE B
+									        WHERE   A.DEVICE_ID = B.DEVICE_ID
+									          AND   A.OID_TYPE  = 'M'
+									          AND   A.OID_GROUP = 'Usage'
+			
+									          AND   UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'MEMORY BUFFERS', 'CACHED MEMORY', 'SYSTEM RAM')
+											  GROUP BY 	A.device_id, A.DEVICE_ID
+									) A 
+					) B
+		) AA RIGHT OUTER JOIN  ms_device BB ON AA.DEVICE_ID=BB.DEVICE_ID
+		]]></query>
+	</sql-service>
+	
+	<!-- 
+	<sql-service name='inf.inf070.getUsedMemory.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>memory사용량 조회</description>
+		<result-name>DS_MEM</result-name>
+		<query><![CDATA[
+			SELECT  B.DEVICE_ID,
+			        REG_TIME AS MEM_REG_TIME,
+					REG_DATE AS MEM_REG_DATE,
+					ROUND(STORAGE_USED, 2) AS STORAGE_USED,
+					ROUND(STORAGE_SIZE, 2) AS STORAGE_SIZE,
+			        IsNULL(HR_MEMORY_SIZE, 0 ) AS HR_MEMORY_SIZE,
+					ISNULL(round((convert(float,STORAGE_USED)/convert(float,STORAGE_SIZE)*100),1),0) MEMORY_USED_RATE
+			 FROM (
+                 SELECT DEVICE_ID, 
+					         format(A.LAST_UPDATED,'%H:%I') AS REG_TIME,
+							   format(A.LAST_UPDATED,'%Y-%m-%d') AS REG_DATE,
+							   (A.STORAGE_USED - BUFFERS_USED - A.CACHED_USED) AS STORAGE_USED,
+							   A.STORAGE_SIZE AS STORAGE_SIZE,
+							   CASE WHEN A.STORAGE_SIZE = 0
+						            THEN 0
+						            ELSE ROUND(((A.STORAGE_USED - A.BUFFERS_USED - A.CACHED_USED) / A.STORAGE_SIZE) * 100, 2)
+						            END HR_MEMORY_SIZE			
+						FROM
+						(
+							 SELECT  A.device_id AS DEVICE_ID,
+							         MAX(A.LAST_UPDATED) AS LAST_UPDATED,
+									 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'SYSTEM RAM') THEN B.STORAGE_USED ELSE 0 END) AS STORAGE_USED,
+									 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'SYSTEM RAM') THEN B.STORAGE_SIZE ELSE 0 END) AS STORAGE_SIZE,
+									 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) = ('MEMORY BUFFERS') THEN B.STORAGE_USED ELSE 0 END) AS BUFFERS_USED,
+									 MAX(CASE WHEN	UPPER(B.STORAGE_DESCR) = ('CACHED MEMORY') THEN B.STORAGE_USED ELSE 0 END) AS CACHED_USED
+							 FROM    MS_MIB      A,
+						             MS_RT_USAGE B
+						        WHERE   A.DEVICE_ID = B.DEVICE_ID
+						          AND   A.OID_TYPE  = 'M'
+						          AND   A.OID_GROUP = 'Usage'
+						          AND   UPPER(B.STORAGE_DESCR) IN ('PHYSICAL MEMORY', 'MEMORY BUFFERS', 'CACHED MEMORY', 'SYSTEM RAM')
+								  GROUP BY 	A.device_id, A.DEVICE_ID
+						) A 
+			) B
+			
+		]]></query>
+	</sql-service>-->
+	<!-- 
+	<sql-service name='inf.inf070.getUsedDisk.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>disk사용량 조회</description>
+		<result-name>DS_DISK</result-name>
+		<query><![CDATA[
+			SELECT  
+				A.DEVICE_ID,
+				format(A.LAST_UPDATED,'%H:%I')    AS DISK_REG_TIME,
+		        format(A.LAST_UPDATED,'%Y-%m-%d') AS DISK_REG_DATE,
+		        IsNULL(CASE WHEN AVG(CONVERT(FLOAT,B.STORAGE_SIZE)) = 0 THEN 0
+	                   ELSE ROUND(AVG(CONVERT(FLOAT,B.STORAGE_USED)) / AVG(CONVERT(FLOAT,B.STORAGE_SIZE)) * 100, 1) END ,0) DISK_USED_RATE
+	          FROM    MS_MIB        A, MS_RT_USAGE   B
+	          WHERE   A.DEVICE_ID = B.DEVICE_ID
+	            AND   A.OID_TYPE  = 'M'
+	            AND   A.OID_GROUP = 'Usage'
+	          GROUP BY A.device_id, A.LAST_UPDATED
+		]]></query>
+	</sql-service> -->
+	
+	<sql-service name='inf.inf070.getUsedDisk.sel'  datasource="snmp" paging="false" type="prepared">
+		<description>disk사용량 조회</description>
+		<result-name>DS_DISK</result-name>
+		<query><![CDATA[
+		SELECT BB.DEVICE_ID,
+				BB.DEVICE_DESC,
+				AA.DISK_REG_TIME,
+				AA.DISK_REG_DATE,
+				ISNULL(AA.DISK_USED_RATE,0) DISK_USED_RATE
+			 FROM (
+					SELECT  
+								A.DEVICE_ID,
+								format(A.LAST_UPDATED,'%H:%I')    AS DISK_REG_TIME,
+						        format(A.LAST_UPDATED,'%Y-%m-%d') AS DISK_REG_DATE,
+						       CASE WHEN AVG(CONVERT(FLOAT,B.STORAGE_SIZE)) = 0 THEN 0
+					                   ELSE ROUND(AVG(CONVERT(FLOAT,B.STORAGE_USED)) / AVG(CONVERT(FLOAT,B.STORAGE_SIZE)) * 100, 1) END DISK_USED_RATE
+					          FROM    MS_MIB        A, MS_RT_USAGE   B
+					          WHERE   A.DEVICE_ID = B.DEVICE_ID
+					            AND   A.OID_TYPE  = 'M'
+					            AND   A.OID_GROUP = 'Usage'
+					          GROUP BY A.device_id, A.LAST_UPDATED
+		) AA RIGHT OUTER JOIN  ms_device BB ON AA.DEVICE_ID=BB.DEVICE_ID
+
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='inf.inf080.stt_anl_n.sel'  datasource="aig_rec" paging="false" type="prepared">
+		<description>STT미분석 사유</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+		SELECT  RIGHT(TPANO,12) CED_NO
+				,fileid UCID
+				,RecStartDT UCID_DATE
+				, STT_ERR_CD REASON
+		FROM Sponsor_CallInfo
+		WHERE InsDate BETWEEN FORMAT(DATEADD(M, -3, GETDATE()), 'yyyyMMdd') AND FORMAT(GETDATE(),'yyyyMMdd')
+		AND STT_FLAG='E'
+		ORDER BY RecStartDT DESC
+		]]></query>
+	</sql-service>
+	
+	
+	<sql-service name='inf.inf080.vrs_anl_n.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>VRS미분석 사유</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+		SELECT CON_ENT_DGN_NO CED_NO
+				   ,CON_ENT_DGN_DATE CED_DATE
+				   ,USER_NAME+'('+S.USER_ID+')' AS USER_NM
+				   ,(CASE WHEN TA_FLAG ='E' THEN '데이터가 없습니다.(TA)' WHEN SRC_FLAG='E' THEN '오류가 발생했습니다.(검색)' WHEN TA_FLAG <> 'E' AND SRC_FLAG <> 'E' AND GRD_FLAG ='E' THEN '오류가 발생했습니다. (등급부여)' END ) REASON
+			FROM ms_stt_meta S, ms_usermaster B
+			WHERE S.USER_ID=B.USER_ID
+			AND REG_DATE BETWEEN FORMAT(DATEADD(M, -3, GETDATE()), 'yyyyMMdd') AND FORMAT(GETDATE(),'yyyyMMdd')
+			AND GRD_FLAG='E'
+			ORDER BY CON_ENT_DGN_DATE DESC
+		]]></query>
+	</sql-service>
+	
+	
+	<sql-service name='inf.inf130.getSttMetaFlag.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>STT META FLAG 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT 
+				A.UCID,
+				CON_ENT_DGN_NO,
+				TA_FLAG,
+				TA_R_TIME,
+				SRC_FLAG,
+				SRC_R_TIME,
+				GRD_FLAG,
+				ASS_FLAG,
+				ASS_R_TIME,
+				B.ENC_FLAG,
+				B.ENC_R_TIME,
+				VRS_S_FLAG,
+				BAN_S_FLAG,
+				A.CHG_ID,
+				A.CHG_DATE
+			FROM ms_stt_meta A , ms_stt_rslt_merge B 
+			WHERE A.UCID=B.UCID
+			?ucid
+			?ced_no
+		]]></query>
+		<parameter name='ucid'  value="AND A.UCID LIKE CONCAT('%',?ucid,'%')" default=""/>
+		<parameter name='ced_no'  value="AND CON_ENT_DGN_NO LIKE CONCAT('%',?ced_no,'%')" default=""/>
+	</sql-service>
+	
+	<sql-service name='inf.inf130.getSttBefMetaFlag.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>STT BEF META FLAG 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT 
+			    FILEID,
+				UCID,
+				TPANO,
+				STT_FLAG,
+				STT_ERR_CD,
+				STT_R_TIME,
+				VA_FLAG,
+				CHG_ID,
+				CHG_DATE
+			FROM ms_stt_bef_meta A
+			WHERE 1=1
+			?ucid
+			?ced_no
+		]]></query>
+		<parameter name='ucid'  value="AND A.UCID LIKE CONCAT('%',?ucid,'%')" default=""/>
+		<parameter name='ced_no'  value="AND A.TPANO LIKE CONCAT('%',?ced_no,'%')" default=""/>
+	</sql-service>
+	
+	<sql-service name="inf.inf130.meta.flag.upd" datasource="is_stat" paging="false" type="prepared" batch="true">
+		<description>META FLAG UPDATE</description>
+		<batch-name>DS_UPDATE</batch-name>
+		<query><![CDATA[
+		 BEGIN TRANSACTION;	
+			UPDATE A 
+				SET TA_FLAG=?TA_FLAG,
+					GRD_FLAG=?GRD_FLAG,
+					ASS_FLAG=?ASS_FLAG,
+					ENC_FLAG=?ENC_FLAG,
+					VRS_S_FLAG=?VRS_S_FLAG,
+					BAN_S_FLAG=?BAN_S_FLAG,
+					CHG_ID = 'INF130',
+					CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+				FROM MS_STT_META A, MS_STT_RSLT_MERGE B
+				WHERE A.UCID=B.UCID
+				AND A.UCID = ?UCID
+				AND A.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+			 
+			 UPDATE B 
+				SET B.ENC_FLAG= ?ENC_FLAG,
+					B.CHG_ID ='INF130',
+					B.CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+				FROM MS_STT_META A, MS_STT_RSLT_MERGE B
+				WHERE A.UCID=B.UCID
+				AND A.UCID = ?UCID
+				AND A.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+			 
+		 COMMIT;
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="inf.inf130.bef.meta.flag.upd" datasource="is_stat" paging="false" type="prepared" batch="true">
+		<description>META FLAG UPDATE</description>
+		<batch-name>DS_UPDATE</batch-name>
+		<query><![CDATA[
+			UPDATE A 
+				SET VA_FLAG=?VA_FLAG,
+					CHG_ID = 'INF130',
+					CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+				FROM MS_STT_BEF_META A
+				WHERE A.UCID = ?UCID
+				AND A.TPANO = ?TPANO
+		
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='inf.inf100.getRecBatch.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>수동배치 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+				
+				SELECT FILEID
+					--,format(CONVERT(DATE,REC_START_TIME),'yyyy-MM-dd HH:mm:ss') REC_START_TIME
+					,format(convert(date,substring(REC_START_TIME,1,8)),'yyyy-MM-dd') + ' '+ substring(REC_START_TIME,9,2) + ':' + substring(REC_START_TIME,11,2) + ':' +substring(REC_START_TIME,13,2) REC_START_TIME
+					,ORGFILEFULLPATH
+					,ORGFILENAME
+					,ISNULL((SELECT USER_NAME 
+					  FROM ms_usermaster
+					  WHERE USER_ID = A.REQ_ID) + '(' +REQ_ID + ')',REQ_ID) AS REQ_ID
+					,CASE WHEN STT_FLAG = 'S' THEN '작업중'
+						  WHEN STT_FLAG = 'Y' THEN '작업완료'
+						  WHEN STT_FLAG = 'E' THEN '작업오류'
+						  WHEN STT_FLAG = 'N' THEN '작업대상'
+					END STT_FLAG_NM
+					,STT_FLAG
+					--,format(CONVERT(DATE,STT_R_TIME),'yyyyMMddHHmmss') STT_R_TIME
+					,STT_R_TIME
+					,STT_ERR_CD
+					,BATCH_YN
+					,(SELECT USER_NAME 
+					  FROM ms_usermaster
+					  WHERE USER_ID = A.REG_ID) + '(' +REG_ID + ')' AS REG_ID 
+					,format(convert(date,substring(REG_DATE,1,8)),'yyyy-MM-dd') + ' '+ substring(REG_DATE,9,2) + ':' + substring(REG_DATE,11,2) + ':' +substring(REG_DATE,13,2) REG_DATE
+				FROM ms_rec_batch A
+				WHERE 1=1
+				AND REC_START_TIME BETWEEN ?searchRecStartDateFrom +'000000' AND ?searchRecStartDateTo +'235959'
+				AND REG_DATE BETWEEN ?searchRegDateFrom +'000000' AND ?searchRegDateTo +'235959' 
+					?searchReqId
+					?searchOrgFileNm
+					?searchChkSttFlag
+				ORDER BY REG_DATE DESC
+		]]></query>
+		<parameter name='searchReqId' value="AND REQ_ID in (?searchReqId)" default="" />
+		<parameter name='searchOrgFileNm'  value="AND ORGFILENAME LIKE CONCAT('%',?searchOrgFileNm,'%')" default=""/>
+		<!-- <parameter name='searchChkSttFlag'  value="AND STT_FLAG= ?searchChkSttFlag" default=""/> -->
+		<parameter name='searchChkSttFlag' value="" default="" >
+				<condition key="Y" value="AND STT_FLAG ='Y'"/>
+				<condition key="N" value="AND STT_FLAG !='Y'"/>
+		</parameter>
+		</sql-service>
+		
+		
+	<sql-service name="inf.inf100.insertFile.ins" datasource='is_stat' type='prepared' batch='false'>
+		<description>파일저장</description>
+		<query><![CDATA[
+			INSERT INTO ms_rec_batch(
+			 FILEID
+			,REC_START_TIME
+			,ORGFILEFULLPATH
+			,ORGFILENAME
+			,REQ_ID
+			,BATCH_YN
+			,REG_ID
+			,REG_DATE
+			,CHG_ID
+			,CHG_DATE
+			)VALUES(
+				format(GETDATE(),'yyyyMMddHHmmss') +''+?REG_ID
+			   ,CONVERT(VARCHAR,format(CONVERT(DATE,?REC_START_TIME),'yyyyMMdd') +''+format(GETDATE(),'HHmmss'))
+			   ,?ORGFILEFULLPATH
+			   ,?ORGFILENAME
+			   ,?REQ_ID
+			   ,?BATCH_YN
+			   ,?REG_ID
+			   ,format(GETDATE(),'yyyyMMddHHmmss')
+			   ,?REG_ID
+			   ,format(GETDATE(),'yyyyMMddHHmmss')
+			)
+		
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="inf.inf100.insertExcelFile.ins" datasource='is_stat' type='prepared' batch='true'>
+		<description>파일저장</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			INSERT INTO ms_rec_batch(
+			 FILEID
+			,REC_START_TIME
+			,ORGFILEFULLPATH
+			,ORGFILENAME
+			,REQ_ID
+			,BATCH_YN
+			,REG_ID
+			,REG_DATE
+			,CHG_ID
+			,CHG_DATE
+			)VALUES(
+				format(GETDATE(),'yyyyMMddHHmmss') +
+				''+(SELECT CONVERT(VARCHAR,COUNT(1)+1) 
+					FROM ms_rec_batch
+					 WHERE SUBSTRING(REG_DATE,1,8) = format(GETDATE(),'yyyyMMdd') 
+				)+''+?REG_ID
+			   ,CONVERT(VARCHAR,format(CONVERT(DATE,?REC_START_TIME),'yyyyMMdd') +''+format(GETDATE(),'HHmmss'))
+			   ,?ORGFILEFULLPATH
+			   ,?ORGFILENAME
+			   ,?REQ_ID
+			   ,'N'
+			   ,?REG_ID
+			   ,format(GETDATE(),'yyyyMMddHHmmss')
+			   ,?REG_ID
+			   ,format(GETDATE(),'yyyyMMddHHmmss')
+			)
+		
+		]]></query>
+	</sql-service>
+	
+	
+	<sql-service name='inf.inf100.getUploadLimit.sel'  datasource="is_stat" paging="false" type="prepared">
+		<description>당일 건수제한 조회</description>
+		<result-name>DS_LIMIT</result-name>
+		<query><![CDATA[
+							
+			SELECT COUNT(*) CNT 
+			FROM MS_REC_BATCH
+			WHERE REG_DATE BETWEEN FORMAT(GETDATE(),'yyyyMMdd') +'0900' AND  FORMAT(GETDATE(),'yyyyMMdd')+'2000'
+			
+		]]></query>
+		
+		</sql-service>
+
+	
+</query-collection>

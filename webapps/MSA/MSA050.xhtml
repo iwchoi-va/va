@@ -1,0 +1,480 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url = "service::msa.msa050.getMentMng.sel.do";
+var prod_cd = "", dmbco_cd = ""; // 조회조건에서 선택된 상품, 담보코드
+var v_mode = "U"; // 저장 모드
+//selectedProd : 담보리스트에서 선택된 상품코드, selectedDmbo : 담보리스트에서 선택된 담보코드, selectedRow : 담보리스트에서 선택된 row
+var selectedProd = "", selectedDmbo = "", selectedRow=-1; 
+
+
+function page_load(event) {
+	XwingObject();
+	f_getDmbo();
+}
+
+/* 
+ * 조회 조건의 상품/담보 정보 조회 
+ * */
+function f_getDmbo(){
+
+	 var param	= {
+			 _sqlName: "cs.com.getProduct.sel,msa.msa050.getDmbo.sel",
+	 }
+
+	var opt = {
+			reqId: 'f_getDmbo',
+			url: v_url,
+			param: param,
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+
+}
+
+/* 
+ * 조회버튼 클릭 시, 좌측의 담보 리스트 조회 
+ * */
+function btn_search_click(event) {
+	$btn_up.setEnabled(false);
+	$btn_down.setEnabled(false);
+	$btn_copy_popup.setEnabled(false);
+	
+	prod_cd = $cmb_prod.getValue();
+	dmbo_cd = $cmb_dmbo.getValue();
+	selectedRow = 0; // 조회 버튼 클릭시 0번째 row가 선택 될 수 있도록 row 초기화 
+	
+	f_getDmboList();
+}
+
+/*
+ * 좌측 담보리스트 조회 함수
+ * */
+function f_getDmboList(){
+	var param	= {
+			 _sqlName: "msa.msa050.getDmboList.sel",
+			 prod_cd : prod_cd,
+			 dmbo_cd : dmbo_cd
+	 }
+
+	var opt = {
+			reqId: 'f_getDmboList',
+			url: v_url,
+			param: param,
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+/* 
+ * 조회버튼 클릭 시, 우측 멘트 리스트 조회 
+ * */
+function f_getMentList() {
+	$btn_up.setEnabled(true);
+	$btn_down.setEnabled(true);
+	$btn_copy_popup.setEnabled(true);
+	
+	 var param	= {
+			 _sqlName: "msa.msa050.getMentList.sel",
+			 prod_cd : selectedProd,
+			 dmbo_cd : selectedDmbo
+	 }
+
+	var opt = {
+			reqId: 'f_getMentList',
+			url: v_url,
+			param: param,
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+/* 
+ * 우측 멘트리스트에서 하단에 상세로 볼 수 있도록 세팅 
+ * */
+function f_getMentDetail(row){
+	v_mode = "U"; // mode를 update 로 수정함(신규버튼 클릭 시에만 insert 모드로 변경되도록)
+	
+	if($DS_MENT_INFO.size() > 0) $DS_MENT_INFO.clearData();
+	
+	$DS_MENT_INFO.setColumnInfo($DS_MENT_LIST.getColumnInfo());
+	$DS_MENT_INFO.addRow();
+	$DS_MENT_INFO.copyRowFrom(0, $DS_MENT_LIST, row);
+}
+
+
+/*
+ * 저장 버튼 클릭 
+ * */
+function btn_save_click(event) {
+	
+	var sqlname = "";
+	
+	if ($DS_MENT_LIST.size() <= 0) {
+		sqlname="msa.msa050.setMentList.del";
+	}else{
+		sqlname="msa.msa050.setMentList.del,msa.msa050.setMentList.ins";
+	}
+	
+	xwing.Dialog.confirm("등록하시겠습니까?", $page.getTitle(),
+			function(b) {
+				if (!b)
+					return false;
+				
+			 	for(var i = 0; i<$DS_MENT_LIST.size(); i++){
+			 		$DS_MENT_LIST.setValue(i,"CHG_ID", global("G_USER_ID"));
+			 		$DS_MENT_LIST.setValue(i,"REG_ID", global("G_USER_ID"));
+			 		$DS_MENT_LIST.setValue(i,"PROD_CD",selectedProd);	//복사기능때문에 copyFrom 하면서 덮어써짐.
+			 		$DS_MENT_LIST.setValue(i,"DMBO_CD",selectedDmbo);	//복사기능때문에
+			 	}
+			 		
+				 var param	= {
+							 _sqlName: sqlname,
+							 DS_MENT_LIST : $DS_MENT_LIST
+							 ,PROD_CD : selectedProd //delete 하기위해
+							 ,DMBO_CD : selectedDmbo
+				 }
+				
+				 
+				 var opt = {
+							reqId: 'f_setMentList',
+							url: v_url,
+							param: param,
+							indicator: null,
+							showError: true
+				};
+			Xwing.request(opt, callback);
+	});
+
+}
+
+/*
+ * 신규버튼 클릭
+ * */
+function btn_new_click(event) {
+	v_mode = "I";
+	
+	$DS_MENT_LIST.clearData();
+	
+	//if($DS_MENT_LIST.size() == 0) {
+		$DS_MENT_LIST.setValue(0, "PROD_CD", selectedProd);
+		$DS_MENT_LIST.setValue(0, "PROD_NM", $DS_DMBO_LIST.getValue(selectedRow, "PROD_NM"));
+		$DS_MENT_LIST.setValue(0, "DMBO_CD", selectedDmbo);
+		$DS_MENT_LIST.setValue(0, "DMBO_NM", $DS_DMBO_LIST.getValue(selectedRow, "DMBO_NM"));
+	//}
+	
+	$DS_MENT_LIST.setValue(0,"MENT_SENT", "");
+	$DS_MENT_LIST.setValue(0,"MENT_KEYWORD", "");
+	$DS_MENT_LIST.setValue(0,"USE_YN", "Y");
+	$DS_MENT_LIST.setValue(0,"CHG_ID", global("G_USER_NAME")+"("+global("G_USER_ID")+")");
+	$DS_MENT_LIST.setValue(0,"CHG_DATE", getNow());
+
+	
+}
+
+
+function btn_up_click(event) {	
+	$DS_MENT_LIST.addRow();
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1, "PROD_CD", selectedProd);
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1, "DMBO_CD", selectedDmbo);
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1,"USE_YN", "Y");
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1,"REG_ID", global("G_USER_ID"));
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1,"REG_DATE", getNow());
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1,"CHG_ID", global("G_USER_NAME")+"("+global("G_USER_ID")+")");
+	$DS_MENT_LIST.setValue($DS_MENT_LIST.size()-1,"CHG_DATE", getNow());
+}
+
+function btn_down_click(event) {
+	var nRow = "";
+		nRow = $DS_MENT_LIST.getCursor();
+		$DS_MENT_LIST.removeRow(nRow);
+}
+/* ***********************************************************
+ * 	콜백  함수
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+		case "f_getDmbo" :
+			$DS_PRODUCT.setData(res.DS_PRODUCT.column, res.DS_PRODUCT.record);
+			$DS_PRODUCT.insertRow(0, [ "","","", "전체" ]);
+			$DS_DMBO_TEMP.setData(res.DS_DMBO.column, res.DS_DMBO.record);
+			$DS_DMBO.setData(res.DS_DMBO.column, res.DS_DMBO.record);
+			$DS_DMBO.insertRow(0, [ "", "","전체" ]);
+			
+			
+		break;
+		case "f_getDmboList" :
+			$DS_DMBO_LIST.setData(res.DS_DMBO_LIST.column, res.DS_DMBO_LIST.record);
+			$DS_DMBO_LIST.setCursor(selectedRow);
+			
+			selectedProd = $DS_DMBO_LIST.getValue(selectedRow, "PROD_CD");
+			selectedDmbo = $DS_DMBO_LIST.getValue(selectedRow, "DMBO_CD");
+			$DS_MENT_INFO.clearData();
+			$DS_MENT_INFO.addRow();
+			$DS_MENT_INFO.setValue(0, "PROD_NM", $DS_DMBO_LIST.getValue(selectedRow, "PROD_NM"));
+			$DS_MENT_INFO.setValue(0, "DMBO_NM", $DS_DMBO_LIST.getValue(selectedRow, "DMBO_NM"));
+			
+			f_getMentList();
+		break;
+		case "f_getMentList" :
+			$DS_MENT_LIST.setData(res.DS_MENT_LIST.column, res.DS_MENT_LIST.record);
+			
+			//f_getMentDetail(0);
+		break;
+		case "f_setMentList" :
+			xwing.Dialog.alert("등록되었습니다.");
+			
+			f_getDmboList();
+			f_getMentList();
+			break;
+		case "f_setMentList_U" :
+			xwing.Dialog.alert("수정되었습니다.");
+			
+			f_getDmboList();
+			f_getMentList();
+			break;
+		case "f_setMentListDel" :
+			xwing.Dialog.alert("삭제되었습니다.");
+			f_getMentList();
+			break;
+	}
+}
+
+/*
+ * 조회 영역에서 상품 변경시 담보 코드 change 함수
+ * */
+function cmb_prod_change(event) {
+	
+	var v_prod_cd = $cmb_prod.getValue();
+	
+	if(v_prod_cd == ""){ 
+		$DS_DMBO.copyFrom($DS_DMBO_TEMP);
+		$cmb_dmbo.setValue("");
+	}
+	else{ 
+		$DS_DMBO.clearData();
+		$DS_DMBO.setData($DS_DMBO_TEMP.getData("[PROD_CD=='"+v_prod_cd+"']"))};
+	
+	$DS_DMBO.insertRow(0, [ "", "","전체" ]);
+	
+}
+
+/*
+ * 좌측 담보리스트에서 클릭 함수
+ * */
+function grd_dmbo_list_click(event) {
+	
+	var p_dmbo_cd = $DS_DMBO_LIST.getValue(event.rowIdx, "DMBO_CD");
+	var p_prod_cd = $DS_DMBO_LIST.getValue(event.rowIdx, "PROD_CD");
+	
+	$DS_MENT_INFO.clearData();
+	$DS_MENT_INFO.addRow();
+	$DS_MENT_INFO.setValue(0, "PROD_NM", $DS_DMBO_LIST.getValue(event.rowIdx, "PROD_NM"));
+	$DS_MENT_INFO.setValue(0, "DMBO_NM", $DS_DMBO_LIST.getValue(event.rowIdx, "DMBO_NM"));
+	
+	
+	
+	selectedProd = p_prod_cd;
+	selectedDmbo = p_dmbo_cd
+	selectedRow = event.rowIdx;
+	
+	f_getMentList();
+	
+}
+
+function btn_delete_click(event) {
+	var idx = $DS_MENT_LIST.getCursor();
+	if(idx == -1){ //선택한거 없을경우
+		return;
+	}
+	
+	var mentcd = $DS_MENT_LIST.getValue(idx,"MENT_CD");
+	var prodcd = $DS_MENT_LIST.getValue(idx,"PROD_CD");
+	var dmbocd = $DS_MENT_LIST.getValue(idx,"DMBO_CD");
+	
+	var param	= {
+			 _sqlName: "msa.msa050.setMentList.one.del",
+			 prod_cd : prodcd,
+			 dmbo_cd : dmbocd,
+			 ment_cd : mentcd
+	 }
+
+	var opt = {
+			reqId: 'f_setMentListDel',
+			url: v_url,
+			param: param,
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+function btn_copy_popup_click(event) {
+	var opt = {
+			id : 'copy_ment',
+			url : "./MSA050P1.xhtml",
+			width : 690,
+			height : 465,
+			draggable : true,
+			resizable : false,
+			modal : true,
+			title : "필수멘트 복사",
+		};
+
+		var copy_ment = new xwing.Dialog(opt);
+		copy_ment.open();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_PRODUCT" description="상품코드_조회조건">
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DMBO" description="담보코드_조회조건">
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DMBO_TEMP" description="담보코드_조회조건_TEMP"></xwing:dataset>
+	<xwing:dataset id="DS_DMBO_LIST" description="담보리스트">
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USEYN" description="사용여부">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MENT_LIST" description="필수멘트리스트">
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_SENT"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_KEYWORD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MENT_INFO" description="필수멘트_정보">
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="DMBO_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="MENT_SENT"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHG_DATE"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="필수멘트관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="55" anchor="right left" borderstyle="solid" scroll="false" styles="div_search">
+			<xwing:button id="btn_search" value="조 회" left="744" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" click="btn_search_click"></xwing:button>
+			<xwing:label id="lbl_prod" value="상품" left="25" top="15" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:label id="lbl_dmbo" value="담보" left="340" top="15" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:combo id="cmb_dmbo" left="405" top="15" width="320" height="25" enabled="true" visible="true" domaindataset="DS_DMBO" domaincodecolumn="DMBO_CD" domaintextcolumn="DMBO_NM" itemheight="20" size="10" flexibleitem="true"></xwing:combo>
+			<xwing:combo id="cmb_prod" left="90" top="15" width="270" height="25" enabled="true" visible="true" domaindataset="DS_PRODUCT" domaincodecolumn="PROD_CD" domaintextcolumn="PROD_NM" size="10" flexibleitem="true" change="cmb_prod_change"></xwing:combo>
+		</xwing:panel>
+		<xwing:panel id="pan_tab2" left="498" top="56" width="554" height="728" anchor="top right bottom" visible="true">
+			<xwing:datagrid id="grd_ment_list" left="7" top="149" binddataset="DS_MENT_LIST" width="530" autofit="false" height="533" anchor="all" rownum="true" virtual="true" sortable="true" styles="table_border" resizable="true" click="grd_ment_list_click" editwhen="dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="200"></xwing:datagrid-column>
+					<xwing:datagrid-column width="200"></xwing:datagrid-column>
+					<xwing:datagrid-column width="65"></xwing:datagrid-column>
+					<xwing:datagrid-column width="60"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="필수멘트"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="추출키워드" bindcolumn="MENT_KEYWORD"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="사용여부"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="수정자"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="수정일자"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="MENT_SENT" halign="left" suppress="false" edittype="edit"></xwing:datagrid-cell>
+						<xwing:datagrid-cell edittype="edit" bindcolumn="MENT_KEYWORD"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="USE_YN" halign="center" suppress="false" edittype="combo" domaindataset="DS_USEYN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CHG_ID" halign="center" suppress="false"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CHG_DATE" mask="datetime" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_save" value="저 장" left="476" top="688" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_save_click"></xwing:button>
+			<xwing:label id="lbl_subtitle_2" value="필수멘트등록" left="0" top="0" width="546" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+			<xwing:button id="btn_new_0" value="삭 제" left="346" top="688" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="false" click="btn_delete_click"></xwing:button>
+			<xwing:group id="grp_01" left="7" top="50" width="530" height="67" anchor="top right left" borderstyle="none" borderwidth="0" styles="div_perform">
+				<xwing:label id="lbl_01" value="상품명" left="11" top="5" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+				<xwing:label id="lbl_02" value="담보명" left="11" top="35" halign="left" width="70" height="25" styles="label_lititle"></xwing:label>
+				<xwing:edit id="edt_prod_nm" left="81" top="5" width="388" height="25" binddataset="DS_MENT_INFO" bindcolumn="PROD_NM" styles="edit_readonly"></xwing:edit>
+				<xwing:edit id="edt_dmbo_nm" left="81" top="35" width="440" height="25" binddataset="DS_MENT_INFO" bindcolumn="DMBO_NM" styles="edit_readonly"></xwing:edit>
+			</xwing:group>
+			<xwing:button id="btn_tsr_reset" value="초기화" left="418" top="688" anchor="right bottom" styles="btn_normal" width="53" tabindex="4" height="25" iconalign="left" borderwidth="1" shadow="0 0 0 " borderstyle="solid" click="btn_new_click"></xwing:button>
+			<xwing:button id="btn_up" left="483" top="121" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_add.png" bgimagealign="center center" enabled="false" click="btn_up_click" visible="true"></xwing:button>
+			<xwing:button id="btn_down" left="510" top="121" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/icon_del.png" bgimagealign="center center" enabled="false" click="btn_down_click" visible="true"></xwing:button>
+			<xwing:button id="btn_copy_popup" value="복 사" left="423" top="121" anchor="top right" styles="btn_normal" width="53" tabindex="4" height="25" iconalign="left" borderwidth="1" shadow="0 0 0 " borderstyle="solid" click="btn_copy_popup_click" enabled="false"></xwing:button>
+		</xwing:panel>
+		<xwing:panel id="pan_tab" left="0" top="56" width="490" height="728" anchor="all" visible="true">
+			<xwing:label id="lbl_subtitle_1" value="담보리스트" left="10" top="0" width="469" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+			<xwing:datagrid id="grd_dmbo_list" left="14" top="53" binddataset="DS_DMBO_LIST" width="456" autofit="false" height="628" anchor="all" rownum="true" virtual="true" sortable="true" styles="table_border" resizable="true" textwrap="prewrap" click="grd_dmbo_list_click">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="180"></xwing:datagrid-column>
+					<xwing:datagrid-column width="150"></xwing:datagrid-column>
+					<xwing:datagrid-column width="70"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="상품명"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="담보명"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="수정자"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="수정일자"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="PROD_NM" halign="left" suppress="true"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DMBO_NM" halign="left" suppress="true"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CHG_ID" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CHG_DATE" mask="datetime" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:label id="lbl_help" value="※ 수정자/수정일자가 없는 담보는 등록된 필수멘트가 없는 것입니다." left="134" top="18" width="352" height="22" anchor="right" fontsize="11" visible="true"></xwing:label>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar" left="490" top="100" height="640" borderwidth="0" width="5" cursor="w-resize" bindwidget="r:pan_tab,r:pan_tab2" bartype="horizontal" anchor="top right bottom" visible="true" shadow="#58728d -3 0 0 0"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

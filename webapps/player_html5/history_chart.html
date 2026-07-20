@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  	<style>
+		html {
+			overflow:hidden;
+			resize: both;
+			height: 100%;
+		}
+		body {
+			background: #434343;
+			color: #fafafa;
+			font-family: "NanumBarunGothic", Helvetica, Arial, sans-serif;
+			overflow: hidden;
+			height: 100%;
+			width: 100%;
+			margin: 0 auto;
+		}
+		#container{
+			height: 100%;
+			width:  100%;
+		}
+		svg{ 
+			padding: 12px 5px 0 0; 
+		}
+		/*
+		.highcharts-tooltip>span {
+		    background: rgba(255,255,255,0.85);
+		    border: 1px solid silver;
+		    border-radius: 3px;
+		    box-shadow: 1px 1px 2px #888;
+		    padding: 5px;
+		    width: 400px;
+		    height: 45px;
+		}
+		*/
+		.highcharts-tooltip>span {
+			background: rgba(255,255,255,0.85);
+		    border: 1px solid silver;
+		    border-radius: 3px;
+		    /*box-shadow: 1px 1px 2px #888;*/
+		    height: 38px ;
+		    width: 393px !important;
+		    /*max-width:250px !important; */
+		    overflow:hidden !important;
+		    padding: 5px; 
+		    white-space:normal !important;
+		}
+    </style>
+  	<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+	</head>
+	
+	<body onLoad="calling()">
+	  	<script src="../chart/lib/highcharts.js"></script>
+		<script src="../chart/lib/exporting.js"></script>
+		<script type='text/javascript' src='../js/servicemanager.js'></script>
+		<script type='text/javascript' src='../js/dateutil.js'></script>
+		<div id="container"></div>
+		
+		<script>66
+	   		var xhr = new XMLHttpRequest();
+	   		var date=[], count=[], doc=[], summary=[], file=[];
+	   		var rec_key = parent.rec_key;
+	   		
+		 	function calling(){
+		 		//constContext(); //브라우저 우측 메뉴 막아.
+				document.body.oncontextmenu = function(){return false;};
+		 		console.log(parent);
+		 		var host = parent.host;
+		 		var regist_no = parent.regist_no == undefined ? "" : parent.regist_no;
+		 		var incall_no = parent.incall_no == undefined? "" : parent.incall_no;
+		 		
+		 		var today = parent.start_time.substr(0,8) + "235959";
+		 		var before = g_addDate("m",-1,today) + "000000";
+		 		
+		 		var param = "start_time="+ before + "&end_time="+today + "&regist_no="+regist_no+ "&incall_no="+incall_no;
+		 		
+		 		console.log(param);
+	    		xhr.onreadystatechange = loader;
+	    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=contact_history&" + param),false);    
+	    		xhr.send(null);
+		 	}
+		 	
+		 	function loader(){
+	   			if(xhr.readyState == 4 && xhr.status == 200) {
+		        	result = JSON.parse(xhr.responseText);
+		        	var data = result.DATA;
+		        	
+		        	var icon='';
+		        	for(var i=data.record.length; i>0; i--) {
+		        		doc.push(data.record[i-1][0]);
+		        		file.push(data.record[i-1][1]);
+		        		date.push(data.record[i-1][2]); //query 순
+		        		
+		        		if(rec_key == data.record[i-1][0]){
+		        			icon = {
+			    	            	y: Number(data.record[i-1][3]),
+			    	            	marker: { symbol: 'url(./images/mark.png)' }
+		        			};
+		        			count.push(icon);
+		        		}else{
+		        			count.push(Number(data.record[i-1][3]));
+		        		}
+		        	}
+		        	
+		        	createChart();
+		        }
+		   	}
+		 	
+		 	function createChart(){
+		 		setTimeout(function(){
+			    	
+			    	$(function () {
+			    	    $('#container').highcharts({
+			    	    	
+			    	        chart: {
+			    	            type: 'line',
+			    	            backgroundColor: null,
+			    	            spacingLeft: 0,
+			    	            spacingTop: 5
+			    	        },
+			    	        
+			    	        title: { text: '' },
+			    	        
+			    	        subtitle: { text: '' },
+			    	        
+			    	        xAxis: {
+			    	        	labels: {
+					                formatter: function () {
+					                    return this.value.substring(4,6)+'/'+this.value.substring(6,8)+' '+this.value.substring(8,10)+':'+this.value.substring(10,12);
+					                },
+					                style: {
+			    	                    color: '#fff',
+			    	                    font: '12px 맑은 고딕'
+			    	                 }
+				            	},
+			    	            categories: date
+			    	        },
+			    	        
+			    	        yAxis: {
+			    	            title: {
+			    	                text: '통화시간(분)',
+			    	                margin: 0,
+			    	                style: {
+			    	                    color: '#fafafa',
+			    	                    font: '12px 맑은 고딕'
+			    	                 }
+			    	            },
+			    	            labels: {
+			    	                formatter: function () {
+			    	                    return this.value;
+			    	                },
+			    	                style: {
+			    	                    color: '#fafafa',
+			    	                    font: '11px 맑은 고딕'
+			    	                 }
+			    	            }
+			    	            //min: 0,
+			    	            //max: 3
+			    	        },
+			    	        credits: {
+			    	            enabled: false
+			    	        },
+			    	        tooltip: {
+			    	        	 enabled : false
+			    	        	/*
+			    	            shared: false,
+			    	            useHTML: true,
+			    	            positioner: function(boxWidth, boxHeight, point) {
+					        	    return {
+					        	        x: 25, //this.point,
+					        	        y: 0
+					        	    };
+					            },
+					            backgroundColor: null,
+					            borderWidth: 0,
+					            shadow: false,
+					            useHTML: true,
+					            style: {
+					                padding: 0
+					            },
+			    	            formatter: function(){
+			    	            	var str = '';
+		    	            		var idx = date.indexOf(this.x);
+		    	            		//var tmp = summary[idx].replace(/\\\\n/g, '<br \/>');
+		    	            		var tmp = summary[idx].replace(/\\\\n/g, ' ');
+		    	            		if(tmp.length>70) tmp = tmp.substr(0,70)+"..";
+			    	            	//str = "<div style='width: 300px; height: 25px; white-space:normal;'><b>[요약]</b> "+tmp + "</div>";
+			    	            	str = "<b>[요약]</b> "+tmp;
+			    	            	return str;
+			    	            }*/
+			    	        },
+			    	        legend: {
+			    	        	enabled: false
+			    	        },
+			    	        plotOptions: {
+			    	            spline: {
+			    	                marker: {
+			    	                    radius: 4,
+			    	                    lineColor: '#666666',
+			    	                    lineWidth: 1
+			    	                }
+			    	            }
+			    	        },
+			    	        navigation: {
+			    	            buttonOptions: {
+			    	                enabled: false
+			    	            }
+			    	        },
+			    	        series: [{
+			    	            name: '접촉',
+			    	            marker: {
+			    	                symbol: 'diamond'
+			    	            },
+			    	            color: '#F04931',
+			    	            cursor: 'pointer',
+				                point: {
+				                    events: {
+				                        click: function () {
+				                        	var idx = date.indexOf(this.category);
+				                        	parent.reloadPlayer(doc[idx], file[idx], date[idx]);
+				                        }
+				                    }
+				                },
+			    	            data: count
+
+			    	        }]
+			    	    });
+			    	});
+			    	
+				},500);	
+		 	}
+		 	
+	    </script>
+	    
+	</body>
+
+</html>
+

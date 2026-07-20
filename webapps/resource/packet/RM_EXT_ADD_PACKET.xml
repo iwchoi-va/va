@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service name='ADD-EXT-RM' ref='HANSOL-RM' svc_id='ADD-EXT-RM' resource='RMserver' transaction='false'>
+	<description>RM에 내선 추가 </description>
+	<header>
+    </header>
+	<request>
+		<field name='RMIP'  fld_id='RMIP'    default=''    type='string'  length='0' inout=''/>
+		<field name='RMPORT'  fld_id='RMPORT'    default=''    type='string'  length='0' inout=''/>
+		<field name='PARAMETER'  fld_id='PARAMETER'    default=''    type='string'  length='0' inout=''/>	
+	</request>
+	<response>
+        <field name='RESULT'  fld_id='RESULT' default='' type='string' length='0'  inout=''/>
+    </response>
+</service>

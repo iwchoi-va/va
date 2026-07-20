@@ -1,0 +1,507 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+
+	<!-- login.xhtml -->
+	<sql-service name='cs.com.user_select' datasource='is_stat' type='prepared'>
+		<description>로그인 사용자 조회</description>
+		<query><![CDATA[
+			SELECT	A.USER_ID
+					,A.USER_NAME
+					,A.USER_GRADE_CD																								 -- 사용자등급코드 (참고:코드북 SYS001)
+					,A.USER_GRADE_NM USER_GRADE_NM
+					,A.USER_GROUP_CD
+					,A.PASSWORD
+					,'' PWD_CHG_DATE
+					,A.PWD_ERR_CNT
+					, A.USE_YN
+					,'' SOCIAL_ID
+					, A.EMP_NO
+					,'' ENTER_DATE
+					,'' RETIRE_DATE
+					, LEVEL_CD
+					,'' LEVEL_NAME
+					, FUNCTION_CD
+					,'' FUNCTION_NAME
+					, JOB_CD
+					,'' JOB_NAME
+					,'' WORK_GROUP_CD
+					,'' WORK_GROUP_NAME
+					,A.DEPT_CD
+					,A.DEPT_NM
+					, ORG1_CD
+					, ORG1_NAME
+					, ORG2_CD
+					, ORG2_NAME
+					, ORG3_CD
+					, ORG3_NAME
+					,ISNULL((SELECT ETC1
+						  FROM MS_CODEBOOK
+						 WHERE CODE_TYPE = 'SCH999'
+							AND CODE_ID = '01'), '0800')
+					 WORK_STIME
+					,ISNULL((SELECT ETC2
+							  FROM MS_CODEBOOK
+							 WHERE CODE_TYPE = 'SCH999'
+								AND CODE_ID = '01'), '2000')
+						 WORK_ETIME
+					, CONVERT(varchar , getdate(), 112) CURRDATE
+					,(SELECT CODE_NAME
+						 FROM MS_CODEBOOK
+						WHERE CODE_TYPE = 'SYS010'
+						  AND CODE_ID = 'G_URL')
+						 G_URL
+					,'' CONNECT_IP
+					,'' REG_DATEE
+					,'' REG_TIME
+					,(SELECT ETC3  FROM MS_CODEBOOK    WHERE CODE_TYPE = 'SCH999' AND USE_YN='Y' ) MIN_SORTNO
+			        ,(SELECT ETC4  FROM MS_CODEBOOK    WHERE CODE_TYPE = 'SCH999' AND USE_YN='Y' ) MAX_SORTNO
+			 FROM vw_usermaster A
+			 WHERE UPPER(A.USER_ID) = ?userid
+			 AND (A.USE_YN = 'Y' )
+		]]></query>
+	</sql-service>
+
+	<sql-service name='cs.com.expired_select' datasource='is_stat' type='prepared'>
+		<description>사용기간 조회</description>
+		<query><![CDATA[
+			select code_name
+			from cs_codebook
+			where code_type=?codetype
+			and code_id = ?codeid
+		]]></query>
+	</sql-service>
+
+	<sql-service name='cs.com.password_errorcnt' datasource='is_stat' type='prepared'>
+		<description>비밀번호 오류 횟수를 남긴다</description>
+		<query><![CDATA[
+			UPDATE MS_USERMASTER
+			   SET PWD_ERR_CNT = ?pwd_err_cnt
+			 WHERE EMP_NO = ?userid
+		]]></query>
+	</sql-service>
+
+
+	<sql-service name='cs.com.logout_checklog' datasource='is_stat' paging='false' type='prepared'>
+		<description>상담원 로그아웃체크</description>
+		<result-name>result_logout</result-name>
+		<query><![CDATA[
+			SELECT LOGIN_DATE, LOGIN_TIME
+			  FROM ms_login_log
+			 WHERE USER_ID = ?user_id
+				AND LOGOUT_DATE = ''
+				AND LOGOUT_TIME = ''
+				AND LOGIN_YN = 'Y'
+			    ?was_ip
+		]]></query>
+		<parameter name='was_ip' value='AND WAS_IP = ?was_ip' default="AND WAS_IP = '127.0.0.1'" />
+	</sql-service>
+
+
+	<sql-service name='cs.com.login_insertlog' datasource='is_stat' paging='false' type='prepared'>
+		<description>상담원 로그인</description>
+		<result-name>result_logout</result-name>
+		<query><![CDATA[
+			INSERT INTO ms_login_log(
+								 USER_ID
+								,CONNECT_IP
+								,LOGIN_YN
+								,WAS_IP
+								,LOGIN_DATE
+								,LOGIN_TIME
+								,LOGOUT_DATE
+								,LOGOUT_TIME
+								,REG_ID
+								,REG_DATE
+								,CHG_ID
+								,CHG_DATE
+								)
+			 VALUES (
+					   ?user_id
+					  ,?connect_ip
+					  ,?login_yn
+					  ,?was_ip
+					  ,CONVERT(varchar(8),GETDATE(),112)
+					  ,REPLACE(CONVERT(varchar(8),GETDATE(),108),':','')
+					  ,''
+					  ,''
+					  ,?user_id
+					  ,format(GETDATE(),'yyyyMMddHHmmss')
+					  ,?user_id
+					  ,format(GETDATE(),'yyyyMMddHHmmss')
+				    );
+		]]></query>
+		<parameter name='was_ip' value='?was_ip' default="'127.0.0.1'" />
+	</sql-service>
+
+
+	<sql-service name='cs.com.logout_insertlog' datasource='is_stat' paging='false' type='prepared'>
+		<description>상담원 로그아웃</description>
+		<result-name>result_logout</result-name>
+		<query><![CDATA[
+			UPDATE ms_login_log
+				SET LOGOUT_DATE = CONVERT(varchar(8),GETDATE(),112)
+			      , LOGOUT_TIME = REPLACE(CONVERT(varchar(8),GETDATE(),108),':','')
+			      , LOGIN_YN = 'N'
+			      ,	CHG_ID = ?USER_ID
+			      , CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+			 WHERE USER_ID = ?USER_ID
+				AND LOGOUT_DATE = ''
+				AND LOGOUT_TIME = ''
+				AND LOGIN_YN = 'Y'
+		]]></query>
+		<parameter name='was_ip' value='AND WAS_IP = ?was_ip' default="AND WAS_IP = '127.0.0.1'" />
+	</sql-service>
+
+	<!-- USERMASTER에 LOGIIN TIME 없어지면서 제거됨 -->
+	<!-- <sql-service name='cs.com.login.loginchk' datasource='is_stat' paging='false'  type='simple'>
+		<description>상담원 로그아웃</description>
+		<result-name>result_logout</result-name>
+		<query><![CDATA[
+			update cs_usermaster
+			set login_time = (SELECT CONVERT(CHAR(8),GETDATE(),112)+REPLACE(CONVERT(CHAR(8),GETDATE(),108),':','')),
+				login_yn = 'Y',
+				connect_ip = '?connect_ip',
+				was_ip = '?was_ip'
+			where user_id = '?user_id'
+		]]></query>
+	</sql-service>  -->
+
+	<!-- USERMASTER에 LOGOUT TIME 없어지면서 제거됨 -->
+	<!-- <sql-service name='cs.com.logout.logoutchk' datasource='is_stat' paging='false'  type='simple'>
+		<description>상담원 로그아웃</description>
+		<result-name>result_logout</result-name>
+		<query><![CDATA[
+			update MS_USERMASTER
+			set logout_time = (SELECT CONVERT(CHAR(8),GETDATE(),112)+REPLACE(CONVERT(CHAR(8),GETDATE(),108),':','')),
+				login_yn = 'N',
+				connect_ip = ''
+			where user_id = '?user_id'
+		]]></query>
+	</sql-service> -->
+
+
+	<!-- main.xhtml -->
+	<sql-service name='cs.com.auth_menu.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>로그인 후 권한에 따른 메뉴 조회</description>
+		<result-name>ds_menu</result-name>
+		<query><![CDATA[
+			SELECT
+				    CASE AA.TREE_LEVEL WHEN 0 THEN '굴림,9,bold' END AS FONT_COL
+				   ,CASE AA.TREE_LEVEL WHEN 0 THEN '#666666' END AS FONT_CLR
+				   ,CASE AA.LEAF_YN WHEN 'Y' THEN '0' ELSE '2' END ASIMG_COL
+				   ,TREE_LEVEL
+				   ,PARENT_SEQNO AS MENU_SEQNO
+					,ID
+					,AUTH
+					,CAPTION
+					,LEAF_YN
+					,SUMMARY
+					,URL
+					,POPUP_YN
+					,PARENT_ID
+					,CHILD_SEQNO
+		  	FROM(
+				SELECT
+						 CHILD.MENU_LEVEL TREE_LEVEL
+					   ,CHILD.MENU_SEQNO
+						,CHILD.MENU_ID ID
+						,CHILD.AUTHORITY_CD AUTH
+						,CHILD.CAPTION CAPTION
+						,CHILD.LEAF_YN LEAF_YN
+						,CHILD.SUMMARY SUMMARY
+						,CHILD.ACTION1 URL
+						,CASE CHILD.WINTYPE WHEN 'popup' THEN 'Y' ELSE 'N' END AS POPUP_YN
+						,CHILD.PARENT_ID
+						,CHILD.CHILD_SEQNO
+				   	,CASE PARENT.MENU_SEQNO WHEN '' THEN CHILD.MENU_SEQNO ELSE  PARENT.MENU_SEQNO END PARENT_SEQNO
+				FROM
+					(
+						SELECT
+							  MENU_ID
+							 ,MENU_LEVEL
+							 ,AUTHORITY_CD
+							 ,CAPTION
+							 ,ACTION1
+							 ,EXPLAN
+							 ,SUMMARY
+							 ,PARENT_ID
+							 ,MENU_SEQNO
+							 ,LEAF_YN
+							 ,WINTYPE
+						  FROM
+							  MS_MENU_LIST
+					    WHERE
+							    LEAF_YN='N'
+						   AND USE_YN = 'Y'
+						   AND CHARINDEX(?authority_cd, AUTHORITY_CD) > 0
+					) PARENT
+					RIGHT OUTER JOIN
+					(
+						SELECT
+					 		  MENU_ID
+							 ,MENU_LEVEL
+							 ,AUTHORITY_CD
+							 ,CAPTION
+							 ,ACTION1
+							 ,EXPLAN
+							 ,SUMMARY
+							 ,PARENT_ID
+							 ,MENU_SEQNO
+							 ,LEAF_YN
+							 ,WINTYPE
+							 ,CASE PARENT_ID WHEN 0 THEN MENU_ID ELSE PARENT_ID END PARENT
+							 ,CASE LEAF_YN WHEN 'N' THEN 0 ELSE MENU_SEQNO end as CHILD_SEQNO
+						  FROM
+						  	  MS_MENU_LIST
+						 WHERE
+						       USE_YN = 'Y'
+						   AND CHARINDEX(?authority_cd, AUTHORITY_CD) > 0
+					) CHILD
+					ON CHILD.PARENT = PARENT.MENU_ID
+		) AA
+		 ORDER BY PARENT_SEQNO ,CHILD_SEQNO
+		]]></query>
+	</sql-service>
+
+
+	<!-- CodeCache -->
+	<sql-service name='codeutil_getcode' datasource='is_stat' type='prepared'>
+		<description>Search Code List</description>
+		<result-name>#resultSet</result-name>
+		<query><![CDATA[
+		   SELECT *
+			 FROM MS_CODEBOOK
+			WHERE CODE_TYPE = ?code_type
+			  AND CODE_ID <> 'KB00'
+			  AND CODE_ID <> '00'
+		      ?useyn
+			ORDER BY CONVERT(INT,SORT_KEY),CODE_ID
+		]]></query>
+		<parameter name='useyn' value=" and USE_YN = '?useyn' " default=''/>
+	</sql-service>
+
+	<sql-service name='codeutil_getchildcode' datasource='is_stat' type='prepared'>
+		<description>Search Child Code List</description>
+		<result-name>#resultSet</result-name>
+		<query><![CDATA[
+		   SELECT *
+			 FROM cs_codebook
+			WHERE PARENT_TYPE = ?parent_type
+			  AND PARENT_ID = ?parent_id
+			  AND CODE_ID <> 'KB00'
+			  AND CODE_ID <> '00'
+			ORDER BY CONVERT(INT,SORT_KEY), CODE_ID
+		]]></query>
+	</sql-service>
+
+	<!-- orgutil.js -->
+	<sql-service name='cs.com.deptlist.sel' datasource='is_stat' type='prepared'>
+		<description>현/겸직 하위부서 포함 전체 list</description>
+		<result-name>__dept_list</result-name>
+		<query><![CDATA[
+			SELECT	0 CHK_VAL,
+			 		CASE WHEN DEPT_TYPE = 01 THEN 0 WHEN DEPT_TYPE = 02 THEN 1 WHEN DEPT_TYPE = 03 THEN 2 WHEN DEPT_TYPE = 04 THEN 3 END DEPT_LEVEL,
+					-- A.DEPT_LEVEL,
+					A.SORT_NO,
+					LTRIM(A.ORG1_CD) DEPT0_CD,
+					LTRIM(A.ORG2_CD) DEPT1_CD,
+					LTRIM(A.ORG3_CD) DEPT2_CD,
+					LTRIM(A.ORG4_CD) DEPT3_CD,
+					(
+					SELECT	DEPT_NAME
+					  FROM	MS_DEPT
+					 WHERE	DEPT_CD = A.ORG1_CD
+					) AS DEPT0_NAME,
+					(
+					SELECT	DEPT_NAME
+					  FROM	MS_DEPT
+					 WHERE	DEPT_CD = A.ORG2_CD
+					) AS DEPT1_NAME,
+					(
+					SELECT	DEPT_NAME
+					  FROM	MS_DEPT
+					 WHERE	DEPT_CD = A.ORG3_CD
+					) AS DEPT2_NAME,
+					(
+					SELECT	DEPT_NAME
+					  FROM	MS_DEPT
+					 WHERE	DEPT_CD = A.ORG4_CD
+					) AS DEPT3_NAME,
+					SORT_NO AS ANL_USE_YN
+			  FROM	MS_DEPT A
+			  -- WHERE	DEPT_LEVEL > 0
+			  WHERE DEPT_TYPE IN ('02','03','04')
+        	  AND  A.USE_YN = 'Y'
+        	 ?filter
+		 	 ?filter2
+			ORDER BY DEPT_LEVEL,A.DEPT_CD
+		]]></query>
+		<parameter name='filter'  value="" default=''>
+			<condition key="Y" value="AND A.ORG1_CD= '11002'"/>
+		</parameter>
+		<parameter name='filter2'  value="" default=''>
+			<condition key="Y" value="AND A.ORG2_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+		</parameter> 
+	</sql-service>
+
+	<sql-service name='cs.com.org_user' datasource='is_stat' type='simple'>
+		<description>사원</description>
+		<result-name>__user_list</result-name>
+		<query><![CDATA[
+		  SELECT   USER_ID AS CODEID
+				  ,USER_NAME + ' (' + EMP_NO + ')' CODENAME
+				  ,'%' AS ETC1
+				  ,DEPT_CD AS DEPT_CODE
+				  ,USER_GRADE_CD AS USER_GRADE
+				  ,100 - USER_GRADE_CD AS GRADE_ORDER
+				  ,EMP_NO AS EMP_NO
+			 FROM ms_usermaster
+			WHERE 1=1
+			  AND USE_YN = 'Y'
+			  AND EMP_NO IS NOT NULL
+		      ?deptcd
+		      ?userid
+		ORDER BY ?orderby
+		]]></query>
+		<parameter name='deptcd'  value="AND CHARINDEX('?deptcd', dept_cd) > 0" default=''/>
+		<parameter name='userid'  value="AND CHARINDEX('?userid', user_id) > 0" default=''/>
+		<parameter name='orderby'  value='?orderby'  default='user_name'/>
+	</sql-service>
+
+	<sql-service name='cs.com.get.cnsl' datasource='is_stat' paging='false' type='prepared'>
+		<description>상담유형 정보 가져오기</description>
+		<result-name>DS_CNSL</result-name>
+		<query><![CDATA[
+			SELECT
+			      CNSL_CD_SEQ
+			    , MAIN_CNSL_CD CNSL1_CD
+			    , SUB_CNSL_CD CNSL2_CD
+			    , DTL_CNSL_CD CNSL3_CD
+			    , MAIN_CNSL_CD_NM CNSL1_NM
+			    , SUB_CNSL_CD_NM CNSL2_NM
+			    , DTL_CNSL_CD_NM CNSL3_NM
+			    , CNSL_LVL
+			    , DSAT_CL_CD
+			    , COMP_GUBUN
+			FROM  vs_cnsl_code
+			WHERE USE_YN='Y'
+			ORDER BY CONVERT(INTEGER, CNSL_CD_SEQ)
+		]]></query>
+	</sql-service>
+
+	<sql-service name='cs.com.setDate_holiday.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>휴일 정보 가져오기</description>
+		<result-name>DS_HOLIDAY</result-name>
+		<query><![CDATA[
+			SELECT SOLAR
+			  FROM MS_HOLIDAY_INFO
+			 WHERE (WEEKNAM IN ('토','일') OR DETAIL IS NOT NULL)
+			   AND SOLAR BETWEEN ?sdate AND ?edate
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='cs.main.help.sel' datasource='is_stat' type='prepared'>
+		<description> 도움말조회</description>
+		<result-name>CS_MAIN_HELP_SEL</result-name>
+		<query><![CDATA[
+
+				SELECT A.MENU_ID AS MENU_ID,
+				       A.CAPTION AS CAPTION,
+				       A.EXPLAN AS DOCUMENT
+				FROM ms_menu_list A
+				WHERE A.MENU_ID = ?menuid;
+
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name='cs.common.getContents.sel' datasource='is_stat' type='prepared'>
+		<description>엑셀다운로드를 위한 stt조회</description>
+		<result-name>CS_STT_CONTENTS</result-name>
+		<query><![CDATA[
+
+				SELECT UCID,
+					   STT_SENT,
+					   (SELECT ENC_FLAG FROM MS_STT_RSLT_MERGE WHERE UCID = ?UCID) AS ENC_FLAG,
+					   RXTX_GB
+				FROM ms_stt_rslt
+				WHERE UCID = ?UCID
+				ORDER BY UCID, STT_SENT_ID ASC
+		]]></query>
+	</sql-service>	
+	
+	<sql-service name='cs.com.getProduct.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>보헝종목 및 상품명 가져오기</description>
+		<result-name>DS_PRODUCT</result-name>
+		<query><![CDATA[
+			SELECT c.ETC1 AS ISTP_CD,
+				   c.ETC2 AS ISTP_NM,
+				   p.PROD_CD AS PROD_CD,
+				   p.PROD_NM AS PROD_NM
+			FROM ms_codebook c, ms_product p
+			WHERE c.CODE_ID = p.PROD_CD
+			and c.CODE_TYPE='COM004'
+			AND P.USE_YN = 'Y'
+			--and C.USE_YN = 'Y'
+			ORDER BY PROD_CD ASC
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='cs.com.getistpcd.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>보헝종목 가져오기</description>
+		<result-name>DS_ISTP</result-name>
+		<query><![CDATA[
+			SELECT c.ETC1 AS ISTP_CD,
+				   c.ETC2 AS ISTP_NM 
+			FROM ms_codebook c, ms_product p
+			WHERE c.CODE_ID = p.PROD_CD
+			AND P.USE_YN = 'Y'
+			--and C.USE_YN = 'Y'
+			and c.CODE_TYPE='COM004'
+			GROUP BY ETC1, ETC2
+			ORDER BY ISTP_CD ASC
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='cs.com.getQcOrg.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>QC 조직 정보 조회</description>
+		<result-name>DS_QC_ORG</result-name>
+		<query><![CDATA[
+			SELECT DEPT_CD AS QC_ORG_CD,
+				   DEPT_NAME AS QC_ORG_NM
+			FROM MS_DEPT WITH(NOLOCK)
+			WHERE DEPT_CD IN (
+				SELECT ETC1
+				FROM MS_CODEBOOK WITH(NOLOCK)
+				WHERE CODE_TYPE ='SYS140'
+				AND CODE_ID <> '00'
+				AND USE_YN = 'Y'
+			)
+			?use_yn
+			ORDER BY DEPT_CD ASC
+		]]></query>
+		<parameter name='use_yn'  value="AND USE_YN = ?use_yn" default=''/>
+	</sql-service>
+	
+	<sql-service name='cs.com.getQcUser.sel' datasource='is_stat' paging='false' type='prepared'>
+		<description>QC User 정보 조회</description>
+		<result-name>DS_QC_USER</result-name>
+		<query><![CDATA[
+			SELECT 
+				DEPT_CD AS QC_ORG_CD,
+				DEPT_NM AS QC_ORG_NM,
+				USER_ID AS QC_USER_ID,
+				USER_NAME + ' (' + USER_ID + ')' AS QC_USER_NM
+			FROM VW_USERMASTER
+			WHERE ORG3_CD IN (
+				SELECT ETC1
+				FROM MS_CODEBOOK WITH(NOLOCK)
+				WHERE CODE_TYPE ='SYS140'
+				AND CODE_ID <> '00'
+				AND USE_YN = 'Y'
+			) 
+			?use_yn
+			ORDER BY USER_ID ASC, DEPT_CD ASC
+		]]></query>
+		<parameter name='use_yn'  value="AND USE_YN = ?use_yn" default=''/>
+	</sql-service>
+</query-collection>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" showDataTips="true">
+		<series>
+			<MapSeries id="mapseries" selectionMarking="line" labelPosition="inside" displayName="Map Series" localFillJsFunction="colorFunction">
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/> 
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+	<Box width="100%" horizontalAlign="center" paddingTop="20">
+		<SubLegend direction="horizontal" borderStyle="solid" borderColor="0x999999" backgroundColor="0xFFFFFF">
+			<LegendItem label="30이하">
+				<fill>
+					<SolidColor color="0xFF0000"/>
+				</fill>
+			</LegendItem>
+			<LegendItem label="50이하">
+				<fill>
+					<SolidColor color="0xFF6600"/>
+				</fill>
+			</LegendItem>
+			<LegendItem label="90이하">
+				<fill>
+					<SolidColor color="0xFFCC00"/>
+				</fill>
+			</LegendItem>
+			<LegendItem label="90이상">
+				<fill>
+					<SolidColor color="0xFFFF00"/>
+				</fill>
+			</LegendItem>
+		</SubLegend>
+	</Box>
+</rMateMapChart>

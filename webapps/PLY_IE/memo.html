@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style>
+		html {
+		/* 	overflow-y: scroll;
+			overflow-x: hidden; */
+			overflow:hidden;
+			resize: both;
+			height: 100%;
+			padding: 15px;
+		}
+		body {
+			background: #434343;
+			color: rgba(255,255,255,0.8);
+			font-family: 'Dotum','돋움', "NanumBarunGothic", Helvetica, Arial, sans-serif;
+			font-size: 13px;
+			height:100%;
+			width: 100%;
+			margin: 0;
+			
+			scrollbar-3dlight-color: #434343;
+		    scrollbar-arrow-color: #434343;
+		    scrollbar-base-color: #434343;
+		    scrollbar-darkshadow-color: #434343;
+		    scrollbar-track-color: #434343;
+		    scrollbar-face-color: #F7F1E2;
+		}
+		
+		table {
+				position: absolute;
+				width: 100%;
+				top: 15%;
+				color:  rgba(255,255,255,0.8);
+				font-size: 12px;
+				background: #434343;
+			}
+		table td {
+			/*	border: solid 0.3px #cccccc;*/
+				border-collapse:collapse;
+				vertical-align: middle;
+				font-size: 12px;
+				color:#fff;
+				font-weight:400;
+				
+			}
+		table tr.head td{
+			color:#4cc8e9 !important;
+			border-bottom: solid 0.3px #cccccc;
+			/* border-top:solid 0.3px #cccccc; */
+		}
+		table tr.head td:first-child{
+			color:#4cc8e9 !important;
+			text-align:center;
+			border-bottom: solid 0.3px #cccccc;
+			/* border-top:solid 0.3px #cccccc; */
+		}
+		table tr.head td:nth-child(2){
+			color:#4cc8e9 !important;
+			text-align:center;
+			border-bottom: solid 0.3px #cccccc;
+			/* border-top:solid 0.3px #cccccc; */
+		}
+		
+		table td span.glyphicon {
+			margin-left: 20px;
+			margin-right: 6px;
+			font-size: 18px;
+			top: 4px;
+		}
+			table tr:not(.head) td:first-child {
+				text-align:center;
+				font-size:10px;
+			}
+			table tr:not(.head) td:nth-child(2) {
+				font-size:11px;
+			}
+			table tr td:nth-child(3) {
+				padding-left:10px;
+			}
+			#date{
+				font-size:10px;
+			}
+			table tr:last-child {
+				letter-spacing: 0.08em;
+				border-bottom:none;
+			}
+			table tr:not(.head) {
+				height:20px;
+			}
+			table tr:not(.head) td{
+				height:20px;
+				border-bottom: dotted 0.3px #cccccc;
+			}
+		
+		#btn_del {
+ 			
+		 /*    background-color: rgba(209,74,14,0.9);
+		    color: #fff;
+		    border-color: #d14a0e;
+		     font-size: 11px; 
+		    padding: 0;
+		     font-weight:600;
+		    font-family: 'NanumBarunGothic','Malgun Gothic';
+		    letter-spacing:2px;
+		    width: 45px;
+		    height: 22px;
+		    border-radius: 5px;
+		  */;
+		    cursor:pointer;
+		    width: 20px;
+		     height: 20px;
+		    background:url('./images/ico_delete.png') 10% 10% no-repeat;
+		}
+		
+		#btn_update {
+ 			
+		 /*    background-color: rgba(209,74,14,0.9);
+		    color: #fff;
+		    border-color: #d14a0e;
+		     font-size: 11px; 
+		    padding: 0;
+		     font-weight:600;
+		    font-family: 'NanumBarunGothic','Malgun Gothic';
+		    letter-spacing:2px;
+		    width: 45px;
+		    height: 22px;
+		    border-radius: 5px;
+		  */;
+		    cursor:pointer;
+		    width: 20px;
+		    height: 16px;
+		    background:url('./images/ico_pencil.png') 60% 70% no-repeat;
+		    display:inline-block;
+		    line-height:2px;
+		    
+		}
+		#btn_save {
+ 			
+		 /*    background-color: rgba(209,74,14,0.9);
+		    color: #fff;
+		    border-color: #d14a0e;
+		     font-size: 11px; 
+		    padding: 0;
+		     font-weight:600;
+		    font-family: 'NanumBarunGothic','Malgun Gothic';
+		    letter-spacing:2px;
+		    width: 45px;
+		    height: 22px;
+		    border-radius: 5px;
+		  */;
+		    cursor:pointer;
+		    width: 24px;
+		    height: 24px;
+		    background:url('./images/ico_check.png') 100% 100% no-repeat;
+		    display:inline-block;
+			margin-left:10px		    
+		}
+		.visibleNone{
+			display:none;
+		}
+		#memo_div{
+			overflow:hidden;
+		    height: 20px;
+		    margin-top:15px;
+			font-size: 12px;
+			color:#fff;
+			font-weight:400;}
+		
+    </style>
+	<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+	</head>
+	
+	<body onLoad="calling()" style="margin:0;padding:0">
+
+		<div id="container"  style="backgroud-color:#fff;position:relative;height:85%;overflow-y:scroll;overflow-x:hidden;">
+		<div id="title" class="title">
+			<font size="2" color="#4cc8e9">[ 콜메모 ]</font>
+			<div id="btn_update" visible="true" onclick="setVisible()"></div>
+		</div>	
+		<div style="">
+			 <div id="memo_div">등록된 메모가 없습니다.</div>	
+			 <table  class="visibleNone" style="cellspacing="0" cellpadding="0" id="memo_table">
+				   <colgroup><col width="15%" /><col width="15%" /><col width="*" /><col width="10%" /></colgroup>
+				     <thead> 
+				     <tr  style="height:30px" class="head">
+				     	<td>등록일</td>
+				        <td>등록자</td>
+				        <td>메모</td>
+				        <td></td>
+				      </tr>
+				      </thead>
+				      <tbody id="tbody"></tbody>
+				    </table>
+				    
+				
+				    
+		</div>
+		 	<div style="position:absolute;bottom:0" id="div_insert" class="visibleNone"><textarea rows="2" cols="45" id="memo_text"></textarea><div id="btn_save" onclick="memo_ins()"></div></div>   
+		 </div>
+		<script>
+	   		var xhr;
+	   		var host = parent.host;
+    		var ced_no =  parent.meta.ced_no;
+    		//var ced_no = '941806715096';
+    		var rec_key = parent.meta.rec_key;
+    		//var rec_key = 'TT101_20180102141000_68052721';
+    		
+    		function onload(){
+    			calling();
+    		}
+    		
+		 	function calling(){
+		 		//constContext(); //브라우저 우측 메뉴 막아.
+				document.body.oncontextmenu = function(){return false;};
+				memo_sel();
+		 	}
+		 	
+		 	function setVisible(){
+		 		if($('#div_insert').hasClass("visibleNone")){
+		 			$('#div_insert').removeClass("visibleNone");
+		 		}else{
+		 			$('#div_insert').addClass("visibleNone");
+		 		}
+		 	}
+		 	
+		 	function memo_sel(){
+		 		var xhr = new XMLHttpRequest();
+		 		// xhr.onreadystatechange =loader;
+		 		var timestamp = new Date();
+	    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=callmemo_sel&rec_key=" + rec_key + "&ced_no="+ ced_no+"&timestamp="+timestamp),true);
+	    		xhr.onload = function() {
+	    			  if (xhr.readyState == 4 && xhr.status == 200) {
+	    				  result = JSON.parse(xhr.responseText);
+	 		   			 var data = result.DATA;
+	 	   			 	if(data != undefined){
+	 	   			 		var play_user_id = parent.meta.play_user_id;
+	 	   			 		var date=[],user_nm=[],user_id=[],thetext=[],tmp=[],seq_id=[],ucid=[],memo=[];
+	 	   			 		var thetext = "",tmp="";
+	 	   			 	for(var i=data.record.length; i>0; i--) {
+	 		        		seq_id.push(data.record[i-1][1]);
+	 		        		ucid.push(data.record[i-1][2]);
+	 		        		memo.push(data.record[i-1][3]); //query 순
+	 		        		user_nm.push(data.record[i-1][4]); //query 순
+	 		        		date.push(data.record[i-1][5]); //query 순
+	 		        		user_id.push(data.record[i-1][6]);
+	 	   			 	}
+	 	   			 var tbody = "";
+	 	   			 var v_show = "hidden";
+	 		   			for(var i=0, len= seq_id.length; i<len; i++) {
+	 		   				thetext = memo[i];
+	 	        	       	tmp = thetext != undefined? thetext.replace(/\n/g, '<br />') : ""; 
+	 			        	date[i] = date[i].substring(0,4)+"/"+date[i].substring(4,6)+"/"+date[i].substring(6,8)+"  "+date[i].substring(8,10)+":"+date[i].substring(10,12)+":"+date[i].substring(12,14);
+	 		   			//	var tbody = document.getElementById('tbody').innerHTML;
+	 		   				
+	 		   			if($('#memo_table').hasClass("visibleNone")){
+	 		   				$('#memo_table').removeClass("visibleNone");
+	 		   				$('#memo_div').addClass("visibleNone");
+	 		   			}
+	 		   	  				tbody +=  "<tr>" 				
+	 			   					  + 	"<td id='date'>"+ date[i]+"</td>"
+	  		   				        + "<td id='user_nm'>"+user_nm[i]+"</td>"
+	 						        + "<td id='memo'>"+tmp+"</td>";
+	 						        
+	 						    if(play_user_id == user_id[i]) v_show = "visible";    
+	 						    
+	 						    tbody += "<td><div id='btn_del' style='visibility:"+v_show+";' onclick='memo_del("+seq_id[i]+")'></div></td>"
+	 						        + "</tr>";
+	 			   				document.getElementById('tbody').innerHTML=tbody; 
+	 						    }
+	 	   			 		
+	    			  		}else{
+	    			  		
+	    			  			$('#memo_table').addClass("visibleNone");
+	    			  			$('#memo_div').removeClass("visibleNone");
+	    			  	}
+	    			}; 
+	    		
+		 	}
+	    			xhr.send(null);
+		 }		
+		 	
+		 	function memo_ins(){
+		 		var user_id = parent.meta.play_user_id;
+		 		var memo = document.getElementById('memo_text').value;
+		 		
+		 		
+		 		if(memo == ""){ alert("등록할 메모가 없습니다."); return; }
+		 		if(confirm("메모를 등록하시겠습니까?")){
+		 			var xhr = new XMLHttpRequest();
+		 			var timestamp = new Date();
+		    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=callmemo_ins&rec_key=" + rec_key + "&ced_no="+ ced_no + "&user_id="+ user_id + "&memo="+ memo+"&timestamp="+timestamp),true);
+		    		xhr.onload =  function (aEvt) {
+		    			  if (xhr.readyState == 4 && xhr.status == 200) {
+		    				  		alert("등록 되었습니다.");
+		    				  		memo_sel();
+		    			  		}
+		    				};
+		    		
+		    		
+		    		xhr.send(null);
+		 		}else{
+		 			return;
+		 		}
+		 		
+		 		$('#div_insert').addClass("visibleNone");
+		 		document.getElementById('memo_text').value='';
+		 	}
+		 	
+			function memo_del(seq_id){
+				
+				if(confirm("해당 메모를 삭제하시겠습니까?")){
+					var xhr = new XMLHttpRequest();
+					var timestamp = new Date();
+		    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=callmemo_del&seq_id="+ seq_id+"&timestamp="+timestamp),true); 
+		    		
+		    		xhr.onload =  function (aEvt) {
+		    			  if (xhr.readyState == 4 && xhr.status == 200) {
+		    				  		alert("삭제 되었습니다.");
+		    				  		memo_sel();
+		    			  		}
+		    				};
+		    		
+		    		
+		    		xhr.send(null);
+		 		}else{
+		 			return;
+		 		}
+		 		
+				
+		 	}
+		 	
+		 	function loader(){
+	   			if(xhr.readyState == 4 && xhr.status == 200) {
+	   			 //임시 주석
+	   				 result = JSON.parse(xhr.responseText);
+		   			 var data = result.DATA;
+	   			 	if(data.record[0][0] == "sel"){
+	   			 		var date=[],user_nm=[],thetext=[],tmp=[],seq_id=[],ucid=[],memo=[];
+	   			 		var thetext = "",tmp="";
+	   			 	for(var i=data.record.length; i>0; i--) {
+		        		seq_id.push(data.record[i-1][1]);
+		        		ucid.push(data.record[i-1][2]);
+		        		memo.push(data.record[i-1][3]); //query 순
+		        		user_nm.push(data.record[i-1][4]); //query 순
+		        		date.push(data.record[i-1][5]); //query 순
+	   			 	}
+	   			 var tbody = "";
+		   			for(var i=0, len= seq_id.length; i<len; i++) {
+		   				thetext = memo[i];
+	        	       	tmp = thetext != undefined? thetext.replace(/\n/g, '<br />') : ""; 
+			        	date[i] = date[i].substring(0,4)+"/"+date[i].substring(4,6)+"/"+date[i].substring(6,8)+"  "+date[i].substring(8,10)+":"+date[i].substring(10,12)+":"+date[i].substring(12,14);
+		   			//	var tbody = document.getElementById('tbody').innerHTML;
+		   				
+			   				tbody +=  "<tr>" 				
+			   					  + 	"<td id='date'>"+ date[i]+"</td>"
+ 		   				        + "<td id='user_nm'>"+user_nm[i]+"</td>"
+						        + "<td id='memo'>"+tmp+"</td>"
+						        + "<td><div id='btn_del' visible='true' onclick='memo_del("+seq_id[i]+")'></div></td>"
+						        + "</tr>";
+			   				document.getElementById('tbody').innerHTML=tbody; 
+						    }
+	   			 		
+		   			 }else if(data.record[0][0] == "del"){
+		   				 alert("삭제 되었습니다.");
+		   			 }else if(data.record[0][0]=="ins"){
+		   				alert("저장 되었습니다.");
+		   			 }
+		        }
+	   		
+		   	}
+	    </script>
+	</body>
+	
+</html>
+

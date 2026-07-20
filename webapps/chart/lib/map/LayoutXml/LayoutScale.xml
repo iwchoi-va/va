@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+<!--
+chartScaleX 0.1에서 25까지 X축에 적용할 스케일 (기본 1)
+chartScaleY 0.1에서 25까지 Y축에 적용할 스케일 (기본 1)
+-->
+	<MapChart id="mainMap" chartScaleX="2.0" chartScaleY="1.5" scaleMode="manual">
+		<series>
+			<MapSeries id="mapseries" >
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/> 
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

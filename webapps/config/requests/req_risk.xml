@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-config>
+	<request name="rsk.rsk080.engine.tunning" login="true">
+			<description>엔진튜닝결과저장</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<!--안쓰지만 계속 호출중이라서 넣음-->
+	<request name="src.src040.KeywordForecastAPI" login="true">
+			<description>키워드 예측API</description>
+			<action-class>sens.src.keyword.KeywordMonitoringWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+
+</request-config>

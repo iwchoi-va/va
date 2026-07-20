@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  	<link rel="stylesheet" type="text/css" href="./css/funnel.css">
+  	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	<script>
+		var width, height;
+
+		$( window ).bind("resize", function(){
+			width = parent.$panel_funnel.getAttribute("width");
+			height = parent.$panel_funnel.getAttribute("height");
+
+			$("#container").width( width ); 
+		    $("#container").height( height - 200 );  // 100: legend-y
+		    
+		    var chart = $('#container').highcharts();
+		    chart.setSize(width, height - 200, doAnimation = true);
+		});
+		
+		window.onload = function(){
+			document.body.oncontextmenu = function(){return false;};
+		}
+		
+		var INTEG_CNT = Number(parent.$DS_DATALIST.getValue(0,"INTEG_CNT"));
+		var TA_N_CNT = Number(parent.$DS_DATALIST.getValue(0,"TA_N_CNT"));
+		var TA_Y_CNT = Number(parent.$DS_DATALIST.getValue(0,"TA_Y_CNT"));
+		
+		var REC_LATEST_TIME = parent.$DS_DATALIST.getValue(0,"REC_LATEST_TIME");
+		var TA_N_TIME = parent.$DS_DATALIST.getValue(0,"TA_N_TIME");
+		var TA_Y_TIME = parent.$DS_DATALIST.getValue(0,"TA_Y_TIME");
+		
+		$(function () {
+		    $('#container').highcharts({
+		        chart: {
+		            type: 'funnel',
+		            marginRight: 50
+		        },
+		        title: {
+		            text: '분석시스템',
+		            x: -20
+		        },
+		        
+		        credits: {
+		            enabled: false
+		        },
+		        
+		        tooltip: {
+		            pointFormat: '{point.y}건<br/>{point.z}',
+		            shared:true
+		        },
+		        
+		        plotOptions: {
+		            series: {
+		                dataLabels: {
+		                	align : "left",
+		                	//allowOverlap : true,
+		                	//crop : false,
+		                	//overflow : "none",
+		                    enabled: true,
+		                    //format: '<b>{point.name}</b> <br>({point.y:,.0f})</br> <br>{point.z}</br> ',
+		                    formatter: function() {
+		                    	var str = this.point.name + "\n(" + this.point.y + ")\n" ;
+		                    	switch(this.point.index){
+		                    	case 0:
+		                    		str +=  REC_LATEST_TIME.substr(0,2) + ":" + REC_LATEST_TIME.substr(2,2) + ":" + REC_LATEST_TIME.substr(4) ;
+		                    		break;
+		                    	case 1:
+		                    		str +=  TA_N_TIME.substr(0,2) + ":" + TA_N_TIME.substr(2,2) + ":" + TA_N_TIME.substr(4);
+		                    		break;
+		                    	case 2:
+		                    		str +=  TA_Y_TIME.substr(0,2) + ":" + TA_Y_TIME.substr(2,2) + ":" + TA_Y_TIME.substr(4);
+		                    		break;
+		                    	}
+		                    	return str.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
+		                    },
+		                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'gray',
+		                    softConnector: true
+		                    
+		                },
+		                neckWidth: '30%',
+		                neckHeight: '25%'
+
+		                //-- Other available options
+		                // height: pixels or percent
+		                // width: pixels or percent
+		            }
+		        },
+		        legend: {
+		            enabled: false
+		        },
+		        series: [{
+		            name: '',
+		            data: [
+		                ['수집분배', INTEG_CNT],
+		                ['STT변환', TA_N_CNT],
+		                ['TA분석', TA_Y_CNT]
+		            ]
+		        }]
+		    });
+		});
+		
+		
+		</script>
+		
+		</head>
+		
+		<body>
+		  	<script src="./lib/highcharts.js"></script>
+			<script src="./lib/exporting.js"></script>
+			<script src="./lib/funnel.js"></script>
+			
+			<div id="container" style="min-width: 410px; max-width: 600px; height: 400px; margin: 0 auto"></div>
+		</body>
+
+</html>
+

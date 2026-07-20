@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<request-config>
+
+	<request name="wfm.hr.hrm100m010p" login="true">
+		<description>조직도</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hr.hrm100m10p.sel.dept" login="true">
+		<description>조직관리-상위조직조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	<request name="cs.hr.hrm100m10p.update.upper" login="true">
+		<description>상위 조직 update</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hr.hrm100m.schval.dept" login="true">
+		<description>조직코드 있는지 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+
+		<!-- 사용자업로드 -->
+		<request name="cs.hr.hrm110m10t.sch" login="true">
+			<description>사용자업로드 화면에서 조회</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10t.check" login="true">
+			<description>사용자업로드 화면에서 check 부분</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10t.insert" login="true">
+			<description>사용자업로드 화면에서 insert</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10t.update" login="true">
+			<description>사용자업로드 화면에서 update</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10t.delete" login="true">
+			<description>사용자업로드 화면에서 delete</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10t.dept" login="true">
+			<description>사용자업로드 화면에서 조직코드가져오기</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m10p.sch.dept" login="true">
+			<description>사용자업로드 화면에서 조직 트리 조회</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+
+		<request name="cs.hr.hrm110m20p.dept" login="true">
+			<description>엑셀양식에서 조직 조회</description>
+			<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+			<page type='default'>/common/Xwing.jsp</page>
+		</request>
+<request name="cs.hrm.hrm120m" login="true">
+	<description>사원정보</description>
+	<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+	<page type='default'>/common/Xwing.jsp</page>
+</request>
+
+	<request name="cs.hrm.hrm120m.changepassword" login="true">
+		<description>비밀번호 변경</description>
+		<action-class>cs.com.webaction.ChangePasswordWebaction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hr.hrm120m10p" login="true">
+		<description>사원신규등록/수정</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hrm.hrm130m" login="true">
+		<description>개인정보</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hr.hrm130m010t010p" login="true">
+		<description>비밀번호변경</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+
+	<request name="cs.hrm.hrm130m010t010p.changepassword" login="true">
+		<description>비밀번호 변경</description>
+		<action-class>cs.com.webaction.ChangePasswordWebaction</action-class>
+		<page type="default">/common/Xwing.jsp</page>
+	</request>
+
+
+
+</request-config>

@@ -1,0 +1,54 @@
+.xw-file-shell {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	position: absolute;
+}
+
+.xw-file-form {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	filter: progid : DXImageTransform.Microsoft.gradient ( enabled = 'true', startColorstr = #fcfcfc, endColorstr = #e2e2e2 );
+}
+
+.xw-file-upload-button {
+	display: inline-block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border: 1px solid #798da7;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	vertical-align: middle;
+	overflow: hidden;
+	background: linear-gradient(#fcfcfc, #e4e4e4,);
+	background: -moz-linear-gradient(#fcfcfc 20%, #e4e4e4 60%, #e4e4e4 90%, #e2e2e2 95%);
+	background: -o-linear-gradient(#fcfcfc 20%, #e4e4e4 60%, #e4e4e4 90%, #e2e2e2 95%);
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#fcfcfc), color-stop(.2, #fcfcfc), color-stop(.6, #e4e4e4), to(#e2e2e2) );
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.xw-file-upload-file {
+	position: absolute;
+	height: 100%;
+	text-align: right;
+	font-size: 40px;
+	right: 0px;
+	filter: alpha(opacity = 0);
+	-moz-opacity: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.xw-file-hidden-key {
+	visibility: hidden;
+	position: relative;
+}
+
+.xw-file-iframe {
+	visibility: hidden;
+}

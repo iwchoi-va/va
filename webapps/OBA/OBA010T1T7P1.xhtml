@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var polno;
+function page_load(event) {
+	try{
+		XwingObject();
+		
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+	
+	polno = Xwing.param.polno;
+	var strCheck = polno.substr(0, 1);
+	if(strCheck == "4"){ //장기
+		getDmboList("coverageVoList");
+	}else{ //일반
+		getDmboList2();
+	}
+	
+	
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		
+		case "coverageVoList":
+			
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			$DS_LIST.appendDataset($DS_RES);
+			
+			for(var i = 0 ; i < $DS_LIST.size() ; i++){
+				$DS_LIST.setValue(i, "causeCls", $DS_LIST.getValue(i,"causeCls") == "1" ? "기본" : "선택"); //기본/선택 구분
+			}
+			
+			getDmboList("premiumVoList");
+		break;
+		case "premiumVoList":
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			$DS_PRE_LIST.appendDataset($DS_RES);
+			
+		break;
+		case "mntnCtrCvrInfoList":
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			//$DS_LIST.appendDataset($DS_RES);
+			 if($DS_RES.size() > 0){
+				var nPremiumAmtTotal = 0;
+				//$DS_LIST2.clearData();
+				for(var i = 0 ; i < $DS_RES.size() ; i++){
+					
+					$DS_LIST.addRow();
+					$DS_LIST.setValue(i, "causeCls"			, ""); //기본/선택 구분
+					$DS_LIST.setValue(i, "puCodeName"		, $DS_RES.getValue(i, "coverageName"));
+					$DS_LIST.setValue(i, "joinAmount"		, $DS_RES.getValue(i, "secuAmt"));
+					$DS_LIST.setValue(i, "basePremiumAmount"	, $DS_RES.getValue(i, "premiumAmount"));
+
+					//nPremiumAmtTotal += parseInt($DS_RES.getValue(i, "premiumAmount"), 10);
+					nPremiumAmtTotal += Number($DS_RES.getValue(i, "premiumAmount"));
+				}
+				//console.log($DS_LIST);
+				$DS_PRE_LIST.clearData();
+				$DS_PRE_LIST.addRow();
+				$DS_PRE_LIST.setValue(0, "guarantyPremiumAmount", "0"); //보장보험료
+				$DS_PRE_LIST.setValue(0, "accumPremiumAmount"	, "0"); //적립보험료
+				$DS_PRE_LIST.setValue(0, "basicPremium"			, nPremiumAmtTotal); //합계보험료
+			}
+			
+			
+			//$DS_PRE_LIST.appendDataset($DS_RES);
+			
+		break;
+		default: break;	
+	}
+}
+
+
+
+function getDmboList(str){
+	//https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0022&_reqJson={"TBMA003_PSN_NO":"주민번호","searchCondition4":"0","CHAR_10":"0","CHAR_11":"5","clerkNo":"51160050","chnlCls":"TM"}
+	var url = getWebServiceURL();
+	var serviceName ="LTTMINFR0028";
+	
+	//var psnNo = $DS_PSN.getValue(0,"CON_P_PSN_NO"); 
+	//var clerkNo = $DS_USERINFO.getValue(0,"TREATYCD");
+	/*
+	var polno		= opener.ds_CSB10106S_detail.getColumn(0, "TBMA003_POL_NO");
+	var currdate	= gfn_getSysDate();
+	var treatycd	= gds_userinfo.getColumn(0,"TREATYCD");
+	var loginClerk	= gds_userinfo.getColumn(0,"USERID");
+
+	ds_salePolicySummaryList.addRow();
+	ds_salePolicySummaryList.setColumn(0,"policyNumber"	, polno);
+	ds_salePolicySummaryList.setColumn(0,"eventBaseDate", currdate);
+	ds_salePolicySummaryList.setColumn(0,"loginClerk"	, loginClerk);
+	ds_salePolicySummaryList.setColumn(0,"eventNo"		, "");
+	*/
+	var currdate= g_toDate();
+	var clerkNo = Xwing.param.user_id;
+	var reqJson ='{"salePolicySummaryListNormal":[{"policyNumber":"'+ polno+'","loginClerk":"'+clerkNo+'","eventBaseDate":"'+currdate+'","eventNo":""}]}';
+	
+	var dsObj = (str == "coverageVoList") ? $DS_LIST : $DS_PRE_LIST;
+	
+	var opt = {
+			reqId: str,
+			url: "service::oba.oba010t1t7.getContractInfoVoList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : str,
+				reqJson :reqJson,
+				DS_RES: dsObj
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);	
+}
+
+
+
+function getDmboList2(){
+	//https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0108&_reqJson={"entrDsgnNo":"","plno":"41825099510000"}
+	
+	var url = getWebServiceURL();
+	var serviceName ="LTTMINFR0108";
+	
+	//var psnNo = $DS_PSN.getValue(0,"CON_P_PSN_NO"); 
+	//var clerkNo = $DS_USERINFO.getValue(0,"TREATYCD");
+	/*
+	var polno		= opener.ds_CSB10106S_detail.getColumn(0, "TBMA003_POL_NO");
+	var currdate	= gfn_getSysDate();
+	var treatycd	= gds_userinfo.getColumn(0,"TREATYCD");
+	var loginClerk	= gds_userinfo.getColumn(0,"USERID");
+
+	ds_salePolicySummaryList.addRow();
+	ds_salePolicySummaryList.setColumn(0,"policyNumber"	, polno);
+	ds_salePolicySummaryList.setColumn(0,"eventBaseDate", currdate);
+	ds_salePolicySummaryList.setColumn(0,"loginClerk"	, loginClerk);
+	ds_salePolicySummaryList.setColumn(0,"eventNo"		, "");
+	*/
+	var currdate= g_toDate();
+	var clerkNo = Xwing.param.user_id;
+	var reqJson = '{"entrDsgnNo":"","plno":"'+polno+'"}';
+	
+	var opt = {
+			reqId: "mntnCtrCvrInfoList",
+			url: "service::oba.oba010t1t7.getContractInfoVoList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "mntnCtrCvrInfoList",
+				reqJson :reqJson,
+				DS_RES: $DS_LIST2
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);	
+}
+
+function getWebServiceURL(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "https://tsdev.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "vauat"){
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "va"){
+		url = "https://ts.aig.co.kr/tmMciService.do";
+	}else{//로컬도 개발url로.
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+		//url = "https://tsdev.aig.co.kr/tmMciService.do";
+	}
+	
+	return url;
+}
+
+
+function btn_close_click(event) {
+	parent.Xwing.getDialog("OBA010T1T7P").close();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_RES">
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="puCodeName"></xwing:dataset-column>
+		<xwing:dataset-column id="joinAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="basePremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="causeCls"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRE_LIST">
+		<xwing:dataset-column id="basicPremium"></xwing:dataset-column>
+		<xwing:dataset-column id="guarantyPremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="accumPremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="receivablePremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="firstPremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="applyPremiumAmount"></xwing:dataset-column>
+		<xwing:dataset-column id="seqNo"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST2">
+		<xwing:dataset-column id="coverageName"></xwing:dataset-column>
+		<xwing:dataset-column id="secuAmt"></xwing:dataset-column>
+		<xwing:dataset-column id="premiumAmount"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="고객업로드" width="542" height="350" load="page_load" scroll="false" left="24" top="24">
+		<xwing:group id="grp_setting" left="0" top="0" width="540" height="350" scroll="false" anchor="all" enabled="true" visible="true" styles="div_perform" bgcolor="#fdfdf5" borderstyle="none" borderwidth="0">
+			<xwing:panel id="bg_btn" left="0" top="305" width="540" height="40" bgcolor="#E7EBEE" anchor="all" bgimagerepeat="no-repeat" scroll="false">
+			</xwing:panel>
+			<xwing:checkbox id="chk_all_0" left="-43" top="-24" width="14" halign="center" truevalue="Y" falsevalue="N" value="N" click="chk_all_click" height="20"></xwing:checkbox>
+			<xwing:datagrid id="grd_authMenu_0" left="2" top="7" width="535" height="239" rownum="false" anchor="all" resizable="true" sortable="true" cursor="default" textwrap="prewrap" autofit="false" binddataset="DS_LIST">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="50"></xwing:datagrid-column>
+					<xwing:datagrid-column width="230"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="구분"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="담보내용"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="가입금액"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="보험료" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell halign="center" bindcolumn="causeCls"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="puCodeName"></xwing:datagrid-cell>
+						<xwing:datagrid-cell halign="right" mask="comma" bindcolumn="joinAmount"></xwing:datagrid-cell>
+						<xwing:datagrid-cell mask="comma" halign="right" bindcolumn="basePremiumAmount"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_close" value="닫 기" left="464" top="314" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" visible="true" click="btn_close_click"></xwing:button>
+			<xwing:label id="lbl_user_id" left="1" top="260" value="보장보험료" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="guarantyPremiumAmount" left="83" top="260" height="25" width="90" fontsize="11" enabled="false" mask="comma" binddataset="DS_PRE_LIST" bindcolumn="guarantyPremiumAmount"></xwing:edit>
+			<xwing:label id="lbl_dept" left="178" top="260" value="적립보험료" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="accumPremiumAmount" left="260" top="260" height="25" width="90" fontsize="11" enabled="false" mask="comma" binddataset="DS_PRE_LIST" bindcolumn="accumPremiumAmount"></xwing:edit>
+			<xwing:label id="lbl_dept_0" left="341" top="260" value="합계보험료" height="25" width="88" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="basicPremium" left="431" top="260" height="25" width="90" fontsize="11" enabled="false" mask="comma" binddataset="DS_PRE_LIST" bindcolumn="basicPremium"></xwing:edit>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

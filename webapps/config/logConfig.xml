@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<log-config>
+	<layout-pattern>[%d{yyyy-MM-dd HH:mm:ss,SSS}]%m%n</layout-pattern>
+	<dto-depth>2</dto-depth>
+
+	<logger name="agent" level="ERROR">
+		<console-enabled>true</console-enabled>
+		<file-enabled>true</file-enabled>
+		<file-path>{jedi.home}/logs/agent/agent.log</file-path>
+	</logger>
+
+	<logger name="ivr" level="DEBUG">
+		<console-enabled>true</console-enabled>
+		<file-enabled>true</file-enabled>
+		<file-path>{jedi.home}/logs/ivr/ivr.log</file-path>
+	</logger>
+
+	<logger name="host" level="ERROR">
+		<console-enabled>true</console-enabled>
+		<file-enabled>true</file-enabled>
+		<file-path>{jedi.home}/logs/host/host.log</file-path>
+	</logger>
+
+	<logger name="error" level="DEBUG">
+		<console-enabled>true</console-enabled>
+		<file-enabled>true</file-enabled>
+		<file-path>{jedi.home}/logs/error/error.log</file-path>
+	</logger>
+</log-config>

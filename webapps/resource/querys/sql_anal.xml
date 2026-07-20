@@ -1,0 +1,329 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+
+ 	<sql-service name="anl.obscriptManagement.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>등록된상품스크립트조회</description>
+ 		<result-name>DS_LIST</result-name>
+  		<query><![CDATA[
+  		SELECT SCRIPT_ID,
+               CONCEPT_ID,
+               SCRIPT_NAME,
+               CONCEPT_NAME,
+               LIMIT_SCORE,
+               USE_YN,
+               st.REG_ID,
+               (SELECT USER_NAME FROM cs_usermaster WHERE USER_ID = st.REG_ID) REG_NM,
+               REG_DATE,
+               st.CHG_ID,
+               (CASE CHG_ID WHEN NULL THEN NULL ELSE (SELECT USER_NAME FROM cs_usermaster WHERE USER_ID = st.CHG_ID) END) CHG_NM,
+               CHG_DATE
+        FROM vs_regu_script st
+        WHERE 1=1
+        ?concept_nm
+        ?script_nm
+		ORDER BY SCRIPT_ID DESC, CONCEPT_ID DESC
+		  ]]></query>
+		 <parameter name="concept_nm" value="AND CONCEPT_NAME LIKE CONCAT('%',?concept_nm,'%')" default="" />
+		  <parameter name="script_nm" value="AND SCRIPT_NAME LIKE CONCAT('%',?script_nm,'%')" default="" />
+ 	</sql-service>
+
+ 	<sql-service name="anl.obscriptManagement.item.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>등록된상품스크립트조회</description>
+ 		<result-name>DS_LIST</result-name>
+  		<query><![CDATA[
+  		SELECT sc.SCRIPT_ID,
+             sc.CONCEPT_ID,
+             sc.SCRIPT_NAME,
+             sc.CONCEPT_NAME,
+             st.KEYWORD,
+             sc.USE_YN,
+             sc.REG_ID,
+             (SELECT USER_NAME FROM cs_usermaster WHERE USER_ID = sc.REG_ID) REG_NM,
+             sc.REG_DATE,
+             st.CHG_ID,
+      		 (CASE st.CHG_ID WHEN NULL THEN NULL ELSE (SELECT USER_NAME FROM cs_usermaster WHERE USER_ID = st.CHG_ID) END) CHG_NM,
+             sc.CHG_DATE,
+             st.SENT_ID,
+             st.SENTENCE
+      FROM vs_regu_script sc, vs_regu_sent st
+      WHERE sc.SCRIPT_ID = st.SCRIPT_ID
+      AND sc.CONCEPT_ID = st.CONCEPT_ID
+      AND sc.SCRIPT_ID = ?SCRIPT_ID
+      AND st.CONCEPT_ID = ?CONCEPT_ID
+      ORDER BY st.sent_id
+		  ]]></query>
+ 	</sql-service>
+
+ 	<sql-service name="anl.obscriptManagement.item.del" datasource="is_stat" paging="false" type="prepared">
+		<description>스크립트 삭제</description>
+		<query><![CDATA[
+			DELETE FROM vs_regu_script
+			WHERE SCRIPT_ID = ?SCRIPT_ID
+			AND CONCEPT_ID = ?CONCEPT_ID
+		]]></query>
+	</sql-service>
+
+	<sql-service name="anl.obscriptManagement.sent.del" datasource="is_stat" paging="false" type="prepared">
+		<description>스크립트 문장 삭제</description>
+		<query><![CDATA[
+			DELETE FROM vs_regu_sent
+			WHERE SCRIPT_ID = ?SCRIPT_ID
+			AND CONCEPT_ID = ?CONCEPT_ID
+		]]></query>
+	</sql-service>
+
+ 	<sql-service name='anl.obscriptManagement.item.ins' datasource='is_stat' type='prepared' batch='false'>
+		<description>스크립트 등록</description>
+		<query><![CDATA[
+			INSERT INTO vs_regu_script(SCRIPT_ID
+									,SCRIPT_NAME
+								    ,CONCEPT_ID
+								    ,CONCEPT_NAME
+								    ,PROD_ID
+								    ,USE_YN
+								    ,REG_ID
+								    ,REG_DATE)
+			VALUES (?SCRIPT_ID
+					,?SCRIPT_NAME
+					,?CONCEPT_ID
+					,?CONCEPT_NAME
+					,?PROD_ID
+					,?USE_YN
+					,?REG_ID
+					,format(GETDATE(),'yyyyMMddHHmmss')
+				    )
+		]]></query>
+	</sql-service>
+
+	<sql-service name='anl.obscriptManagement.sent.ins' datasource='is_stat' type='prepared' batch='true'>
+		<description>스크립트 문장 등록</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO vs_regu_sent(SCRIPT_ID
+									,SENT_ID
+									,CONCEPT_ID
+								    ,SENTENCE
+								    ,KEYWORD
+								    ,REG_ID
+								    ,REG_DATE)
+			VALUES (?SCRIPT_ID
+					,(NEXT VALUE FOR dbo.seq_sent_id)
+					, ?CONCEPT_ID
+					,?SENTENCE
+					,?KEYWORD
+					,?REG_ID
+					,format(GETDATE(),'yyyyMMddHHmmss')
+					)
+		]]></query>
+	</sql-service>
+
+	<sql-service name='anl.obscriptManagement.sent.upt' datasource='is_stat' type='prepared' batch='true'>
+		<description>스크립트 문장 등록</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+			IF EXISTS(
+				SELECT * FROM vs_regu_sent
+				WHERE SCRIPT_ID = ?SCRIPT_ID
+				AND CONCEPT_ID = ?CONCEPT_ID
+				AND SENT_ID = ?SENT_ID
+			)
+             UPDATE vs_regu_sent
+             SET
+               SENTENCE = ?SENTENCE,
+               KEYWORD = ?KEYWORD,
+               CHG_ID = ?CHG_ID,
+               CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+             WHERE  SCRIPT_ID = ?SCRIPT_ID
+				 AND CONCEPT_ID = ?CONCEPT_ID
+				 AND SENT_ID = ?SENT_ID
+	       ELSE
+	          INSERT INTO vs_regu_sent(SCRIPT_ID
+										,SENT_ID
+										,CONCEPT_ID
+									    ,SENTENCE
+									    ,KEYWORD
+									    ,REG_ID
+									    ,REG_DATE)
+			  VALUES (?SCRIPT_ID
+					,(NEXT VALUE FOR dbo.seq_sent_id)
+					, ?CONCEPT_ID
+					,?SENTENCE
+					,?KEYWORD
+					,?REG_ID
+					,format(GETDATE(),'yyyyMMddHHmmss')
+					)
+
+		]]></query>
+	</sql-service>
+
+	<sql-service name='anl.obscriptManagement.item.upt' datasource='is_stat' type='prepared'>
+		<description>스크립트 수정</description>
+		<query><![CDATA[
+			UPDATE vs_regu_script
+			SET
+				CONCEPT_NAME = ?CONCEPT_NAME
+				  ,SCRIPT_NAME = ?SCRIPT_NAME
+				  ,CHG_ID = ?CHG_ID
+				  ,CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+			WHERE
+				SCRIPT_ID = ?SCRIPT_ID
+				AND CONCEPT_ID = ?CONCEPT_ID
+		]]></query>
+	</sql-service>
+
+	<sql-service name="anl.obscriptManagement.seq.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>concept_id시퀀스 조회</description>
+ 		<result-name>DS_LIST</result-name>
+  		<query><![CDATA[
+  			SELECT NEXT VALUE FOR seq_concept_id AS SEQ_VAL
+		]]></query>
+ 	</sql-service>
+
+ 	<sql-service name='anl.gradeManagement.ins' datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade 관리 정보 등록</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO vs_grade_info(GRADE
+									,BAN_SCORE
+									,BAN_STD
+								    ,SCRIPT_SCORE
+								    ,SCRIPT_STD
+								    ,COND1
+								    ,COND1_STD)
+			VALUES (?GRADE
+					,?BAN_SCORE
+					,?BAN_STD
+					,?SCRIPT_SCORE
+					,?SCRIPT_STD
+					,?COND1
+					,?COND1_STD
+					)
+		]]></query>
+	</sql-service>
+
+	<sql-service name='anl.gradeManagement.del' datasource='is_stat' type='prepared'>
+		<description>이전 Grade 등록 정보 삭제</description>
+		<query><![CDATA[
+			DELETE FROM vs_grade_info
+		]]></query>
+	</sql-service>
+
+	<sql-service name='anl.gradeManagement.history.ins' datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade 관리 이력 등록</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO vs_grade_his(GRADE
+									,BAN_SCORE
+									,BAN_STD
+								    ,SCRIPT_SCORE
+								    ,SCRIPT_STD
+								    ,COND1
+								    ,COND1_STD
+								    ,REG_ID
+								    ,REG_DATE)
+			VALUES (?GRADE
+					,?BAN_SCORE
+					,?BAN_STD
+					,?SCRIPT_SCORE
+					,?SCRIPT_STD
+					,?COND1
+					,?COND1_STD
+					,?REG_ID
+					,format(GETDATE(),'yyyyMMddHHmmss')
+					)
+		]]></query>
+	</sql-service>
+
+	<sql-service name="anl.getGradeInfo.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>등록된 grade 정보 조회</description>
+ 		<result-name>DS_GRADE_SET</result-name>
+  		<query><![CDATA[
+  			SELECT GRADE
+				,SCRIPT_SCORE
+				,SCRIPT_STD
+				,BAN_SCORE
+				,BAN_STD
+				,COND1
+				,COND1_STD
+				,COND2
+				,COND2_STD
+				,COND3
+				,COND3_STD
+			FROM vs_grade_info
+		 ]]></query>
+ 	</sql-service>
+
+ 	<sql-service name="anl.getGradeSumRes.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>Grade별 건수 조회</description>
+ 		<result-name>DS_MULTI_RES</result-name>
+  		<query><![CDATA[
+  			SELECT GRADE, COUNT(GRADE) AS COUNT
+			FROM vs_grade_sum
+			WHERE 1=1
+			AND SUBSTRING(START_TIME,0,9) = ?start_time
+			GROUP BY GRADE
+			ORDER BY GRADE
+		 ]]></query>
+ 	</sql-service>
+
+ 	<sql-service name='anl.gradeManagement.history.sel' datasource='is_stat' type='prepared' batch='true'>
+		<description>Grade 관리 이력 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+		select REG_DATE
+			   ,u.USER_NAME
+			   ,GRADE
+			   ,BAN_SCORE
+			   ,CASE BAN_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END BAN_STD
+			   ,SCRIPT_SCORE
+			   , CASE SCRIPT_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END SCRIPT_STD
+			   ,BEF_SCORE
+			   , CASE BEF_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END BEF_STD
+			    ,COND1
+				, CASE COND1_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END COND1_STD
+				,COND2
+				, CASE COND2_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END COND2_STD
+				,COND3
+				, CASE COND3_STD WHEN 'M' THEN '이상' WHEN 'E' THEN '초과' WHEN 'L' THEN '이하' WHEN 'U' THEN '미만' END COND3_STD
+				from ms_grade_version g, ms_usermaster u 
+				where reg_id = user_id
+		]]></query>
+	</sql-service>
+
+ 	<sql-service name="anl.getScriptScoreSpread.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>script별 점수 분포도 조회</description>
+ 		<result-name>DS_SCRIPT_RES</result-name>
+  		<query><![CDATA[
+  			SELECT sum(CASE WHEN SCORE > 0 AND SCORE <= 10 THEN 1 ELSE 0 END) CNT_10
+		    	 ,sum(CASE WHEN SCORE > 10 AND SCORE <= 20 THEN 1 ELSE 0 END) CNT_20
+		    	 ,sum(CASE WHEN SCORE > 20 AND SCORE <= 30 THEN 1 ELSE 0 END) CNT_30
+		    	 ,sum(CASE WHEN SCORE > 30 AND SCORE <= 40 THEN 1 ELSE 0 END) CNT_40
+		    	 ,sum(CASE WHEN SCORE > 40 AND SCORE <= 50 THEN 1 ELSE 0 END) CNT_50
+		    	 ,sum(CASE WHEN SCORE > 50 AND SCORE <= 60 THEN 1 ELSE 0 END) CNT_60
+		    	 ,sum(CASE WHEN SCORE > 60 AND SCORE <= 70 THEN 1 ELSE 0 END) CNT_70
+		    	 ,sum(CASE WHEN SCORE > 70 AND SCORE <= 80 THEN 1 ELSE 0 END) CNT_80
+		    	 ,sum(CASE WHEN SCORE > 80 AND SCORE <= 90 THEN 1 ELSE 0 END) CNT_90
+		    	 ,sum(CASE WHEN SCORE > 90 AND SCORE <= 100 THEN 1 ELSE 0 END) CNT_100
+			FROM vs_regu_sum
+		 ]]></query>
+ 	</sql-service>
+
+ 	<sql-service name="anl.getBanScoreSpread.sel" datasource="is_stat" paging="false" type="prepared" >
+  		<description>금지어별 점수 분포도 조회</description>
+ 		<result-name>DS_BAN_RES</result-name>
+  		<query><![CDATA[
+  			SELECT sum(CASE WHEN SCORE > 0 AND SCORE <= 10 THEN 1 ELSE 0 END) CNT_10
+		    	 ,sum(CASE WHEN SCORE > 10 AND SCORE <= 20 THEN 1 ELSE 0 END) CNT_20
+		    	 ,sum(CASE WHEN SCORE > 20 AND SCORE <= 30 THEN 1 ELSE 0 END) CNT_30
+		    	 ,sum(CASE WHEN SCORE > 30 AND SCORE <= 40 THEN 1 ELSE 0 END) CNT_40
+		    	 ,sum(CASE WHEN SCORE > 40 AND SCORE <= 50 THEN 1 ELSE 0 END) CNT_50
+		    	 ,sum(CASE WHEN SCORE > 50 AND SCORE <= 60 THEN 1 ELSE 0 END) CNT_60
+		    	 ,sum(CASE WHEN SCORE > 60 AND SCORE <= 70 THEN 1 ELSE 0 END) CNT_70
+		    	 ,sum(CASE WHEN SCORE > 70 AND SCORE <= 80 THEN 1 ELSE 0 END) CNT_80
+		    	 ,sum(CASE WHEN SCORE > 80 AND SCORE <= 90 THEN 1 ELSE 0 END) CNT_90
+		    	 ,sum(CASE WHEN SCORE > 90 AND SCORE <= 100 THEN 1 ELSE 0 END) CNT_100
+			FROM vs_ban_sum
+		 ]]></query>
+ 	</sql-service>
+
+</query-collection>

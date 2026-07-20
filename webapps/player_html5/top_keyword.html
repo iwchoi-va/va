@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" href="./css/top_keyword.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		<style>
+			html {
+				overflow: hidden;
+				resize: both;
+				height: 100%;
+			}
+			body {
+				background: #202835;
+				color: #fff;
+				font-family: "맑은 고딕", Helvetica, Arial, sans-serif;
+				overflow: hidden;
+				height: 100%;
+				width: 100%;
+				margin: 0 auto;
+			}
+			table {
+				position: absolute;
+				width: 410px;
+				height: 150px;
+				top: 50%;
+				left: 50%;
+				margin: -75px 0 0 -205px;
+				color: #fafafa;
+				font-size: 12px;
+			}
+			table td, table th {
+				border-bottom: 1px solid #161C25;
+				vertical-align: middle;
+				font-size: 12px;
+			}
+			table tr:hover td, table tr:hover th{
+				background: rgba(38,255,250,0.1);
+			}
+			table tr td:nth-child(2){
+			    font-size: 16px;
+			    font-weight: bold;
+			}
+			table tr td:nth-child(3){
+				padding-right:8px;
+			    text-align: right;
+			}
+			table tr th{font-weight:normal;padding-left:12px;}
+			th:first-letter{
+				font-size: 22px;
+			    font-style: italic;
+			    font-weight: normal;
+				padding-right:4px;
+			}
+			table tr:nth-child(1) th:first-letter{color:rgba(107,186,184,1);}
+			table tr:nth-child(2) th:first-letter{color:rgba(107,186,184,0.9);}
+			table tr:nth-child(3) th:first-letter{color:rgba(107,186,184,0.8);}
+			table tr:nth-child(4) th:first-letter{color:rgba(107,186,184,0.7);}
+			table tr:nth-child(5) th:first-letter{color:rgba(107,186,184,0.6);}
+			table tr:nth-child(1) {	background:rgba(115,145,176,0.5); color:rgba(255,255,255,1);}
+			table tr:nth-child(2) {	background:rgba(115,145,176,0.4); color:rgba(255,255,255,0.9);}
+			table tr:nth-child(3) {	background:rgba(115,145,176,0.3); color:rgba(255,255,255,0.8);}
+			table tr:nth-child(4) {	background:rgba(115,145,176,0.2); color:rgba(255,255,255,0.7);}
+			table tr:nth-child(5) {	background:rgba(115,145,176,0.1); color:rgba(255,255,255,0.6);}
+	
+		</style>
+		<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+		<script type='text/javascript' src='../js/servicemanager.js'></script>
+	</head>
+	
+	
+	<body onLoad="calling()">
+	    <table id="ranking" border="0" cellspacing="0" cellpadding="0">
+	    <colgroup><col width="16%" /><col width="" /><col width="10%" /></colgroup>
+	      <tr>
+	        <th id="th1">1위</th>
+	        <td id="td1-1"></td>
+	        <td id="td1-2"></td>
+	      </tr>
+	      <tr>
+	        <th id="th2"></th>
+	        <td id="td2-1"></td>
+	        <td id="td2-2"></td>
+	      </tr>
+	      <tr>
+	        <th id="th3"></th>
+	        <td id="td3-1"></td>
+	        <td id="td3-2"></td>
+	      </tr>
+	      <tr>
+	        <th id="th4"></th>
+	        <td id="td4-1"></td>
+	        <td id="td4-2"></td>
+	      </tr>
+	      <tr>
+	        <th id="th5"></th>
+	        <td id="td5-1"></td>
+	        <td id="td5-2"></td>
+	      </tr>
+	    </table>
+	    
+	    <script>
+	    	var xhr = new XMLHttpRequest();
+		 	function calling(){
+		 		//constContext(); //브라우저 우측 메뉴 막아.
+				document.body.oncontextmenu = function(){return false;};
+		 		
+		 		var host = parent.host;
+	    		var contact_id = parent.contact_id;
+	    		
+	    		var url = serviceConfig.url;
+	    		var field = serviceConfig.sfield;
+	    		//var param = field.fn_sfield + "=" + field.sfield.replace("value","DOCID");
+	    		var param = field.fn_exquery + "=" + field.contact_id.replace("value",contact_id) + "&";
+	    		param += field.fn_rfield + "=TERMS";
+	    		
+	    		xhr.onreadystatechange = loader;
+	    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=top_keyword&service_url="+ url.voc+param ),false);  
+	    		xhr.send(null);
+		 	}
+		 	
+		 	function loader(){
+		 		if(xhr.readyState == 4 && xhr.status == 200) {
+		        	var result = JSON.parse(xhr.responseText);
+		        	var data = result.DATA;
+		        	
+		        	var element = document.getElementById('ranking');
+					var rank_els = element.querySelectorAll('th');
+					var tr_els = element.querySelectorAll('tr');
+					
+		        	for(var i=1; i<=data.record.length; i++) {
+		        		document.getElementById("th"+i).innerHTML = i+"위"; //rank
+		        		document.getElementById("td"+i+"-1").innerHTML = data.record[i-1][0]; //keyword
+		        		document.getElementById("td"+i+"-2").innerHTML = data.record[i-1][1]+"점"; //count
+		        	}
+		        }
+		   	}
+	    </script>
+    
+	</body>
+	
+</html>

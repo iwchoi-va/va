@@ -1,0 +1,48 @@
+.xw-edit-shell {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	width: 100px;
+	overflow: hidden;
+}
+
+.xw-edit {
+	width: 100%;
+	height: 100%;
+	display: block;
+	font-size: 11px;
+	padding: 0px 5px;
+	border: 1px solid #5d6b75;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	vertical-align: middle;
+	color: #ffffff;
+	box-shadow: inset #7e8a92 1px 1px 3px;
+	-webkit-box-shadow: inset #7e8a92 1px 1px 3px;
+	-moz-box-shadow: inset #7e8a92 1px 1px 3px;
+	overflow: hidden;
+	background: #8c99a2;
+}
+
+.xw-edit:focus {
+	border: 1px solid #4d6185;
+}
+
+.xw-edit-ie-insetshadow-top {
+	position: absolute;
+	top: 0px;
+	left: 3px;
+	width: 95%;
+	height: 1px;
+	box-shadow: #c1c1c1 1px 1px 3px;
+}
+
+.xw-edit-ie-insetshadow-left {
+	position: absolute;
+	top: 3px;
+	left: 0px;
+	width: 1px;
+	height: 95%;
+	box-shadow: #c1c1c1 1px 0px 3px;
+}

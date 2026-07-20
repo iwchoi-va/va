@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+                                                    
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba010.sel.do";
+var ced_no="", browser="",userid="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+		XwingObject();
+		
+		ced_no= parent.ced_no;
+		userid = parent.parent.user_id;
+		
+		//userid ="50007559";
+		//alert(userid);
+		//fnCallWebService();
+		
+		//alert(parent.$DS_INFO.getValue(0,"TM_TMR_ID"));
+		getUserInfo();
+}
+
+//*********************************************************************************************************
+//* UI ACTION
+//*********************************************************************************************************/
+function getUserInfo(){
+	var opt = {
+			reqId: "getUserInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1t7.getUserInfo.sel,oba.oba010t1t7.getConPPsnNo.sel,oba.oba010t1t7.getGroup.sel', 
+				USERID : userid,
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+function getSpCenter(callauth){
+	
+	var opt = {
+			reqId: "getSpCenter",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1t7.getSpCenter.sel', 
+				CALLAUTH : callauth,
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getUserInfo":
+			$DS_USERINFO.setData(res.DS_USERINFO.column, res.DS_USERINFO.record);
+			$DS_PSN.setData(res.DS_PSN.column, res.DS_PSN.record);
+			$DS_GROUP.setData(res.DS_GROUP.column, res.DS_GROUP.record);
+			//alert($DS_USERINFO.getValue(0,"CALLAUTH"));
+			//fnCallWebService();
+			getSpCenter($DS_USERINFO.getValue(0,"CALLAUTH"));
+		break;
+		case "getSpCenter":
+			$DS_SP_CENTER.setData(res.DS_SP_CENTER.column, res.DS_SP_CENTER.record);
+			
+			getContractInfoVoList();
+		break;
+		
+		case "getContractInfoVoList":
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+		
+			var nomalCount 	= 0;
+			var rowCount 	= 0;
+			
+			// 사업부 관리자(auth가 0) 이거나 QM그룹이면 모든 데이터 조회가능 2015.12.18
+			if($DS_USERINFO.getValue(0,"AUTH") != "0" && $DS_USERINFO.getValue(0,"USERGROUPCD") != "05") {
+				var condition = "";
+				
+				if($DS_USERINFO.getValue(0,"AGENCY") == "22026" || $DS_USERINFO.getValue(0,"AGENCY") == "22177"){
+					//condition = "jijum =='22026'";
+					
+					$DS_RES.filter("[jijum =='22026']");
+					$DS_LIST.appendDataset($DS_RES);
+					
+					$DS_RES.filter("[jijum =='22177']");
+					$DS_LIST.appendDataset($DS_RES);
+					
+				}else if(!g_isEmpty($DS_USERINFO.getValue(0, "CALLAUTH"))){
+					for(var i=0; i < $DS_SP_CENTER.size(); i++) {
+						//condition = "jijum =='" + $DS_SP_CENTER.getValue(i,"TREATYBRHCD") + "'";
+						$DS_RES.filter("[jijum =='" + $DS_SP_CENTER.getValue(i,"TREATYBRHCD") + "']");
+						$DS_LIST.appendDataset($DS_RES);
+						$DS_RES.filter("");
+					}
+				}else{
+					//condition = "jijum =='" + DS_USERINFO.getValue(0,"AGENCY") + "'";
+					//alert($DS_USERINFO.getValue(0,"AGENCY"));
+					$DS_RES.filter("[jijum =='" + $DS_USERINFO.getValue(0,"AGENCY") + "']");
+					$DS_LIST.appendDataset($DS_RES);
+					
+					//$DS_RES.addRow($DS_LIST.getData("[jijum =='" + DS_USERINFO.getValue(0,"AGENCY") + "']"));
+				}
+				
+				
+				//console.log($DS_RES);
+				/*
+				// 직영POM일경우 1,2 센터 통합
+				if($DS_USERINFO.getValue(0,"AGENCY") == "22026" || $DS_USERINFO.getValue(0,"AGENCY") == "22177") {
+					condition = "jijum =='22026'||jijum =='22177'";
+				
+				//제휴일경우 제휴사별로 통합
+				}else if(!g_isEmpty($DS_USERINFO.getValue(0, "CALLAUTH"))) {
+					for(var i=0; i < $DS_SP_CENTER.size(); i++) {
+						if(i == 0) condition = "jijum =='" + $DS_SP_CENTER.getValue(i,"TREATYBRHCD") + "'";
+						else condition += " || jijum =='" + $DS_SP_CENTER.getValue(i,"TREATYBRHCD") + "'";
+					}
+				// 그외 본인 센터만
+				}else {
+					condition = "jijum =='" + DS_USERINFO.getValue(0,"AGENCY") + "'";
+				}*/
+				//jijum =='22167' || jijum =='22029' || jijum =='22112'
+				
+				//console.log(condition);
+				//condition = "[jijum =='22026'][jijum =='22027']";
+				//console.log($DS_RES);
+				//$DS_RES.filter("["+condition+"]");
+				//$DS_RES.filter(condition);
+				
+				//$DS_RES.filter("[jijum =='22167' || jijum =='22029' || jijum =='22112']");
+				
+				//nomalCount 	= ds_CSB10106S.getCaseCount(condition +" && CHAR_5=='01'");
+				//rowCount 	= ds_CSB10106S.getCaseCount(condition);
+				
+				nomalCount 	= $DS_LIST.getData("[CHAR_5=='01']").length;
+				rowCount 	= $DS_LIST.size();
+			}else {
+				$DS_LIST.appendDataset($DS_RES);
+				nomalCount 	= $DS_LIST.getData("[CHAR_5=='01']").length;
+				rowCount 	= $DS_LIST.size();
+			}
+			
+			//txt_totalNum.text 	 = rowCount;
+			//txt_totalNormal.text = nomalCount;
+			
+			//console.log(rowCount);
+			//console.log(nomalCount);
+			//총 0 건 | 정상 0 건
+			$totText.setValue("총 "+rowCount+" 건 | 정상 "+nomalCount+" 건");
+			
+			break;
+		default: break;	
+	}
+}
+
+
+function getContractInfoVoList(){
+	//https://tsdev.aig.co.kr/tmMciService.do?_serviceName=LTTMINFR0022&_reqJson={"TBMA003_PSN_NO":"주민번호","searchCondition4":"0","CHAR_10":"0","CHAR_11":"5","clerkNo":"51160050","chnlCls":"TM"}
+	var url = getWebServiceURL();
+	var serviceName ="LTTMINFR0022";
+	
+	var psnNo = $DS_PSN.getValue(0,"CON_P_PSN_NO"); 
+	var clerkNo = $DS_USERINFO.getValue(0,"TREATYCD");
+	//clerkNo = "23921376";
+	var reqJson ='{"TBMA003_PSN_NO":"'+ psnNo+'","searchCondition4":"0","CHAR_10":"0","CHAR_11":"5","clerkNo":"'+clerkNo+'","chnlCls":"TM"}';
+	
+	
+	var opt = {
+			reqId: "getContractInfoVoList",
+			url: "service::oba.oba010t1t7.getContractInfoVoList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "contractInfoVoList",
+				reqJson :reqJson,
+				DS_RES: $DS_RES
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);	
+}
+
+function getWebServiceURL(){
+	
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "https://tsdev.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "vauat"){
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "va"){
+		url = "https://ts.aig.co.kr/tmMciService.do";
+	}else{//로컬도 개발url로.
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+		//url = "https://tsdev.aig.co.kr/tmMciService.do";
+	}
+	
+	return url;
+}
+
+function grd_list_dblclick(event) {
+	//alert(parent.parent.user_id);
+	//alert(event.rowIdx);
+	var polno = $DS_RES.getValue(event.rowIdx,"TBMA003_POL_NO");
+	//var polno = "123";
+	var opt = {
+			modal: false,
+			resizable: false,
+			id : "OBA010T1T7P",
+			url : './OBA010T1T7P1.xhtml',		
+			width : 550,
+			height : 400,
+			title : "담보내역",
+			param : {	
+						polno : polno,
+						user_id : parent.parent.user_id
+						
+			},
+			draggable:true
+		};
+	
+	var info_dialog = new xwing.Dialog(opt);
+	info_dialog.open();	
+
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_RES">
+		<xwing:dataset-column id="TBMA003_ISD_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ADDR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="contractStatusName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_I_KIND_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TREATY_DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ZIP_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="clpsNm"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_STATE_ADD_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="paymentMethodName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TREATY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_ISTAR_CONT_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_I_KIND_L"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_END_NAB_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="TBIC061_NA_Y_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_INS_CUST_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_9"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ISD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_POL_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="ptyCd"></xwing:dataset-column>
+		<xwing:dataset-column id="campId"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_SUM_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_IEND_CONT_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="agentName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_END_NAB_YM"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_TEL_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TOT_NAB_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_4"></xwing:dataset-column>
+		<xwing:dataset-column id="agentSsno"></xwing:dataset-column>
+		<xwing:dataset-column id="jijum"></xwing:dataset-column>
+		<xwing:dataset-column id="sil"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_3"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_21"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_2"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_8"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_7"></xwing:dataset-column>
+		<xwing:dataset-column id="collectMethodName"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_6"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_5"></xwing:dataset-column>
+		<xwing:dataset-column id="clpsId"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USERINFO"></xwing:dataset>
+	<xwing:dataset id="DS_PSN"></xwing:dataset>
+	<xwing:dataset id="DS_PTYCD">
+		<xwing:dataset-column id="CODE"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>0</xwing:dataset-cell>
+			<xwing:dataset-cell>피보험자</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+			<xwing:dataset-cell>계약자</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+			<xwing:dataset-cell>대리인</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SP_CENTER"></xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="TBMA003_ISD_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ADDR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="contractStatusName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_I_KIND_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TREATY_DEPT_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ZIP_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="clpsNm"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_STATE_ADD_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="paymentMethodName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TREATY_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_ISTAR_CONT_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_I_KIND_L"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_END_NAB_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="TBIC061_NA_Y_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_INS_CUST_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_9"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_ISD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_POL_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="ptyCd"></xwing:dataset-column>
+		<xwing:dataset-column id="campId"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_SUM_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_IEND_CONT_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="agentName"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_END_NAB_YM"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA003_TEL_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="TBMA001_TOT_NAB_PREM"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_4"></xwing:dataset-column>
+		<xwing:dataset-column id="agentSsno"></xwing:dataset-column>
+		<xwing:dataset-column id="jijum"></xwing:dataset-column>
+		<xwing:dataset-column id="sil"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_3"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_21"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_2"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_1"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_8"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_7"></xwing:dataset-column>
+		<xwing:dataset-column id="collectMethodName"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_6"></xwing:dataset-column>
+		<xwing:dataset-column id="CHAR_5"></xwing:dataset-column>
+		<xwing:dataset-column id="clpsId"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GROUP">
+		<xwing:dataset-column id="GROUP_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="GROUP_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="true">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="400" anchor="all" bgcolor="#eee" scroll="true">
+			<xwing:panel id="pan_base_info" left="0" top="-5" scroll="false" width="769" height="400" anchor="none">
+				<xwing:datagrid id="grd_list" left="10" top="64" width="751" height="281" rownum="true" checkbox="false" binddataset="DS_LIST" anchor="top bottom left" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" styles="table_border" textwrap="prewrap" dblclick="grd_list_dblclick">
+					<xwing:datagrid-colgroup>
+						<xwing:datagrid-column width="193"></xwing:datagrid-column>
+						<xwing:datagrid-column width="145"></xwing:datagrid-column>
+						<xwing:datagrid-column width="142"></xwing:datagrid-column>
+						<xwing:datagrid-column width="152"></xwing:datagrid-column>
+						<xwing:datagrid-column width="69"></xwing:datagrid-column>
+						<xwing:datagrid-column width="110"></xwing:datagrid-column>
+						<xwing:datagrid-column width="110"></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+						<xwing:datagrid-column></xwing:datagrid-column>
+					</xwing:datagrid-colgroup>
+					<xwing:datagrid-head>
+						<xwing:datagrid-row height="30">
+							<xwing:datagrid-cell text="상품명" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="증권번호" halign="center" fontweight="bold"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="계피관계"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="계약자 주민번호/명" colspan="2"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="피보험자 주민번호/명" colspan="2"></xwing:datagrid-cell>
+							<xwing:datagrid-cell colspan="2" text="대리인 주민번호/명"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="팀"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상담원"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="상태"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="월보험료"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="캠페인"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="납입횟수"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="최종납입월"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="납입방법"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="수금방법"></xwing:datagrid-cell>
+							<xwing:datagrid-cell text="취급자"></xwing:datagrid-cell>
+							<xwing:datagrid-cell colspan="2" text="보험기간"></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-head>
+					<xwing:datagrid-body>
+						<xwing:datagrid-row>
+							<xwing:datagrid-cell halign="center" bindcolumn="CHAR_1"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA003_POL_NO" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="ptyCd" domaindataset="DS_PTYCD" domaincodecolumn="CODE" domaintextcolumn="CODENAME" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CHAR_8"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CHAR_7" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA003_ISD_CD"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA003_ISD_NAME" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="agentSsno"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="agentName" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="jijum" halign="center" domaindataset="DS_GROUP" domaincodecolumn="GROUP_CD" domaintextcolumn="GROUP_NAME"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="sil" halign="center" domaindataset="DS_GROUP" domaincodecolumn="GROUP_CD" domaintextcolumn="GROUP_NAME"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="clpsNm" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="contractStatusName" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA001_TOT_NAB_PREM" mask="comma" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="campId" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA001_END_NAB_NO" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA001_END_NAB_YM" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="paymentMethodName" halign="right"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="collectMethodName"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="CHAR_6" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA001_ISTAR_CONT_DATE" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell bindcolumn="TBMA001_IEND_CONT_DATE" halign="center"></xwing:datagrid-cell>
+							<xwing:datagrid-cell></xwing:datagrid-cell>
+						</xwing:datagrid-row>
+					</xwing:datagrid-body>
+				</xwing:datagrid>
+				<xwing:label id="lbl_user_id" left="7" top="33" value="기계약 유무" height="25" width="80" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="totText" left="90" top="33" value="총 0 건 | 정상 0 건" height="25" width="130" anchor="left" styles="label_subtitle"></xwing:label>
+				<xwing:label id="lbl_title1" value=" 통합계약 이력" left="10" top="10" width="180" height="20" icon="../images/icon_page_title.png" fontweight="bold"></xwing:label>
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

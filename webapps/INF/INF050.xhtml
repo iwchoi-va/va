@@ -1,0 +1,363 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>	
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+* FormID(명) : INF110.xhtml
+* Form 설명  : 녹취청취이력
+* 작성자     : 
+* 작성일     : 
+* =================================================================
+* 변경내역 : 
+* * YYYYMMDD 담당자명 변경내용(Why?,What?)
+* =================================================================
+* *******************************************************************************/
+var v_url="service::cs.inf050.player.log.sel.do";
+/* **********************************************************
+ *    페이지 로드 함수
+ *************************************************************/
+function page_load(event) {
+	try{
+		XwingObject();
+		
+		$cal_date.setValue(g_toDate()); 
+		g_createOrg("pan_org", 3, "Y", "Y", "N", "", "전체",false,false,true);
+		f_getCode();
+		//엑셀다운권한정의
+		excelDownAuth($btn_excel);
+		
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+
+
+/* **********************************************************
+ *    코드북 로드 함수(조회 조건/청취시간)
+ *************************************************************/
+function f_getCode() {
+	var param = {
+			cmd : "getCodes",
+			codeType : "RPT200,SYS102",
+			useyn : "Y"
+		};
+		var opt = {
+			reqId : "getCodes",
+			url : "service::cs.com.codeutil.do",
+			param : param
+		};
+	Xwing.request(opt, callback);	
+}
+
+
+/* **********************************************************
+ *    조회 버튼 클릭
+ *************************************************************/
+function btn_search_click() {
+	var strSQL = '';
+	
+	if($rdo_gubun.getValue() == '1'){
+		strSQL = "cs.inf050.rec_user.player.log.sel";
+	}else if($rdo_gubun.getValue() == '2'){
+		strSQL = "cs.inf050.play_user.player.log.sel";
+	}
+	
+	var param = {
+		_sqlName	: strSQL,
+		play_date : $cal_date.getValue(),
+		stime : $edt_stime.getValue(),
+		etime : $edt_etime.getValue(),
+		ucid : $edt_ucid.getValue(),
+		log_gb: $cmb_type.getValue()
+	};
+	
+	g_orgToParam("", param);
+	
+	var opt = {
+			reqId : 'player_log',
+			url : v_url,
+			param : param,
+			indicator : null,
+			showError : true
+		};
+	Xwing.request(opt, callback);
+}
+
+
+/* **********************************************************
+ *    그리드 클릭 : 녹취 팝업 플레이어 호출
+ *************************************************************/
+function grd_list_click(event) {
+	var cell_idx = event.cell._getColIndex();
+	var start_time = $DS_PLAYER_LOG.getValue(event.rowIdx, "REC_START_TIME");
+	var rec_key = $DS_PLAYER_LOG.getValue(event.rowIdx, "UCID");
+	var log_gb = 'L'; //사용자권한에 따라 차후 달라질듯
+	var ced_no = $DS_PLAYER_LOG.getValue(event.rowIdx, "CED_NO");
+	var file_path = $DS_PLAYER_LOG.getValue(event.rowIdx, "FILE_PATH");
+
+	if(cell_idx == 12){
+		var param={
+				rec_key: rec_key,
+				start_time : start_time,
+				log_gb:log_gb,
+				file_path : file_path,
+				ced_no : ced_no
+		};
+		play(param, 'pan_player', 'Y');
+	}
+}
+
+
+/* **********************************************************
+ *    콜백 함수
+ *************************************************************/
+function callback(reqId, res, err, xhr) {
+	
+	if (res.Error != '0') {
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+		case "getCodes" : 
+			$DS_RPT200.setData(res.RPT200.column, res.RPT200.record);
+			$DS_SYS102.setData(res.SYS102.column, res.SYS102.record);
+			
+			var stime = $DS_RPT200.getValue($DS_RPT200.indexOfRow('CODEID',$DS_SYS102.getValue(0,'ETC3')), 'ETC1') + '00';
+			var etime = Number($DS_RPT200.getValue($DS_RPT200.indexOfRow('CODEID',$DS_SYS102.getValue(0,'ETC4')), 'ETC2'))+41 + '00';
+			$edt_stime.setValue(stime);
+			$edt_etime.setValue(etime);
+			btn_search_click();
+			break;
+		case "player_log" :
+			$DS_PLAYER_LOG.setData(res.DS_PLAYER_LOG.column, res.DS_PLAYER_LOG.record);
+			$edit_rowcnt.setValue($DS_PLAYER_LOG.size());
+			break;
+	}
+	
+}
+
+
+/* **********************************************************
+ *    엑셀 다운로드 함수
+ *************************************************************/
+function btn_excel_click(event) {
+	if(Xwing.getDataset('DS_PLAYER_LOG').size() > 0) {
+		$grd_list_excel.setBinddataset('DS_PLAYER_LOG');
+		$grd_list_excel.exportData('녹취청취이력',  '../jsp/export2.jsp',true);
+		//$grd_list_excel.exportData('녹취청취이력',  global('G_SERVERURL') + '/jsp/export2.jsp',true);
+		$grd_list_excel.setBinddataset('');
+	} else {
+		new xwing.Dialog.alert("출력할 데이터가 없습니다.");
+	}
+}
+
+
+/* **********************************************************
+ *    엑셀 다운로드 시 시간 format을 맞춰주기위한 grid expr
+ *************************************************************/
+function expr_time(cellObj,rowIdx) {
+	var opt = {};
+	opt['value'] = $DS_PLAYER_LOG.getValue(rowIdx,'PLAY_TIME');
+	return opt;
+}
+
+function expr_date(cellObj,rowIdx) {
+	var opt = {};
+	opt['value'] = $DS_PLAYER_LOG.getValue(rowIdx,'REC_START_TIME');
+	return opt;
+}
+
+
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_search_click();
+	}
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_RDO_GUBUN" description="라디오 버튼">
+		<xwing:dataset-column id="menu_name"></xwing:dataset-column>
+		<xwing:dataset-column id="menu_val"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>청취자</xwing:dataset-cell>
+			<xwing:dataset-cell>1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>상담사</xwing:dataset-cell>
+			<xwing:dataset-cell>2</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_RPT200" description="조회조건"></xwing:dataset>
+	<xwing:dataset id="DS_SYS102" description="청취시간"></xwing:dataset>
+	<xwing:dataset id="DS_PLAYER_LOG" description="녹취청취이력 조회 결과">
+		<xwing:dataset-column id="LOG_GUBUN"></xwing:dataset-column>
+		<xwing:dataset-column id="PLAY_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="PLAY_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG1_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG3_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_START_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_CUST_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CONTACT_USER_IP"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_USER_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="UCID"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_GUBUN">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>L</xwing:dataset-cell>
+			<xwing:dataset-cell>녹취청취</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>S</xwing:dataset-cell>
+			<xwing:dataset-cell>녹취내용조회</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="엔진학습관리" width="1050" height="780" load="page_load" resize="page_resize" scroll="false">
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="80" styles="div_search" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false">
+			<xwing:label id="stc_01" value="청취시간" left="400" top="10" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:label id="stc_03" value="녹취KEY" left="645" top="10" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:label id="stc_01_0_0" value="청취일자" left="215" top="10" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:datepicker id="cal_date" left="280" top="10" height="25" width="100" enabled="true" keydown="edt_date_keydown" click="edt_date_click"></xwing:datepicker>
+			<xwing:edit id="edt_stime" left="465" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:label id="lbl2_1" left="539" top="10" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:edit id="edt_etime" left="553" top="10" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:edit id="edt_ucid" left="713" top="10" height="25" width="246" halign="left" fontsize="11" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:radio id="rdo_gubun" left="25" top="40" width="170" height="25" domaindataset="DS_RDO_GUBUN" domaincodecolumn="menu_val" domaintextcolumn="menu_name" fontsize="13" fontfamily="WallBoardFond" fontweight="bold" fontcolor="#000000" value="1" halign="left"></xwing:radio>
+			<xwing:panel id="pan_org" left="176" top="45" width="420" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="stc_01_0" value="구분" left="10" top="10" height="25" halign="right" width="60" styles="label_subtitle"></xwing:label>
+			<xwing:combo id="cmb_type" left="75" top="10" domaindataset="DS_GUBUN" domaincodecolumn="CODEID" width="99" height="25" value="L" domaintextcolumn="CODENAME" change="cmb_type_change"></xwing:combo>
+		</xwing:panel>
+		<xwing:datagrid id="grd_list" left="15" top="130" width="1020" autofit="false" height="639" anchor="all" virtual="true" sortable="true" resizable="true" binddataset="DS_PLAYER_LOG" click="grd_list_click" rownum="true" styles="table_border">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="85"></xwing:datagrid-column>
+				<xwing:datagrid-column width="85"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="130"></xwing:datagrid-column>
+				<xwing:datagrid-column width="130"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width=""></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column width="40"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-colgroup>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="구분" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취일자" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취시간" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="본부" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="센터" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="팀" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취자" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="녹취정보" colspan="4"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="접속IP" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취" rowspan="2"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="녹취일시"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상담사"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="설계번호"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="UCID"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="LOG_GUBUN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PLAY_DATE" halign="center" mask="date"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PLAY_TIME" halign="center" mask="sec"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG1_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG2_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG3_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REC_START_TIME" mask="datetime" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REC_USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CED_NO" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="UCID" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CONTACT_USER_IP" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="center" bgimage="../images/icon_notice.png" cursor="pointer" displaytype="button" bgimagealign="center center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="lbl_subtitle" value="녹취청취이력" left="10." top="81" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left" visible="true"></xwing:label>
+		<xwing:button id="btn_search" value="조 회" left="900" top="45" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" click="btn_search_click"></xwing:button>
+		<xwing:edit id="edit_rowcnt" left="961" top="88" width="45" height="25" halign="right" anchor="top right" readonly="true"></xwing:edit>
+		<xwing:button id="btn_excel" left="1010" top="88" height="25" width="25" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center" click="btn_excel_click"></xwing:button>
+		<xwing:datagrid id="grd_list_excel" left="15" top="355" width="1020" autofit="true" height="300" anchor="all" virtual="true" sortable="true" resizable="true" binddataset="DS_PLAYER_LOG" click="grd_list_click" rownum="true" styles="table_border" visible="false">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="85"></xwing:datagrid-column>
+				<xwing:datagrid-column width="85"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="130"></xwing:datagrid-column>
+				<xwing:datagrid-column width="130"></xwing:datagrid-column>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width=""></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-colgroup>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="구분" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취일자" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취시간" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="본부" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="센터" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="팀" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="청취자" rowspan="2"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="녹취정보" colspan="4"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="접속IP" rowspan="2"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="녹취일시"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="상담사"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="설계번호"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="UCID"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell bindcolumn="LOG_GUBUN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PLAY_DATE" halign="center" mask="date"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="PLAY_TIME" halign="center" mask="sec"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG1_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG2_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="ORG3_NAME" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REC_START_TIME" mask="datetime" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="REC_USER_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CED_NO" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="UCID" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="CONTACT_USER_IP" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+	</xwing:page>
+</body>
+</html>

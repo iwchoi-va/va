@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration>
+    <appender name="CONSOLE_LOGGER" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+
+	<appender name="SERVICE_LOGGER" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${xcron.home}/logs/xcron/service.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="20MB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+
+	<appender name="SCHEDULE_LOGGER" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${xcron.home}/logs/xcron/schedule.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="20MB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+
+	<appender name="BATCHSERVICE_LOGGER" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${xcron.home}/logs/xcron/batch.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="20MB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+
+	<appender name="CLUSTER_LOGGER" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${xcron.home}/logs/xcron/cluster.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="20MB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+
+	<appender name="ADMIN_LOGGER" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="${xcron.home}/logs/xcron/admin.log"/>
+		<param name="Append" value="true"/>
+		<param name="MaxFileSize" value="20MB"/>
+		<param name="MaxBackupIndex" value="5"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss:sss}] %-5p - %m%n"/>
+		</layout>
+    </appender>
+    
+	<!--
+		Log Level 우선순위 : OFF < FATAL < ERROR < WARN < INFO < DEBUG < ALL
+		우선순위가 높은 Level은 하위 Level의 로그를 포함합니다.
+	-->
+
+	<category name="serviceLogger">
+		<priority value="DEBUG"/>
+		<appender-ref ref="CONSOLE_LOGGER"/>
+		<appender-ref ref="SERVICE_LOGGER"/>
+	</category>
+
+	<category name="consoleLogger">
+		<priority value="ERROR"/>
+		<appender-ref ref="CONSOLE_LOGGER"/>
+	</category>
+
+	<category name="scheduleLogger">
+		<priority value="DEBUG"/>
+		<appender-ref ref="CONSOLE_LOGGER"/>
+		<appender-ref ref="SCHEDULE_LOGGER"/>
+	</category>
+
+	<category name="clusterLogger">
+		<priority value="ERROR"/>
+		<appender-ref ref="CLUSTER_LOGGER"/>
+	</category>
+
+	<category name="adminLogger">
+		<priority value="ERROR"/>
+		<appender-ref ref="ADMIN_LOGGER"/>
+	</category>
+
+	<category name="batchServiceLogger">
+		<priority value="ERROR"/>
+		<appender-ref ref="BATCHSERVICE_LOGGER"/>
+	</category>
+</log4j:configuration>

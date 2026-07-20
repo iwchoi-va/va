@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<request-config>
+	<request name="msa.msa010.sqlservice" login="true">
+		<description>상품 조회</description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+	<request name="msa.msa030t1.grademng" login="true">
+		<description>Grade관리 화면 </description>
+		<action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+		<page type='default'>/common/Xwing.jsp</page>
+	</request>
+	
+    <request name="msa.msa030p1.user.info.sel" login="true">
+        <description>조직조회</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="msa.msa040t2.uat.to.prod" login="true">
+        <description>조직조회</description>
+        <action-class>sens.service.webaction.VRSUpdateWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="msa.msa050.getMentMng.sel" login="true">
+        <description>필수멘트관리</description>
+        <action-class>jedix.xwing.action.SQLXwingWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+    
+    <request name="msa.msa040t1.delYnUpdateWebAction" login="true">
+        <description>삭제여부동기화</description>
+        <action-class>sens.service.webaction.DelYnUpdateWebAction</action-class>
+        <page type='default'>/common/Xwing.jsp</page>
+    </request>
+</request-config>

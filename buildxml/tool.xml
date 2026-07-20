@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="tool" default="do" basedir=".">
+
+	<target name="do">
+		<ant antfile="${antfile}" />
+		<antcall target="while" />
+	</target>
+
+	<target name="while">
+		<antcall target="do" />
+
+	</target>
+
+</project>

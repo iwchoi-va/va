@@ -1,0 +1,1728 @@
+<?xml version="1.0" encoding="EUC-KR"?>  
+  <!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by sslee (shoo corp.) -->  
+  <!DOCTYPE mmilist [  
+   <!ELEMENT mmilist (version, indicator, category+)>  
+   <!ELEMENT version (#PCDATA)>  
+   <!ELEMENT indicator (servers+)>  
+   <!ELEMENT servers EMPTY>  
+   <!ATTLIST servers  
+    sname CDATA #REQUIRED   
+    sindex CDATA #REQUIRED  
+   >  
+   <!ELEMENT category (mmi+)>  
+   <!ATTLIST category  
+    name CDATA #REQUIRED  
+   >  
+   <!ELEMENT mmi (info, usage*, desc+, example*, param*)>  
+   <!ATTLIST mmi  
+    id CDATA #REQUIRED   
+    level CDATA #REQUIRED   
+    name CDATA #REQUIRED   
+    password CDATA #IMPLIED  
+   >  
+   <!ELEMENT info EMPTY>  
+   <!ATTLIST info  
+    server CDATA #REQUIRED   
+    dir CDATA #REQUIRED   
+    return CDATA #REQUIRED   
+    nms CDATA #IMPLIED   
+    omc CDATA #IMPLIED   
+    sync CDATA #IMPLIED   
+    delimeter CDATA #IMPLIED  
+   >  
+   <!ELEMENT usage (#PCDATA)>  
+   <!ELEMENT desc (#PCDATA)>  
+   <!ATTLIST desc  
+    lang CDATA #REQUIRED  
+   >  
+   <!ELEMENT example (#PCDATA)>  
+   <!ELEMENT param (p_desc*)>  
+   <!ATTLIST param  
+    name CDATA #REQUIRED   
+    datatype CDATA #REQUIRED   
+    option CDATA #REQUIRED   
+    list CDATA #IMPLIED   
+    value CDATA #IMPLIED   
+    min CDATA #IMPLIED   
+    max CDATA #IMPLIED   
+    readonly CDATA #IMPLIED   
+    abbr CDATA #IMPLIED   
+    order CDATA #IMPLIED  
+   >  
+   <!ELEMENT p_desc (#PCDATA)>  
+   <!ATTLIST p_desc  
+    lang CDATA #REQUIRED  
+   >  
+  ]>  
+  <mmilist>  
+   <version>201201111800</version>  
+   <indicator>  
+    <servers sname="ALL" sindex="0|1|2"/>  
+    <servers sname="OMS" sindex="0"/>  
+    <servers sname="OMA" sindex="1|2"/>  
+   </indicator>  
+   <category name="COMMON">  
+    <mmi id="1000" level="A" name="GET-XML-VER" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="FALSE" omc="TRUE" return="2" sync="FALSE"/>  
+     <usage>GET-XML-VER</usage>  
+     <desc lang="ko">COMMAND.xml의 버전을 전송합니다.</desc>  
+     <example>GET-XML-VER</example>  
+    </mmi>  
+    <mmi id="1001" level="A" name="GET-XML" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="FALSE" omc="TRUE" return="2" sync="FALSE"/>  
+     <usage>GET-XML</usage>  
+     <desc lang="ko">COMMAND.xml을 전송합니다.</desc>  
+     <example>GET-XML</example>  
+    </mmi>  
+    <mmi id="1002" level="C" name="SHOW-AP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-AP</usage>  
+     <desc lang="ko">Process list를 조회합니다.</desc>  
+     <example>SHOW-AP</example>  
+    </mmi>  
+    <mmi id="1003" level="C" name="SHOW-IPC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-IPC</usage>  
+     <desc lang="ko">IPC를 조회합니다.</desc>  
+     <example>SHOW-IPC</example>  
+    </mmi>  
+    <mmi id="1004" level="C" name="ACT-DUPC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>ACT-DUPC</usage>  
+     <desc lang="ko">DUPC 테이블의 리스트 중 해당 DUPC를 활성화 합니다.</desc>  
+     <example>ACT-DUPC</example>  
+    </mmi>  
+    <mmi id="1005" level="C" name="DEACT-DUPC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>DEACT-DUPC</usage>  
+     <desc lang="ko">DUPC 테이블의 리스트 중 해당 DUPC를 비활성화 합니다.</desc>  
+     <example>DEACT-DUPC</example>  
+    </mmi>  
+    <mmi id="1006" level="C" name="TLOG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>TLOG Process_Name</usage>  
+     <desc lang="ko">해당 프로세스의 트레이스 로그를 추적 합니다.</desc>  
+     <example>TLOG XREG</example>  
+    </mmi>  
+    <mmi id="1007" level="C" name="TR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>TR</usage>  
+     <desc lang="ko">현재 호를 추적 합니다.</desc>  
+     <example>TR</example>  
+    </mmi>  
+    <mmi id="1008" level="C" name="CRT-SIP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-SIP</usage>  
+     <desc lang="ko">Sip 의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-SIP</example>  
+    </mmi>  
+    <mmi id="1009" level="C" name="CRT-HAF" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-HAF</usage>  
+     <desc lang="ko">HAF의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-HAF</example>  
+    </mmi>  
+    <mmi id="1010" level="C" name="CRT-MUX" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-MUX</usage>  
+     <desc lang="ko">MUX의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-MUX</example>  
+    </mmi>  
+    <mmi id="1011" level="C" name="CRT-OAM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-OAM</usage>  
+     <desc lang="ko">OAM의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-OAM</example>  
+    </mmi>  
+    <mmi id="1012" level="C" name="CRT-SEC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-SEC</usage>  
+     <desc lang="ko">SEC의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-SEC</example>  
+    </mmi>  
+    <mmi id="1013" level="C" name="CRT-TRC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-TRC</usage>  
+     <desc lang="ko">TRC의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-TRC</example>  
+    </mmi>  
+    <mmi id="1014" level="C" name="CRT-STA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-STA</usage>  
+     <desc lang="ko">STA의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-STA</example>  
+    </mmi>  
+    <mmi id="1015" level="C" name="CRT-APP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-APP</usage>  
+     <desc lang="ko">Application의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-APP</example>  
+    </mmi>  
+    <mmi id="1016" level="C" name="CRT-CONF" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-CONF</usage>  
+     <desc lang="ko">Configuration의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-CONF</example>  
+    </mmi>  
+    <mmi id="1017" level="C" name="CRT-IRM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-IRM</usage>  
+     <desc lang="ko">IRM의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-IRM</example>  
+    </mmi>  
+    <mmi id="1018" level="C" name="CRT-COM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-COM</usage>  
+     <desc lang="ko">COM의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-COM</example>  
+    </mmi>  
+    <mmi id="1019" level="C" name="CRT-MMI" password="TRUE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-MMI</usage>  
+     <desc lang="ko">MMI의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-MMI</example>  
+    </mmi>  
+    <mmi id="1020" level="C" name="CRT-SYS" password="TRUE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-SYS</usage>  
+     <desc lang="ko">SYS의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-SYS</example>  
+    </mmi>  
+    <mmi id="1021" level="A" name="ADD-OMA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>ADD-OMA host</usage>  
+     <desc lang="ko">OMA list에 oma 정보를 추가합니다.</desc>  
+     <example>ADD-OMA 10.1.14.192</example>  
+    </mmi>  
+    <mmi id="1022" level="C" name="SHOW-OMA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-OMA</usage>  
+     <desc lang="ko">OMA list에서 oma 정보를 조회합니다.</desc>  
+     <example>SHOW-OMA</example>  
+    </mmi>  
+    <mmi id="1023" level="A" name="CHG-OMA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CHG-OMA INDEX=index HOST=host</usage>  
+     <desc lang="ko">OMA list의 특정 oma 정보를 변경합니다.</desc>  
+     <example>CHG-OMA 1 10.1.14.192</example>  
+    </mmi>  
+    <mmi id="1024" level="A" name="DEL-OMA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>DEL-OMA index</usage>  
+     <desc lang="ko">OMA list의 특정 oma 정보를 삭제합니다.</desc>  
+     <example>DEL-OMA 1</example>  
+     <param name="INDEX" datatype="string" option="M" readonly="TRUE"/>  
+    </mmi>  
+    <mmi id="1025" level="A" name="ADD-OMC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>ADD-OMC host</usage>  
+     <desc lang="ko">OMC list에 omc 정보를 추가합니다.</desc>  
+     <example>ADD-OMC 10.1.14.192</example>  
+    </mmi>  
+    <mmi id="1026" level="C" name="SHOW-OMC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-OMC</usage>  
+     <desc lang="ko">OMC list에서 omc 정보를 조회합니다.</desc>  
+     <example>SHOW-OMC</example>  
+    </mmi>  
+    <mmi id="1027" level="A" name="CHG-OMC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CHG-OMC index host</usage>  
+     <desc lang="ko">OMC list의 특정 omc 정보를 변경합니다.</desc>  
+     <example>CHG-OMC 1 10.1.14.192</example>  
+    </mmi>  
+    <mmi id="1028" level="A" name="DEL-OMC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>DEL-OMC index</usage>  
+     <desc lang="ko">OMC list의 특정 omc 정보를 삭제합니다.</desc>  
+     <example>DEL-OMC 1</example>  
+     <param name="INDEX" datatype="string" option="M" readonly="TRUE"/>  
+    </mmi>  
+    <mmi id="1029" level="C" name="SHOW-MUX" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-MUX</usage>  
+     <desc lang="ko">MUX List에서 MUX 정보를 조회합니다.</desc>  
+     <example>SHOW-MUX</example>  
+    </mmi>  
+    <mmi id="1030" level="A" name="CHG-MUX" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CHG-MUX id=snt_id [c=connection_mode] [l1=local_ip_addr] [l2=local_ip_addr] [lp=local_port] [d1=dest_ip_addr] [d2=dest_ip_addr] [dp=dest_port]</usage>  
+     <desc lang="ko">MUX list에 특정 MUX 정보를 변경합니다.</desc>  
+     <example>CHG-MUX id=5 c=1 l1=192.168.1.18 lp=18025</example>  
+    </mmi>  
+    <mmi id="1031" level="C" name="SHOW-CONF" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE" delimeter="="/>  
+     <usage>SHOW-CONF</usage>  
+     <desc lang="ko">Config 정보를 조회합니다.</desc>  
+     <example>SHOW-CONF</example>  
+     <example>SHOW-CONF</example>  
+    </mmi>  
+    <mmi id="1032" level="A" name="CHG-CONF" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CHG-CONF SECTION|S=section_name KEY|K=name VALUE|V=value</usage>  
+     <desc lang="ko">해당 섹션의 특정 Config 정보를 변경합니다.</desc>  
+     <example>CHG-CONF SECTION=STA KEY=CollectShortPeriod VALUE=5</example>  
+    </mmi>  
+    <mmi id="1033" level="A" name="CHG-LOGLEVEL" password="FALSE">  
+     <info server="ALL" dir="script" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CHG-LOGLEVEL AP=process LEVEL=DG [INST=number]</usage>  
+     <desc lang="ko">해당 프로세스의 Log Level을 변경합니다.</desc>  
+     <example>CHG-LOGLEVEL AP=TREG LEVEL=DG</example>  
+     <example>CHG-LOGLEVEL AP=TREG LEVEL=TR</example>  
+    </mmi>  
+    <mmi id="1035" level="C" name="SHOW-COMMAND" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-COMMAND</usage>  
+     <desc lang="ko">command list를 조회합니다.</desc>  
+     <example>SHOW-COMMAND</example>  
+    </mmi>  
+    <mmi id="1036" level="C" name="SHOW-DUPC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-DUPC</usage>  
+     <desc lang="ko">DUPC List에서 DUPC 정보를 조회합니다.</desc>  
+     <example>SHOW-DUPC</example>  
+    </mmi>  
+    <mmi id="1037" level="C" name="SHOW-DB-STATUS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-DB-STATUS</usage>  
+     <desc lang="ko">DB 상태 정보를 조회합니다.</desc>  
+     <example>SHOW-DB-STATUS</example>  
+    </mmi>  
+    <mmi id="1038" level="C" name="SHOW-STATUS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-STATUS</usage>  
+     <desc lang="ko">시스템 상태 정보를 조회합니다.</desc>  
+     <example>SHOW-STATUS</example>  
+    </mmi>  
+    <mmi id="1041" level="C" name="SHOW-SIP-TRX" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-SIP-TRX ALL=1 | CNT=1 | CALLID=call_id [TYPE=SVR|CLI | TIDX=tidx] | TYPE=SVR|CLI</usage>  
+     <desc lang="ko">SIP TRX 정보를 조회합니다.</desc>  
+     <example>SHOW-SIP-TRX ALL=1</example>  
+    </mmi>  
+    <mmi id="1048" level="C" name="SHOW-PROC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-PROC</usage>  
+     <desc lang="ko">process 정보를 조회합니다.</desc>  
+     <example>SHOW-PROC</example>  
+    </mmi>  
+    <mmi id="1049" level="C" name="CLEAR-HA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CLEAR-HA</usage>  
+     <desc lang="ko">장애 인지 리소스의 장애가 해지되는지 확인합니다.</desc>  
+     <example>CLEAR-HA</example>  
+    </mmi>  
+    <mmi id="1050" level="C" name="STRT-HA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>STRT-HA</usage>  
+     <desc lang="ko">INVOKE_HA 메시지를 송신합니다.</desc>  
+     <example>STRT-HA</example>  
+    </mmi>  
+    <mmi id="1051" level="C" name="SWITCH-HA" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>SWITCH-HA</usage>  
+     <desc lang="ko">수동으로 PEER 절체 처리되는지 확인합니다.</desc>  
+     <example>SWITCH-HA</example>  
+    </mmi>  
+    <mmi id="1052" level="C" name="SHOW-DUPCRES" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-DUPCRES</usage>  
+     <desc lang="ko">DUPCRESTBL 정보를 조회합니다.</desc>  
+     <example>SHOW-DUPCRES</example>  
+    </mmi>  
+    <mmi id="1053" level="A" name="STOP-AP" password="FALSE">  
+     <info server="ALL" dir="script" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>STOP-AP [AP] [INST#|ALL]</usage>  
+     <desc lang="ko">한 프로세스를 정지합니다.</desc>  
+     <example>STOP-AP LTMR 1</example>  
+     <example>STOP-AP LTMR ALL</example>  
+    </mmi>  
+    <mmi id="1056" level="C" name="SEND-IPC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>SEND-IPC ap_name ins# msg_type</usage>  
+     <desc lang="en">send IPC message.</desc>  
+     <desc lang="ko">해당 프로세스에게 IPC 메시지를 전송합니다.</desc>  
+     <example>SEND-IPC MUXD 1 AP_INVITE_RPT</example>  
+    </mmi>  
+    <mmi id="1057" level="C" name="CLR-EXT-ARM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>CLR-EXT-ARM</usage>  
+     <desc lang="ko">EXTENTION의 MONITOR ARMMING을 삭제합니다.</desc>  
+     <example>CLR-EXT-ARM</example>  
+    </mmi>  
+          <mmi id="1058" level="C" name="DEL-MON" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+              <usage>DEL-MON ID|I=pool_id|ALL</usage>  
+              <desc lang="en">delete Monitoring pool</desc>  
+              <desc lang="ko">Monitor Table 정보를 삭제합니다.</desc>  
+              <example>DEL-MON ID=ALL</example>  
+              <example>DEL-MON ID=3</example>  
+          </mmi>  
+    <mmi id="1059" level="C" name="CRT-LCTL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-LCTL</usage>  
+     <desc lang="en">create and initialize shmmem for LCTL.</desc>  
+     <desc lang="ko">LCTL의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-LCTL</example>  
+    </mmi>  
+    <mmi id="1060" level="C" name="CRT-REG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-REG</usage>  
+     <desc lang="en">create and initialize shmmem for REG.</desc>  
+     <desc lang="ko">REG의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-REG</example>  
+    </mmi>  
+    <mmi id="1061" level="C" name="CRT-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-CALL</usage>  
+     <desc lang="en">create and initialize shmmem for CALL.</desc>  
+     <desc lang="ko">CALL의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-CALL</example>  
+    </mmi>  
+    <mmi id="1062" level="C" name="CRT-DLG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-DLG</usage>  
+     <desc lang="en">create and initialize shmmem for DIALOG.</desc>  
+     <desc lang="ko">DIALOG의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-DLG</example>  
+    </mmi>  
+    <mmi id="1063" level="C" name="CRT-MON" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-MON</usage>  
+     <desc lang="en">create and initialize shmmem for MONITOR.</desc>  
+     <desc lang="ko">MONITOR의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-MON</example>  
+    </mmi>  
+    <mmi id="1064" level="C" name="CRT-PROC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-PROC</usage>  
+     <desc lang="en">create and initialize shmmem for PROC.</desc>  
+     <desc lang="ko">PROC의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-PROC</example>  
+    </mmi>  
+    <mmi id="1065" level="C" name="LOAD-ACD" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-ACD</usage>  
+     <desc lang="en">initialize shmmet and load ACD.</desc>  
+     <desc lang="ko">ACD의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-ACD</example>  
+    </mmi>  
+    <mmi id="1066" level="C" name="LOAD-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-CALL</usage>  
+     <desc lang="en">initialize shmmet and load CALL.</desc>  
+     <desc lang="ko">CALL의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-CALL</example>  
+    </mmi>  
+    <mmi id="1067" level="C" name="LOAD-DLG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-DLG</usage>  
+     <desc lang="en">initialize shmmet and load DIALOG.</desc>  
+     <desc lang="ko">DIALOG의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-DLG</example>  
+    </mmi>  
+    <mmi id="1068" level="C" name="LOAD-DLG-POOL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-DLG-POOL</usage>  
+     <desc lang="en">initialize shmmet and load DIALOG POOL.</desc>  
+     <desc lang="ko">DIALOG POOL의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-DLG-POOL</example>  
+    </mmi>  
+    <mmi id="1069" level="C" name="LOAD-MON" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-MON</usage>  
+     <desc lang="en">initialize shmmet and load MONITOR.</desc>  
+     <desc lang="ko">MONITOR의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-MONITOR</example>  
+    </mmi>  
+    <mmi id="1070" level="C" name="LOAD-REG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>LOAD-REG</usage>  
+     <desc lang="en">initialize shmmet and load REGISTER.</desc>  
+     <desc lang="ko">REGISTER의 공유 메모리를 초기화하고 로드합니다.</desc>  
+     <example>LOAD-REG</example>  
+    </mmi>  
+    <mmi id="1072" level="C" name="SHOW-BCMS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>SHOW-BCMS VDN(V)|GRP(G)|QUE(Q)|AGT(A)|VMEM(M)=NUM</usage>  
+     <desc lang="en">MONITORING BCMS STATISTICS.</desc>  
+     <desc lang="ko">BCMS통계를 실시간 모니터링 합니다.</desc>  
+     <example>SHOW-BCMS VDN=3012</example>  
+    </mmi>  
+    <mmi id="1073" level="C" name="SHOW-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CALL ID=ALL|call_id</usage>  
+     <desc lang="ko">Call 정보를 조회합니다.</desc>  
+     <example>SHOW-CALL ID=ALL</example>  
+     <example>SHOW-CALL ID=1</example>  
+     <param name="ID" datatype="string" option="M" value="ALL" abbr="I"/>  
+    </mmi>  
+    <mmi id="1074" level="C" name="SHOW-CALL-CAUSE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CALL-CAUSE</usage>  
+     <desc lang="ko">Call Cause List를 조회합니다.</desc>  
+     <example>SHOW-CALL-CAUSE</example>  
+    </mmi>  
+    <mmi id="1075" level="C" name="SHOW-REG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-REG NUM=ext_num|ALL</usage>  
+     <desc lang="ko">Reg Binding Pool list를 조회합니다.</desc>  
+     <example>SHOW-REG NUM=ALL</example>  
+     <example>SHOW-REG NUM=1001</example>  
+     <param name="NUM" datatype="string" option="M"/>  
+    </mmi>  
+    <mmi id="1076" level="A" name="DEL-REG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>DEL-REG NUM|N=ext_num|ALL</usage>  
+     <desc lang="ko">Register의 List에서 특정 상세정보를 삭제합니다.</desc>  
+     <example>DEL-REG NUM=2</example>  
+     <example>DEL-REG NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="1077" level="C" name="SHOW-UDLG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-UDLG NUM=num|ALL</usage>  
+     <desc lang="ko">UACM Dialog list를 조회합니다.</desc>  
+     <example>SHOW-UDLG NUM=ALL</example>  
+     <example>SHOW-UDLG NUM=58</example>  
+     <param name="NUM" datatype="string" min="1" max="65535" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="1078" level="C" name="SHOW-DLG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-DLG TYPE|T=IN|OUT ID|I=ALL|num</usage>  
+     <desc lang="ko">Dialog 정보를 조회합니다</desc>  
+     <example>SHOW-DLG TYPE=INLEG ID=ALL</example>  
+     <example>SHOW-DLG T=OUTLEG I=3</example>  
+     <param name="TYPE" datatype="string" min="1" max="1024" option="M" abbr="T"/>  
+     <param name="ID" datatype="string" min="1" max="65535" option="M" abbr="I"/>  
+    </mmi>  
+    <mmi id="1079" level="C" name="SHOW-MON" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-MON</usage>  
+     <desc lang="ko">Monitor list를 조회합니다.</desc>  
+     <example>SHOW-MON</example>  
+    </mmi>  
+    <mmi id="1080" level="C" name="DEL-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-CALL ID=ALL|call_id</usage>  
+     <desc lang="ko">Call 정보를 삭제합니다.</desc>  
+     <example>DEL-CALL ID=ALL</example>  
+     <example>DEL-CALL ID=1</example>  
+     <param name="ID" datatype="string" option="M" abbr="I"/>  
+    </mmi>  
+          <mmi id="6028" level="A" name="DEL-CALL-CAUSE" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-CALL-CAUSE SIP|S=sip_res_code</usage>  
+              <desc lang="en">Delete call cause table.</desc>  
+              <desc lang="ko">Call Cause Table을 삭제합니다.</desc>  
+              <example>DEL-CALL-CAUSE S=500</example>  
+     <param name="SIP" datatype="string" option="M" abbr="S"/>  
+          </mmi>  
+    <mmi id="1081" level="C" name="TR-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>TR-CALL [CALLING|G=calling_num] [CALLED|D=called_num] [ANSWERED|W=answered_num] [LAST_REDIR|R=last_redirect_num]</usage>  
+     <usage>        [VDN|V=vdn_num] [VECTOR|O=vector_num] [CALL|C=call_id] [TYPE|T=USER|VDN|MMC] [TRACE|A=CALL|VECTOR]</usage>  
+     <desc lang="ko">CALL정보를 실시간으로 봅니다.</desc>  
+     <example>TR-CALL CALLING=1031</example>  
+     <example>TR-CALL CALLED=1011</example>  
+     <example>TR-CALL VDN=4823</example>  
+     <param name="CALLING" datatype="string" option="O" abbr="G"/>  
+     <param name="CALLED" datatype="string" option="O" abbr="D"/>  
+     <param name="ANSWERED" datatype="string" option="O" abbr="W"/>  
+     <param name="LAST_REDIR" datatype="string" option="O" abbr="R"/>  
+     <param name="VDN" datatype="string" option="O" abbr="V"/>  
+     <param name="VECTOR" datatype="string" option="O" abbr="O"/>  
+     <param name="CALL" datatype="string" option="O" abbr="C"/>  
+     <param name="TYPE" datatype="string" option="O" abbr="T"/>  
+     <param name="TRACE" datatype="string" option="O" abbr="A"/>  
+    </mmi>  
+    <mmi id="1082" level="C" name="LOAD-CDR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>LOAD-CDR</usage>  
+     <desc lang="ko">CDR 정보를 로드합니다.</desc>  
+     <example>LOAD-CDR</example>  
+    </mmi>  
+    <mmi id="1083" level="C" name="CRT-CDR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CRT-CDR</usage>  
+     <desc lang="ko">CDR의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-CDR</example>  
+    </mmi>  
+    <mmi id="1084" level="C" name="SHOW-CDR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CDR</usage>  
+     <desc lang="ko">CDR의 정보를 조회합니다.</desc>  
+     <example>SHOW-CDR</example>  
+    </mmi>  
+    <mmi id="1085" level="C" name="LOAD-MMI" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>LOAD-MMI</usage>  
+     <desc lang="ko">COMMAND.xml의 내용을 메모리로 LOAD합니다.</desc>  
+     <example>LOAD-MMI</example>  
+    </mmi>  
+   </category>  
+   <category name="SYSTEM MANAGEMENT">  
+    <mmi id="2000" level="C" name="SHOW-FAC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-FAC NUM=num|ALL</usage>  
+     <desc lang="en">show FAC.</desc>  
+     <desc lang="ko">FAC 정보를 조회합니다.</desc>  
+     <example>SHOW-FAC NUM=ALL</example>  
+     <example>SHOW-FAC NUM=2</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="2001" level="A" name="CHG-FAC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-FAC NUM|N=num FAC|F="string"</usage>  
+     <desc lang="en">Change FAC.</desc>  
+     <desc lang="ko">FAC 정보를 수정합니다.</desc>  
+     <example>CHG-FAC NUM=2 FAC="*63"</example>  
+     <example>CHG-FAC N=2 F="*63"</example>  
+     <param name="NUM" datatype="string" option="M" min="0" max="99" abbr="N"/>  
+     <param name="FAC" datatype="string" option="M" value="0|1|2|3|4|5|6|7|8|9|*|#" abbr="F"/>  
+    </mmi>  
+    <mmi id="2002" level="C" name="SHOW-STA-MODEL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-STA-MODEL ID=id|ALL</usage>  
+     <desc lang="en">show station-model.</desc>  
+     <desc lang="ko">Station Model 정보를 조회합니다.</desc>  
+     <example>SHOW-STA-MODEL ID=ALL</example>  
+     <example>SHOW-STA-MODEL ID=2</example>  
+     <param name="ID" datatype="string" option="M" abbr="I"/>  
+    </mmi>  
+    <mmi id="2003" level="C" name="SHOW-CHAN" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CHAN DSP|D=dsp_id|ALL</usage>  
+     <desc lang="en">show channel.</desc>  
+     <desc lang="ko">Channel 정보를 조회합니다.</desc>  
+     <example>SHOW-CHAN DSP=1</example>  
+     <param name="DSP" datatype="string" option="M" abbr="D"/>  
+    </mmi>  
+    <mmi id="2004" level="C" name="SHOW-ANNC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-ANNC NUM=announce_num|ALL</usage>  
+     <desc lang="en">show announcement.</desc>  
+     <desc lang="ko">톤과 안내방송의 정보를 조회합니다.</desc>  
+     <example>SHOW-ANNC NUM=ALL</example>  
+     <example>SHOW-ANNC NUM=2</example>  
+     <param name="NUM" datatype="string" option="M" value="ALL|1~99" abbr="N"/>  
+    </mmi>  
+    <mmi id="2005" level="C" name="SHOW-TONE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-TONE NUM=num|ALL</usage>  
+     <desc lang="ko">show tone.</desc>  
+     <desc lang="ko">Tone 정보를 조회합니다.</desc>  
+     <example>SHOW-TONE NUM=ALL</example>  
+     <example>SHOW-TONE NUM=2</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="2006" level="C" name="SHOW-PICKUP-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-PICKUP-GRP NUM=num|ALL</usage>  
+     <desc lang="en">show pickup-group.</desc>  
+     <desc lang="ko">Pickup Group 정보를 조회합니다.</desc>  
+     <example>SHOW-PICKUP-GRP NUM=ALL</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+    </mmi>  
+          <mmi id="2007" level="A" name="ADD-PICKUP-GRP" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage># Pickup Group 추가 시</usage>  
+              <usage>ADD-PICKUP-GRP NUM|N=num NAME|NM=string</usage>  
+              <usage># Pickup Group Member 추가 시</usage>  
+              <usage>ADD-PICKUP-GRP NUM|N=num MEMBER|M=ext_num</usage>  
+              <desc lang="en">add pickup-group info</desc>  
+              <desc lang="ko">Pickup Group 정보를 추가합니다. </desc>  
+              <example>ADD-PICKUP-GRP NUM=2 NAME=ck_grp_1</example>  
+              <example>ADD-PICKUP-GRP NUM=2 MEMBER=1001</example>  
+              <param name="NUM" datatype="string" option="M" min="1" max="100" abbr="N"/>  
+              <param name="NAME" datatype="string" option="O" abbr="NM"/>  
+              <param name="MEMBER" datatype="string" option="O" min="0" max="9999" abbr="M"/>  
+          </mmi>  
+    <mmi id="2008" level="A" name="CHG-PICKUP-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-PICKUP-GRP NUM|N=num NAME|NM=string</usage>  
+     <desc lang="en">change pickup-group.</desc>  
+     <desc lang="ko">Pickup Group 정보를 수정합니다.</desc>  
+     <example>CHG-PICKUP-GRP NUM=2 NAME=ck_grp_1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="100" abbr="N"/>  
+     <param name="NAME" datatype="string" option="M" abbr="NM"/>  
+    </mmi>  
+          <mmi id="2009" level="A" name="DEL-PICKUP-GRP" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage># Pickup Group 삭제 시</usage>  
+              <usage>DEL-PICKUP-GRP NUM|N=group_num</usage>  
+              <usage># Pickup Group Member 삭제 시</usage>  
+              <usage>DEL-PICKUP-GRP NUM|N=group_num MEMBER|M=ext_num</usage>  
+              <desc lang="en">delete pickup-group.</desc>  
+              <desc lang="ko">Pickup Group 정보를 삭제합니다.</desc>  
+              <example>DEL-PICKUP-GRP NUM=2</example>  
+              <example>DEL-PICKUP-GRP NUM=2 MEMBER=1023</example>  
+              <param name="NUM" datatype="int" option="M" min="1" max="100" abbr="M"/>  
+              <param name="NAME" datatype="string" option="M" abbr="NM"/>  
+          </mmi>  
+    <mmi id="2010" level="C" name="SHOW-CSTA-CLIENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CSTA-CLIENT NUM=num|ALL</usage>  
+     <desc lang="en">SHOW CSTA CLIENT.</desc>  
+     <desc lang="ko">CSTA Client 정보를 조회합니다.</desc>  
+     <example>SHOW-CSTA-CLIENT NUM=ALL</example>  
+    </mmi>  
+    <mmi id="2011" level="A" name="ADD-CSTA-CLIENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-CSTA-CLIENT IP|I=10.1.1.1 PORT|P=5060 DESC|D=CSTA</usage>  
+     <desc lang="en">ADD CSTA CLIENT.</desc>  
+     <desc lang="ko">Client 정보를 추가합니다.</desc>  
+     <example>ADD-CSTA-CLIENT IP=10.1.1.1 PORT=5060 DESC=CSTA</example>  
+     <param name="IP" datatype="ipaddress" option="M" abbr="I"/>  
+     <param name="PORT" datatype="string" option="M" abbr="P"/>  
+     <param name="DESC" datatype="string" option="M" abbr="D"/>  
+    </mmi>  
+          <mmi id="2011" level="A" name="DEL-CSTA-CLIENT" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-CSTA-CLIENT IP|I=ip_address PORT|P=port_num</usage>  
+              <desc lang="en">delete Client info </desc>  
+              <desc lang="ko">Client 정보를 삭제합니다.</desc>  
+              <example>DEL-CSTA-CLIENT IP=10.1.1.1 PORT=5060</example>  
+              <param name="IP" datatype="ipaddress" option="M" abbr="I"/>  
+              <param name="PORT" datatype="string" option="M" abbr="P"/>  
+          </mmi>  
+    <mmi id="2012" level="A" name="CLR-LOG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CLR-LOG</usage>  
+     <desc lang="en">Delete or Move Log File</desc>  
+     <desc lang="ko">Log File을 정리 합니다.</desc>  
+     <example>CLR-LOG</example>  
+    </mmi>  
+   </category>  
+   <category name="USER STATION">  
+    <mmi id="3000" level="C" name="SHOW-EXT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-EXT NUM|N=ext_num|ALL</usage>  
+     <desc lang="en">show user-station.</desc>  
+     <desc lang="ko">User Station의 정보를 조회합니다.</desc>  
+     <example>SHOW-EXT NUM=1001</example>  
+     <example>SHOW-EXT NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" value="ALL" min="0" max="65535" abbr="N"/>  
+    </mmi>  
+          <mmi id="3001" level="A" name="ADD-EXT" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>ADD-EXT NUM|N=ext_num TYPE|T=PHONE|IVR NAME|NM=ext_name PASSWORD|P=password SECURITY_CODE|SC=security_code MODEL|M=station_model_id RECORD|R=record_flag TENANT|TN=tenant_id PUBLIC_NUM=public_number</usage>  
+              <desc lang="en">add User Station info </desc>  
+              <desc lang="ko">User Station 정보를 추가합니다.</desc>  
+              <example>ADD-EXT NUM=1001 TYPE=PHONE NAME=inticube1001 PASSWORD=100100 SECURITY_CODE=100100 MODEL=2 RECORD=NO TENANT=1 PUBLIC_NUM=15881588</example>  
+              <param name="NUM" datatype="int" min="0" max="65535" option="M" abbr="N"/>  
+     <param name="TYPE" datatype="string" option="M" min="1" max="1024" abbr="T"/>  
+              <param name="NAME" datatype="string" option="M" min="1" max="1024" abbr="NM"/>  
+              <param name="PASSWORD" datatype="string" option="M" abbr="P"/>  
+              <param name="SECURITY_CODE" datatype="string" option="M" abbr="SC"/>  
+              <param name="MODEL" datatype="int" option="M" min="1" max="65535" abbr="M"/>  
+              <param name="RECORD" datatype="string" option="M" abbr="R"/>  
+              <param name="TENANT" datatype="int" option="M" min="1" max="63" abbr="TN"/>  
+     <param name="PUBLIC_NUM" datatype="string" option="M" abbr="PN"/>  
+    </mmi>  
+    <mmi id="3002" level="A" name="CHG-EXT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-EXT NUM|N=ext_num [TYPE|T=PHONE|IVR] [NAME|NM=string] [PASSWORD|P=string] [SECURITY_CODE|SC=string] [MODEL|M=station_model_id] [MONITOR|MON=TRUE|FALSE] [CNIR|C=YES|NO] [RECORD|R=YES|NO] [TENANT|TN=tenant_id] [STATE|ST=IDLE] [PUBLIC_NUM=public_number]</usage>  
+     <desc lang="en">change user-station.</desc>  
+     <desc lang="ko">User Station의 정보를 수정합니다.</desc>  
+     <example>CHG-EXT NUM=1003 TYPE=PHONE NAME=test1003 PASSWORD=100300 SECURITY_CODE=100300 MODEL=1 CNIR=YES R=YES TENANT=1 PUBLIC_NUM=15881588</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="TYPE" datatype="string" option="O" min="1" max="1024" abbr="T"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="1024" abbr="NM"/>  
+     <param name="PASSWORD" datatype="string" option="O" abbr="P"/>  
+     <param name="SECURITY_CODE" datatype="string" option="O" abbr="SC"/>  
+     <param name="MODEL" datatype="int" option="O" min="1" max="65535" abbr="M"/>  
+     <param name="MONITOR" datatype="string" option="O" value="TRUE|FALSE" abbr="MON"/>  
+     <param name="CNIR" datatype="string" option="O" value="YES|NO" abbr="C"/>  
+     <param name="TENANT" datatype="int" option="O" min="1" max="63" abbr="TN"/>  
+     <param name="PUBLIC_NUM" datatype="string" option="M" abbr="PN"/>  
+    </mmi>  
+          <mmi id="3003" level="A" name="DEL-EXT" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-EXT NUM|N=ext_num</usage>  
+              <desc lang="en">delete User-Station info</desc>  
+              <desc lang="ko">User Station 정보를 삭제합니다.</desc>  
+              <example>DEL-EXT NUM=1001</example>  
+              <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+    </mmi>  
+    <mmi id="3004" level="A" name="CHG-BRDG-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-BRDG-CALL EXT|E=ext_num BRDG_CALL|BC=ext_num</usage>  
+     <desc lang="en">change bridging call.</desc>  
+     <desc lang="ko">Bridging Call 설정을 수정합니다.</desc>  
+     <example>CHG-BRDG-CALL EXT=1001 BRDG_CALL=1021</example>  
+     <param name="EXT" datatype="string" option="M" abbr="E"/>  
+     <param name="BRDG_CALL" datatype="string" option="M" abbr="BC"/>  
+    </mmi>  
+    <mmi id="3005" level="A" name="CHG-CALL-FWD" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-CALL-FWD NUM|N=ext_num [TYPE|T=NONE|UNCONDITIONAL|BUSY|NO_ANSWER|BUSY_NO_ANSWER] [INTERNAL|I=num] [EXTERNAL|E=num] [NO_ANSW_TIME|A=num]</usage>  
+     <usage># TYPE이 NONE인 경우 INTERNAL, EXTERNAL값이 초기화 됩니다.</usage>  
+     <desc lang="en">change call-forwording.</desc>  
+     <desc lang="ko">Call Forwording 정보를 수정합니다.</desc>  
+     <example>CHG-CALL-FWD NUM=1001 TYPE=BUSY INTERNAL=1001 EXTERNAL=1002 NO_ANSW_TIME=10</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+     <param name="TYPE" datatype="string" option="O" value="NONE|UNCONDITIONAL|BUSY|NO_ANSWER|BUSY_NO_ANSWER" abbr="T"/>  
+     <param name="INTERNAL" datatype="string" option="O" abbr="I"/>  
+     <param name="EXTERNAL" datatype="string" option="O" abbr="E"/>  
+     <param name="NO_ANSW_TIME" datatype="string" option="O" abbr="A"/>  
+    </mmi>  
+    <mmi id="3006" level="A" name="CHG-CALL-RESTR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-CALL-RESTR NUM|N=ext_num [CALLED|CD=NONE|INTERNAL|PUBLIC|INTERNATIONAL|ALL] [CALLING|CG=NONE|INTERNAL|PUBLIC|INTERNATIONAL|ALL] [LEVEL|L=0~9] [FULLY|F=YES|NO]</usage>  
+     <desc lang="en">change call-restriction.</desc>  
+     <desc lang="ko">Call Restriction 정보를 수정합니다.</desc>  
+     <example>CHG-CALL-RESTR NUM=1001 CALLED=NONE LEVEL=6 FULLY=NO</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+     <param name="CALLED" datatype="string" option="O" value="NONE|INTERNAL|EXTERNAL|PUBLIC|ALL" abbr="CD"/>  
+     <param name="CALLING" datatype="string" option="O" value="NONE|INTERNAL|EXTERNAL|PUBLIC|ALL" abbr="CG"/>  
+     <param name="LEVEL" datatype="string" option="O" min="0" max="9" abbr="L"/>  
+     <param name="FULLY" datatype="string" option="O" value="YES|NO" abbr="F"/>  
+    </mmi>  
+          <mmi id="3007" level="A" name="CHG-SVC-RESTR" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>CHG-SVC-RESTR NUM|N=ext_num [OBSERVED(OD)|OBSERVING(OG)|PRI_QUE(PQ)|AGENT_SKILL(AS)|REMOTE_LOGOUT(RL)=YES|NO] [AUTO_ANSWER(AA)=ALLOW|RESTR|IGNORE] </usage>  
+              <usage>[CALL_BRIDGED(CB)|PICKUP(P)=ALLOW|RESTR|DENY]</usage>  
+              <desc lang="en">change service-restriction.</desc>  
+              <desc lang="ko">User Station 의 Service Restriction 정보를 수정합니다. </desc>  
+              <example>CHG-SVC-RESTR NUM=1001 OBSERVED=NO AGENT_SKILL=NO PICKUP=ALLOW</example>  
+              <param name="NUM" datatype="string" option="M" min="1" max="65535" abbr="N"/>  
+              <param name="OBSERVED" datatype="string" option="O" value="YES|NO" abbr="OD"/>  
+              <param name="OBSERVING" datatype="string" option="O" value="YES|NO" abbr="OG"/>  
+              <param name="PRI_QUE" datatype="string" option="O" value="YES|NO" abbr="PQ"/>  
+              <param name="AGENT_SKILL" datatype="string" option="O" value="YES|NO" abbr="AS"/>  
+              <param name="REMOTE_LOGOUT" datatype="string" option="O" value="YES|NO" abbr="RL"/>  
+              <param name="AUTO_ANSWER" datatype="string" option="O" value="ALLOW|RESTR|IGNORE" abbr="AA"/>  
+              <param name="CALL_BRIDGED" datatype="string" option="O" value="ALLOW|RESTR|DENY" abbr="CB"/>  
+              <param name="PICKUP" datatype="string" option="O" value="ALLOW|RESTR|DENY" abbr="P"/>  
+    </mmi>  
+    <mmi id="3008" level="A" name="CHG-FINDME" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># ADR CONDITION 변경 시</usage>  
+     <usage>CHG-FINDME NUM|N=ext_num [UNCOND(U)|ACTIVE(A)|BUSY(B)|NO_ANSWER(NA)=NONE|BOTH|INTERNAL|EXTERNAL] [NO_ANSWER_TIMER(NT)=number] [ADR_TYPE(AT)=SEQUENTIAL|PARALLEL]</usage>  
+     <usage># ADR 변경(기존 ADR 설정을 해제하고 싶다면 TYPE을 NONE으로 변경)</usage>  
+     <usage>CHG-FINDME NUM|N=ext_num [ID|I=id] [TYPE|T=NONE|TEL|VDN] [NUMBER|NB=tel_num]</usage>  
+     <desc lang="en">change find-me.</desc>  
+     <desc lang="ko">Find-Me 정보를 수정합니다.</desc>  
+     <example>CHG-FINDME NUM=1001 UNCOND=BOTH NO_ANSWER_TIMER=10 ADR_TYPE=PARALLEL</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="UNCOND" datatype="string" option="O" value="NONE|BOTH|INTERNAL|EXTERNAL" abbr="U"/>  
+     <param name="ACTIVE" datatype="string" option="O" value="NONE|BOTH|INTERNAL|EXTERNAL" abbr="A"/>  
+     <param name="BUSY" datatype="string" option="O" value="NONE|BOTH|INTERNAL|EXTERNAL" abbr="B"/>  
+     <param name="NO_ANSWER" datatype="string" option="O" value="NONE|BOTH|INTERNAL|EXTERNAL" abbr="NA"/>  
+     <param name="NO_ANSWER_TIMER" datatype="int" option="O" abbr="NT"/>  
+     <param name="ADR_TYPE" datatype="string" option="O" value="SEQUENTIAL|PARALLEL" abbr="AT"/>  
+     <param name="ID" datatype="int" option="O" min="0" max="7" abbr="I"/>  
+     <param name="TYPE" datatype="string" option="O" value="NONE|TEL|VDN" abbr="T"/>  
+     <param name="NUMBER" datatype="string" option="O" abbr="NB"/>  
+    </mmi>  
+    <mmi id="3009" level="A" name="CHG-INTC-NUM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-INTC-NUM EXT|E=ext_num INTERCOM_I=ext_num</usage>  
+     <desc lang="en">change intercom.</desc>  
+     <desc lang="ko">Intercom 정보를 수정합니다.</desc>  
+     <example>CHG-INTC-NUM EXT=1001 INTERCOM=1021</example>  
+     <param name="EXT" datatype="string" option="M" abbr="E"/>  
+     <param name="INTERCOM" datatype="string" option="M" abbr="I"/>  
+    </mmi>  
+    <mmi id="3010" level="A" name="CHG-RING-ALSO" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-RING-ALSO EXT|E=ext_num RING_ALSO|RA=ext_num</usage>  
+     <desc lang="en">change ring-also.</desc>  
+     <desc lang="ko">Ring Also 정보를 수정합니다.</desc>  
+     <example>CHG-RING-ALSO EXT=1001 RING_ALSO=1021</example>  
+     <param name="EXT" datatype="string" option="M" abbr="E"/>  
+     <param name="RING_ALSO" datatype="string" option="M" abbr="RA"/>  
+    </mmi>  
+    <mmi id="3011" level="C" name="SHOW-CALL-FWD" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-CALL-FWD NUM=num|ALL</usage>  
+     <desc lang="en">Call Forwarding.</desc>  
+     <desc lang="ko">Call Forwarding의 정보를 조회합니다.</desc>  
+     <example>SHOW-CALL-FWD NUM=ALL</example>  
+     <example>SHOW-CALL-FWD NUM=1011</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="3012" level="C" name="CLR-CALLST" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CLR-CALLST</usage>  
+     <desc lang="en">clear a abnormal call state of user-station</desc>  
+     <desc lang="ko">user-station의 비정상 call state를 해제합니다.</desc>  
+     <example>CLR-CALLST NUM=1001 or CLR-CALLST NUM=ALL</example>  
+    </mmi>  
+          <mmi id="3013" level="A" name="DEL-DLG" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+              <usage>DEL-DLG TYPE|T=INLEG(IN)|OUTLEG(OUT) ID|I=dialog_id|ALL</usage>  
+              <desc lang="en">delete Dialog info </desc>  
+              <desc lang="ko">Dialog 정보를 삭제합니다</desc>  
+              <example>DEL-DLG TYPE=IN ID=ALL</example>  
+              <example>DEL-DLG T=OUTLEG I=3</example>  
+              <param name="TYPE" datatype="string" min="1" max="1024" option="M" abbr="T"/>  
+              <param name="ID" datatype="string" min="1" max="65535" option="M" abbr="I"/>  
+          </mmi>  
+    <mmi id="3014" level="A" name="DEL-UDLG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>DEL-UDLG NUM|N=ALL|num</usage>  
+     <desc lang="ko">UACM Dialog 정보를 삭제합니다</desc>  
+     <example>DEL-UDLG NUM=ALL</example>  
+     <example>DEL-UDLG N=3</example>  
+     <param name="NUM" datatype="string" min="1" max="65535" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="3015" level="C" name="SHOW-USER" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-USER NUM|N=user_station_num|ALL</usage>  
+     <desc lang="en">show user-station.</desc>  
+     <desc lang="ko">User Station의 정보를 조회합니다.</desc>  
+     <example>SHOW-USER NUM=1001</example>  
+     <example>SHOW-USER NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" value="ALL" min="0" max="65535" abbr="N"/>  
+    </mmi>  
+    <mmi id="3016" level="C" name="SHOW-IVR" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-IVR NUM|N=ivr_num|ALL</usage>  
+     <desc lang="en">show ivr.</desc>  
+    <desc lang="ko">ivr의 정보를 조회합니다.</desc>  
+    <example>SHOW-IVR NUM=1001</example>  
+    <example>SHOW-IVR NUM=ALL</example>  
+    <param name="NUM" datatype="string" option="M" value="ALL" min="0" max="65535" abbr="N"/>  
+    </mmi>  
+   </category>  
+   <category name="ROUTING">  
+    <mmi id="4000" level="C" name="SHOW-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-RTE NUM|N=num|ALL</usage>  
+     <desc lang="ko">Route 정보를 조회합니다.</desc>  
+     <example>SHOW-RTE NUM=ALL</example>  
+     <example>SHOW-RTE NUM=2</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="4001" level="A" name="ADD-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-RTE NUM|N=route_id(0~99) TENANT|T=tenant_id NAME|NM=string NET_TYPE|NT=EXT|PUB|PRIV</usage>  
+     <desc lang="ko">Route 정보를 추가합니다.</desc>  
+     <example>ADD-RTE NUM=99 TENANT=1 NAME=inticube NET_TYPE=PUB</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="1024" abbr="N"/>  
+     <param name="TENANT" datatype="int" option="M" min="0" max="63" abbr="T"/>  
+     <param name="NAME" datatype="string" option="M" min="1" max="32" abbr="NM"/>  
+     <param name="NET_TYPE" datatype="string" option="M" min="1" max="5" value="EXT|PUB|PRIV" abbr="NT"/>  
+    </mmi>  
+    <mmi id="4002" level="A" name="CHG-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-RTE NUM|N=route_id [NAME|NM=string] [TENANT|T=tenant_id] [RTE_TYPE|RT=SIP|ISDN|CO|DID|TIE] [NET_TYPE|NT=EXT|PUB|PRIV] [DIRECTION|D=NONE|IN|OUT|BOTH] [CALLING_DELETE|CGD=num]</usage>  
+     <usage>                     [CALLING_INSERT|CGI=string] [CALLED_DELETE|CDD=num] [CALLED_INSERT|CDI=string] [RESTR_LEVEL|RL=level]</usage>  
+     <desc lang="ko">Route 정보를 수정합니다.</desc>  
+     <example>CHG-RTE NUM=1 TENANT=1 RTE_TYPE=SIP CALLING_DELETE=3 CALLED_INSERT=34 CALLING_INSERT=NULL RESTR_LEVEL=5</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="1024" abbr="N"/>  
+     <param name="TENANT" datatype="int" option="O" min="0" max="63" abbr="T"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="32" abbr="NM"/>  
+     <param name="RTE_TYPE" datatype="int" option="O" min="1" max="1024" value="SIP|ISDN|CO|DID|TIE" abbr="RT"/>  
+     <param name="NET_TYPE" datatype="string" option="O" min="1" max="5" value="EXT|PUB|PRIV" abbr="NT"/>  
+     <param name="DIRECTION" datatype="string" option="O" min="1" max="32" value="IN|OUT|BOTH" abbr="D"/>  
+     <param name="CALLING_DELETE" datatype="int" option="O" min="1" max="65535" abbr="CGD"/>  
+     <param name="CALLING_INSERT" datatype="string" option="O" abbr="CGI"/>  
+     <param name="CALLED_DELETE" datatype="int" option="O" min="1" max="65535" abbr="CDD"/>  
+     <param name="CALLED_INSERT" datatype="string" option="O" abbr="CDI"/>  
+     <param name="RESTR_LEVEL" datatype="string" option="O" min="0" max="9" abbr="RL"/>  
+    </mmi>  
+    <mmi id="4003" level="A" name="DEL-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-RTE NUM|N=route_id</usage>  
+     <desc lang="ko">Route 정보를 삭제합니다.</desc>  
+     <example>DEL-RTE NUM=99</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+    </mmi>  
+    <mmi id="4004" level="C" name="SHOW-RTE-SIG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-RTE-SIG NUM|N=rte_sig_num|ALL</usage>  
+     <desc lang="ko">Route Signal 정보를 조회합니다.</desc>  
+     <example>SHOW-RTE-SIG NUM=ALL</example>  
+     <example>SHOW-RTE-SIG NUM=1</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+    </mmi>  
+          <mmi id="4005" level="A" name="CHG-RTE-SIG" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-RTE-SIG NUM|N=route_id [SIG_TYPE|ST=NONE|SIP] [TRANS_TYPE|TT=NONE|TCP|UDP] [DOMAIN|D=string] [PROXY_ADDRESS|PA=ip_address] [PORT|P=port_num]</usage>  
+     <usage>[SESSION_TIMER_USE|STU=YES|NO] [SESSION_TIMER|STR=time(sec)] [DTMF_METHOD|DM=NONE|INFO|BYPASS|RFC2833] [REPLACE|RP=NONE|FROM|TO|BOTH] [DEP_RTE|DR=route_id|-1]</usage>  
+     <usage>[USER_ID|ID=id] [USER_PWD|PWD=password_string] [SVR_REG_REQ|RR=YES|NO] [REG_USER|RUS=regi_user] [REG_URI|RUR=register_uri]</usage>  
+     <desc lang="en">change Route Signal Info </desc>  
+     <desc lang="ko">Route Signal 정보를 수정합니다.</desc>  
+     <example>CHG-RTE-SIG NUM=1 SIG_TYPE=SIP SESSION_TIMER_USE=YES</example>  
+     <example>CHG-RTE-SIG N=2 TT=UDP DM=INFO R=BOTH</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="SIG_TYPE" datatype="string" option="O" abbr="ST"/>  
+     <param name="TRANS_TYPE" datatype="string" option="O" abbr="TT"/>  
+     <param name="DOMAIN" datatype="string" option="O" abbr="D"/>  
+     <param name="PROXY_ADDRESS" datatype="string" option="O" abbr="PA"/>  
+     <param name="PORT" datatype="int" option="O" abbr="P"/>  
+     <param name="SESSION_TIMER_USE" datatype="string" option="O" abbr="STU"/>  
+     <param name="SESSION_TIMER" datatype="string" option="O" abbr="STR"/>  
+     <param name="DTMF_METHOD" datatype="string" option="O" abbr="DM"/>  
+     <param name="REPLACE" datatype="string" option="O" abbr="RP"/>  
+     <param name="DEP_RTE" datatype="int" option="O" abbr="DR"/>  
+     <param name="USER_ID" datatype="string" option="O" abbr="ID"/>  
+     <param name="USER_PWD" datatype="string" option="O" abbr="PDW"/>  
+     <param name="SVR_REG_REQ" datatype="string" option="O" abbr="RR"/>  
+     <param name="REG_USER" datatype="string" option="O" abbr="RUS"/>  
+     <param name="REG_URI" datatype="string" option="O" abbr="RUR"/>  
+          </mmi>  
+    <mmi id="4006" level="C" name="SHOW-RTE-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-RTE-GRP NUM|N=num|ALL</usage>  
+     <desc lang="ko">Route Group 정보를 조회합니다.</desc>  
+     <example>SHOW-RTE-GRP NUM=ALL</example>  
+     <example>SHOW-RTE-GRP NUM=2</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="4007" level="A" name="ADD-RTE-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-RTE-GRP NUM|N=group_id NAME|NM=string ROUTE_ID|R=rte_id INSERT|I=추가할문자 DELETE|D=삭제할숫자수</usage>  
+     <usage>NAME, INSERT인 경우 값을 넣고 싶지 않은 경우 INSERT=NULL과 같은 형식을 사용한다.</usage>  
+     <desc lang="ko">ROUTE GROUP 정보를 추가합니다.</desc>  
+     <example>ADD-RTE-GRP NUM=1 NAME=public_all ROUTE_ID=1 DELETE=1 INSERT="002"</example>  
+     <example>ADD-RTE-GRP NUM=13 NAME=public_all ROUTE_ID=20</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="NAME" datatype="string" option="M" min="1" max="1024" abbr="NM"/>  
+     <param name="ROUTE_ID" datatype="int" option="M" abbr="R"/>  
+     <param name="INSERT" datatype="int" option="O" abbr="I"/>  
+     <param name="DELETE" datatype="int" option="O" abbr="D"/>  
+    </mmi>  
+    <mmi id="4008" level="A" name="CHG-RTE-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-RTE-GRP NUM|N=group_id [NAME|NM=string] [DELETE|D=num] [INSERT|I=string] [ROUTE_ID|R=route_num] [AR|A=ar_num] [RNUM|RN=rte_num]</usage>  
+     <desc lang="ko">Route Group 정보를 수정합니다.</desc>  
+     <example>CHG-RTE-GRP NUM=1 NAME=test1 DELETE=3 INSERT="12"</example>  
+     <example>CHG-RTE-GRP NUM=1 AR=1 RN=38"</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="NAME" datatype="string" option="O" abbr="NM"/>  
+     <param name="ROUTE_ID" datatype="int" option="O" abbr="R"/>  
+     <param name="DELETE" datatype="int" option="O" abbr="D"/>  
+     <param name="INSERT" datatype="int" option="O" abbr="I"/>  
+     <param name="AR" datatype="int" min="1" max="9" option="O" abbr="A"/>  
+     <param name="RNUM" datatype="int" option="O" abbr="RN"/>  
+    </mmi>  
+    <mmi id="4009" level="A" name="DEL-RTE-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-RTE-GRP NUM|N=group_id</usage>  
+     <desc lang="ko">Route Group 정보를 삭제합니다.</desc>  
+     <example>DEL-RTE-GRP NUM=1</example>  
+     <param name="NUM" datatype="int" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="4010" level="C" name="SHOW-NUM-ANAL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-NUM-ANAL</usage>  
+     <desc lang="ko">착신 번호별 Route Group Anal 정보를 조회합니다.</desc>  
+     <example>SHOW-NUM-ANAL</example>  
+    </mmi>  
+          <mmi id="4011" level="A" name="ADD-NUM-ANAL" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>ADD-NUM-ANAL PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len GROUP_ID|G=rte_grp_id</usage>  
+              <desc lang="en">add Route Group Anal info by termination number</desc>  
+              <desc lang="ko">착신 번호별 Route Group Anal 정보를 추가합니다.</desc>  
+              <example>ADD-NUM-ANAL PREFIX="00700" MIN_LEN=4 MAX_LEN=5 GROUP_ID=1</example>  
+              <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+              <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+              <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+              <param name="GROUP_ID" datatype="int" option="M" min="1" max="65535" abbr="G"/>  
+          </mmi>  
+    <mmi id="4012" level="A" name="CHG-NUM-ANAL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-NUM-ANAL PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len GROUP_ID|G=route_grp_id</usage>  
+     <desc lang="ko">착신 번호별 Route Group Anal 정보를 수정합니다.</desc>  
+     <example>CHG-NUM-ANAL PREFIX="00700" MIN_LEN=4 MAX_LEN=5 GROUP_ID=2</example>  
+     <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+     <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+     <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+     <param name="GROUP_ID" datatype="int" option="M" min="1" max="65535" abbr="G"/>  
+    </mmi>  
+          <mmi id="4013" level="A" name="DEL-NUM-ANAL" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-NUM-ANAL PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len</usage>  
+              <desc lang="en">delete Num Anal info </desc>  
+              <desc lang="ko">착신 번호별 Route Group Anal 정보를 삭제합니다.</desc>  
+              <example>DEL-NUM-ANAL PREFIX="7007" MIN_LEN=2 MAX_LEN=4</example>  
+              <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+              <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+              <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+          </mmi>  
+    <mmi id="4014" level="C" name="SHOW-NUM-CONV" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-NUM-CONV</usage>  
+     <desc lang="ko">착신 번호별 변환 규칙 정보를 조회합니다.</desc>  
+     <example>SHOW-NUM-CONV</example>  
+    </mmi>  
+    <mmi id="4015" level="A" name="ADD-NUM-CONV" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-NUM-CONV PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len INSERT|I=추가할문자 DELETE|D=삭제할숫자수 TYPE|T=EXT|PUB|PRIV</usage>  
+     <desc lang="ko">착신 번호별 변환 규칙 정보를 추가합니다.</desc>  
+     <example>ADD-NUM-CONV PREFIX="#2" MIN_LEN=4 MAX_LEN=5 D=2 I="12" TYPE=EXT</example>  
+     <example>ADD-NUM-CONV PREFIX="#2" MIN_LEN=4 MAX_LEN=5 I="12" TYPE=EXT</example>  
+     <example>ADD-NUM-CONV PREFIX="#2" MIN_LEN=4 MAX_LEN=5 D=2 TYPE=EXT</example>  
+     <example>ADD-NUM-CONV PREFIX="#2" MIN_LEN=4 MAX_LEN=5 TYPE=EXT</example>  
+     <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+     <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+     <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+     <param name="INSERT" datatype="int" option="O" min="1" max="65535" abbr="I"/>  
+     <param name="DELETE" datatype="int" option="O" min="1" max="65535" abbr="D"/>  
+     <param name="NET_TYPE" datatype="string" option="M" value="EXT|PUB|PRIV" abbr="T"/>  
+    </mmi>  
+    <mmi id="4016" level="A" name="CHG-NUM-CONV" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>                                                                                                       
+     <usage>CHG-NUM-CONV PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len [DELETE|D=num] [INSERT|I=num] [TYPE|T=EXT|PUB|PRIV]</usage>                                            
+     <usage>INSERT인 경우 값을 넣고 싶지 않으면 INSERT="-"와 같은 형식을 사용한다.</usage>                                                                                              
+     <desc lang="ko">착신 번호별 변환 규칙 정보를 수정합니다.</desc>                                                                                                                    
+     <example>CHG-NUM-CONV PREFIX="902" MIN_LEN=4 MAX_LEN=5 DELETE=1 INSERT="-" TYPE=PUB</example>                                                                                      
+     <param name="PREFIX" datatype="string" option="M" abbr="P"/>                                                                                                                       
+     <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>                                                                                                   
+     <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>                                                                                                   
+     <param name="INSERT" datatype="int" option="O" min="1" max="65535" abbr="I"/>                                                                                                      
+     <param name="DELETE" datatype="int" option="O" min="1" max="65535" abbr="D"/>                                                                                                      
+     <param name="NET_TYPE" datatype="string" option="O" value="EXT|PUB|PRIV" abbr="T"/>                                                                                                
+    </mmi>  
+          <mmi id="4017" level="A" name="DEL-NUM-CONV" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-NUM-CONV PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len</usage>  
+              <desc lang="ko">delete Num Conv info </desc>  
+              <desc lang="ko">착신 번호별 변환 규칙 정보를 삭제합니다.</desc>  
+              <example>DEL-NUM-CONV PREFIX="#2" MIN_LEN=2 MAX_LEN=4</example>  
+              <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+              <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+              <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+          </mmi>  
+    <mmi id="4018" level="C" name="SHOW-DIALPLAN" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-DIALPLAN</usage>  
+     <desc lang="ko">Dial Plan 정보를 조회합니다.</desc>  
+     <example>SHOW-DIALPLAN</example>  
+    </mmi>  
+          <mmi id="4019" level="A" name="ADD-DIALPLAN" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>ADD-DIALPLAN PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len NET_TYPE|T=PUB|PRIV|FAC|EXT_USER|EXT_VDN|EXT_MMC|EXT_AGNT</usage>  
+              <desc lang="en">add Dial Plan info</desc>  
+              <desc lang="ko">Dial Plan 정보를 추가합니다.</desc>  
+              <example>ADD-DIALPLAN P="#2" MIN=4 MAX=5 T=FAC</example>  
+              <example>ADD-DIALPLAN PREFIX="02" MIN_LEN=10 MAX_LEN=11 NET_TYPE=PUB</example>  
+              <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+              <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+              <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+              <param name="NET_TYPE" datatype="string" option="M" value="PUB|PRIV|FAC|EXT_USER|EXT_VDN|EXT_MMC|EXT_AGNT" abbr="T"/>  
+          </mmi>  
+    <mmi id="4020" level="A" name="CHG-DIALPLAN" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-DIALPLAN PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len [NET_TYPE|T=INT|PUB|PRIV|FAC|EXT_USER|EXT_VDN|EXT_MMC|EXT_AGNT]</usage>  
+     <desc lang="ko">Dial Plan 정보를 수정합니다.</desc>  
+     <example>CHG-DIALPLAN PREFIX="#2" MIN_LEN=4 MAX_LEN=5 NET_TYPE=FAC</example>  
+     <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+     <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+     <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+     <param name="NET_TYPE" datatype="string" option="M" value="INT|PUB|PRIV|FAC|EXT_USER|EXT_VDN|EXT_MMC|EXT_AGNT" abbr="T"/>  
+    </mmi>  
+          <mmi id="4021" level="A" name="DEL-DIALPLAN" password="FALSE">  
+              <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+              <usage>DEL-DIALPLAN PREFIX|P=prefix MIN_LEN|MIN=min_len MAX_LEN|MAX=max_len</usage>  
+              <desc lang="en">dekete Dial Plan info </desc>  
+              <desc lang="ko">DIAL PLAN 정보를 삭제합니다.</desc>  
+              <example>DEL-DIALPLAN PREFIX="#2" MIN_LEN=2 MAX_LEN=3</example>  
+              <param name="PREFIX" datatype="string" option="M" abbr="P"/>  
+              <param name="MIN_LEN" datatype="int" option="M" min="1" max="65535" abbr="MIN"/>  
+              <param name="MAX_LEN" datatype="int" option="M" min="1" max="65535" abbr="MAX"/>  
+          </mmi>  
+    <mmi id="4022" level="A" name="CHG-OBSG-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-OBSG-CALL EXT|E=EXT_NUM OBSG_CALL|OC=EXT_NUM</usage>  
+     <usage># 기존에 OBSG_CALL 내선번호를 제거하기 위해서는 NULL을 입력</usage>  
+     <desc lang="ko">Observing Call 정보를 수정합니다.</desc>  
+     <example>CHG-OBSG-CALL EXT=1001 OBSG_CALL=1021</example>  
+     <param name="EXT" datatype="int" option="M" min="1" max="65535" abbr="E"/>  
+     <param name="OBSG_CALL" datatype="int" option="M" min="1" max="65535" abbr="OC"/>  
+    </mmi>  
+    <mmi id="4023" level="A" name="CHG-DND" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-DND NUM|N=ext_num DND|D=YES|NO</usage>  
+     <desc lang="ko">DND 정보를 수정합니다.</desc>  
+     <example>CHG-DND NUM=1001 DND=YES</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="DND" datatype="int" option="M" value="YES|NO" abbr="D"/>  
+    </mmi>  
+   </category>  
+   <category name="ACD">  
+    <mmi id="5000" level="C" name="SHOW-AGENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-AGENT NUM|N=ALL|agent_num</usage>  
+     <desc lang="ko">AGENT 정보를 조회합니다.</desc>  
+     <example>SHOW-AGENT NUM=4500</example>  
+     <example>SHOW-AGENT NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="5001" level="C" name="ADD-AGENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-AGENT NUM|N=agent_num NAME|NM=name PASS|P=password TENANT|T=tenant</usage>  
+     <desc lang="ko">AGENT 정보를 추가합니다.</desc>  
+     <example>ADD-AGENT NUM=4500 NAME=AGT_4500 PASS=123456 TENANT=1</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="13" abbr="N"/>  
+     <param name="NAME" datatype="string" option="M" min="1" max="23" abbr="NM"/>  
+     <param name="PASS" datatype="string" option="M" min="6" max="6" abbr="P"/>  
+     <param name="TENANT" datatype="int" option="M" min="1" max="63" abbr="T"/>  
+    </mmi>  
+    <mmi id="5002" level="C" name="CHG-AGENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-AGENT NUM|N=agent_num [NAME|NA=name] [PASS|P=password] [GRP|G=default_group(main_skill)]</usage>  
+     <desc lang="ko">AGENT 정보를 수정합니다.</desc>  
+     <example>CHG-AGENT NUM=4500 NAME=AGT_4500 PASS=123456 GRP=1</example>  
+     <param name="NUM" datatype="string" min="1" option="M" max="13" abbr="N"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="23" abbr="NM"/>  
+     <param name="PASS" datatype="string" option="O" min="6" max="6" abbr="P"/>  
+     <param name="GRP" datatype="int" option="O" min="1" max="50" abbr="G"/>  
+    </mmi>  
+    <mmi id="5003" level="C" name="DEL-AGENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-AGENT NUM=agent_num</usage>  
+     <desc lang="ko">AGENT 정보를 삭제합니다.</desc>  
+     <example>DEL-AGENT NUM=4500</example>  
+     <param name="NUM" datatype="string" min="1" max="13" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="5004" level="C" name="SHOW-ACD-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-ACD-GRP NUM|N=grp_num|ALL</usage>  
+     <desc lang="ko">ACD GROUP 정보를 조회합니다.</desc>  
+     <example>SHOW-ACD-GRP NUM=1</example>  
+     <example>SHOW-ACD-GRP NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" value="ALL|1~50" abbr="N"/>  
+    </mmi>  
+    <mmi id="5005" level="C" name="ADD-ACD-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-ACD-GRP NUM|N=grp_num NAME|NM=name SKILL|S=Y|N QUEUE|Q=Y|N TERM|TM=termination TENANT|T=term_id [ANNC1|AN1=annc_1st] [ANNC2|AN2=annc_2th] [RONA_TO|R=rona] [SUPER|SP=supervisor]</usage>  
+     <desc lang="ko">ACD GROUP 정보를 추가합니다.</desc>  
+     <example>ADD-ACD-GRP NUM=1 NAME=AGENCY SKILL=Y QUEUE=Y ANNC1=21 ANNC2=22 TERM=7000 RONA_TO=1577 SUPER=1064 TENANT=1</example>  
+     <example>ADD-ACD-GRP NUM=1 NAME=AGENCY SKILL=N QUEUE=N TERM=7000 TENANT=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="600" abbr="N"/>  
+     <param name="NAME" datatype="string" option="M" min="1" max="56" abbr="NM"/>  
+     <param name="SKILL" datatype="string" option="M" value="Y|N" abbr="S"/>  
+     <param name="QUEUE" datatype="string" option="M" value="Y|N" abbr="Q"/>  
+     <param name="ANNC1" datatype="int" option="0" min="1" max="100" abbr="AN1"/>  
+     <param name="ANNC2" datatype="int" option="0" min="1" max="100" abbr="AN2"/>  
+     <param name="TERM" datatype="string" option="M" min="1" max="13" abbr="TM"/>  
+     <param name="RONA_TO" datatype="string" option="O" min="1" max="13" abbr="R"/>  
+     <param name="SUPER" datatype="string" option="O" min="1" max="13" abbr="SP"/>  
+     <param name="TENANT" datatype="int" min="1" max="63" option="M" abbr="T"/>  
+    </mmi>  
+    <mmi id="5006" level="C" name="CHG-ACD-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-ACD-GRP NUM|N=grp_num [NAME|NM=name] [SKILL|Y=Y|N] [STRATEGY|ST=DIR|MIA|LOA|MIA-S|LOA-S] [ACD_WEIGHT_TYPE|AW=SKILL|TIME] [WEIGHT|WT=time(sec)]</usage>  
+     <usage>[QUEUE|Q]=[Y|N] [QUEUE_SIZE|QS=size] [ANNC1|AN1=annc_1st] [ANNC2|AN2=annc_2th] [PLAY_CNT|PC=replay_count] [SUPER|SP=supervisor] [TERM|T=termination]</usage>  
+     <usage>[WAC_WAIT_TIME|WT=time(sec)] [QUEUE_WAIT_TIME|QT=time(sec)] [RONA_TIMEOUT|RT=time(sec)] [RONA_TO|R=rona] [SVC_LEVEL|SVC=time(sec)] [PASS|P=Y|N] [TENANT|T=tenant]</usage>  
+     <usage># 항목들이 OPTION이며 SKILL 유무에 따라 종속성이 있습니다.</usage>  
+     <usage># SKILL=N 일때 STRATEGY, ACD_WEIGHT_TYPE, WEIGHT, RONA, RONA_TIMEOUT, SUPER, WAC_WAIT_TIME, SVC_LEVEL 옵션을 사용할수 없습니다.</usage>  
+     <desc lang="ko">ACD GROUP 정보를 수정합니다.</desc>  
+     <desc lang="ko">ACD Group에 ACD 정보를 수정합니다.</desc>  
+     <example>CHG-ACD-GRP NUM=1 NAME=MOBILE SKILL=Y QUEUE=Y ANNC1=21 ANNC2=22 SUPER=1045 TERM=7000 RONA=1577 TENANT=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="600" abbr="N"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="56" abbr="NM"/>  
+     <param name="SKILL" datatype="string" option="O" value="Y|N" abbr="S"/>  
+     <param name="STRATEGY" datatype="string" option="O" value="DIR|MIA|LOA|MIA-S|LOA-S" abbr="ST"/>  
+     <param name="ACD_WEIGHT_TYPE" datatype="string" option="O" value="SKILL|TIME" abbr="AW"/>  
+     <param name="WEIGHT" datatype="int" option="O" min="0" max="600" abbr="WT"/>  
+     <param name="QUEUE" datatype="string" option="O" value="Y|N" abbr="Q"/>  
+     <param name="QUEUE_SIZE" datatype="int" option="O" min="1" max="1000" abbr="QS"/>  
+     <param name="ANNC1" datatype="int" option="O" min="1" max="100" abbr="AN1"/>  
+     <param name="ANNC2" datatype="int" option="O" min="1" max="100" abbr="AN2"/>  
+     <param name="PLAY_CNT" datatype="int" option="O" min="-1" max="10" abbr="PC"/>  
+     <param name="SUPER" datatype="string" min="1" max="13" option="O" abbr="SP"/>  
+     <param name="TERM" datatype="string" min="1" max="13" option="O" abbr="TM"/>  
+     <param name="WAC_WAIT_TIME" datatype="int" min="1" max="300" option="O" abbr="WT"/>  
+     <param name="QUEUE_WAIT_TIME" datatype="int" min="1" max="86400" option="O" abbr="QW"/>  
+     <param name="RONA_TIMEOUT" datatype="int" min="1" max="60" option="O" abbr="RT"/>  
+     <param name="RONA_TO" datatype="string" min="1" max="13" option="O" abbr="R"/>  
+     <param name="SVC_LEVEL" datatype="int" min="1" max="65535" option="O" abbr="SVC"/>  
+     <param name="TENANT" datatype="int" min="1" max="63" option="M" abbr="T"/>  
+    </mmi>  
+    <mmi id="5007" level="C" name="DEL-ACD-GRP" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-ACD-GRP NUM|N=grp_num</usage>  
+     <desc lang="ko">ACD Group 정보를 삭제합니다.</desc>  
+     <example>DEL-ACD-GRP NUM=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="600" abbr="N"/>  
+    </mmi>  
+    <mmi id="5008" level="C" name="ADD-SKILL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-SKILL NUM|N=agent_num [SKILL|S=skill_num] [LEVEL|L=skill_level]</usage>  
+     <desc lang="ko">상담원 SKILL list에 SKILL 정보를 추가합니다.</desc>  
+     <example>ADD-SKILL NUM=4500 SKILL=1 LEVEL=4</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="13" abbr="N"/>  
+     <param name="SKILL" datatype="int" option="M" min="1" max="600" abbr="S"/>  
+     <param name="LEVEL" datatype="int" option="M" min="1" max="5" abbr="L"/>  
+    </mmi>  
+    <mmi id="5009" level="C" name="CHG-SKILL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-SKILL NUM|N=agent_num [SKILL|S=skill_num] [LEVEL|L=skill_level]</usage>  
+     <desc lang="ko">상담원 SKILL 설정 정보를 수정합니다.</desc>  
+     <example>CHG-SKILL NUM=4500 SKILL=1 LEVEL=4</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="13" abbr="N"/>  
+     <param name="SKILL" datatype="int" option="M" min="1" max="600" abbr="S"/>  
+     <param name="LEVEL" datatype="int" option="M" min="1" max="5" abbr="L"/>  
+    </mmi>  
+    <mmi id="5010" level="C" name="DEL-SKILL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># AGENT 전체 SKILL 삭제 시</usage>  
+     <usage>DEL-SKILL NUM|N=agent_num</usage>  
+     <usage># AGENT 특정 SKILL 삭제 시</usage>  
+     <usage>DEL-SKILL NUM|N=agent_num SKILL|S=skill_num</usage>  
+     <desc lang="ko">SKILL 설정 정보를 삭제합니다.</desc>  
+     <example>DEL-SKILL NUM=4500 SKILL=1</example>  
+     <example>DEL-SKILL NUM=4500</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="13" abbr="N"/>  
+     <param name="SKILL" datatype="int" option="M" min="1" max="600" abbr="S"/>  
+    </mmi>  
+    <mmi id="5011" level="C" name="ADD-GRP-EXT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-GRP-EXT NUM|N=grp_num EXT|E=user_station</usage>  
+     <desc lang="ko">ACD GROUP에 내선을 추가합니다.</desc>  
+     <example>ADD-GRP-EXT NUM=1 EXT=1045</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="EXT" datatype="string" option="M" abbr="E"/>  
+    </mmi>  
+    <mmi id="5012" level="C" name="DEL-GRP-EXT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-GRP-EXT NUM|N=grp_num EXT|E=user_station</usage>  
+     <desc lang="ko">ACD GROUP의 내선을 삭제합니다.</desc>  
+     <example>DEL-GRP-EXT NUM=1 EXT=1045</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="50" abbr="N"/>  
+     <param name="EXT" datatype="string" option="M" min="1" max="13" abbr="E"/>  
+    </mmi>  
+    <mmi id="5014" level="C" name="SHOW-REASON-CODE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-REASON-CODE CODE|C=code|ALL</usage>  
+     <desc lang="ko">Reason Code 정보를 조회합니다.</desc>  
+     <example>SHOW-REASON-CODE CODE=ALL</example>  
+     <example>SHOW-REASON-CODE CODE=2</example>  
+     <param name="CODE" datatype="int" option="M" min="1" max="65535" abbr="C"/>  
+    </mmi>  
+    <mmi id="5015" level="C" name="ADD-REASON-CODE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-REASON-CODE CODE|C=code_num DESC|D=description</usage>  
+     <desc lang="ko">Reason Code 정보를 추가합니다.</desc>  
+     <example>ADD-REASON-CODE CODE=3 DESC=T_03</example>  
+     <param name="CODE" datatype="int" option="M" min="0" max="99" abbr="C"/>  
+     <param name="DESC" datatype="string" option="M" min="1" max="19" abbr="D"/>  
+    </mmi>  
+    <mmi id="5016" level="C" name="CHG-REASON-CODE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-REASON-CODE CODE|C=code_num DESC|D=description</usage>  
+     <desc lang="ko">Reason Code 정보를 수정합니다.</desc>  
+     <example>CHG-REASON-CODE CODE=3 DESC=T_03</example>  
+     <param name="CODE" datatype="int" option="M" min="0" max="99" abbr="C"/>  
+     <param name="DESC" datatype="string" option="M" min="1" max="19" abbr="D"/>  
+    </mmi>  
+    <mmi id="5017" level="C" name="DEL-REASON-CODE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-REASON-CODE CODE|C=code_num</usage>  
+     <desc lang="ko">Reason Code 정보를 삭제합니다.</desc>  
+     <example>DEL-REASON-CODE CODE=3</example>  
+     <param name="CODE" datatype="int" option="M" min="0" max="99" abbr="C"/>  
+    </mmi>  
+    <mmi id="5018" level="C" name="VIEW-ACD" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>VIEW-ACD NUM|N=acd_num|ALL</usage>  
+     <desc lang="ko">ACD 정보를 MONITORING합니다.</desc>  
+     <example>VIEW-ACD NUM=1</example>  
+     <example>VIEW-ACD NUM=ALL</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="10" abbr="N"/>  
+    </mmi>  
+   </category>  
+   <category name="VECTOR">  
+    <mmi id="6000" level="C" name="SHOW-HOLI" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-HOLI NUM|N=Holiday Table|ALL</usage>  
+     <desc lang="ko">HOLIDAY TABLE의 정보를 조회합니다.</desc>  
+     <example>SHOW-HOLI NUM=ALL</example>  
+     <example>SHOW-HOLI NUM=2</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="6001" level="C" name="ADD-HOLI" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># HOLIDAY 추가 시</usage>  
+     <usage>ADD-HOLI NUM|N=holi_num NAME|NM=string</usage>  
+     <usage># HOLIDAY RECORD(INDEX) 추가 시</usage>  
+     <usage>ADD-HOLI NUM|N=holi_num INDEX|I=holiday_index [HOLIDAY_START|HS=MOMTH/DAY] [HOLIDAY_END|HE=MONTH/DAY] [DESCRIPTION|D=string]</usage>  
+     <desc lang="ko">Holiday Table의 정보를 추가합니다.</desc>  
+     <example>ADD-HOLI NUM=1 NAME=NEW_YEAR</example>  
+     <example>ADD-HOLI NUM=1 INDEX=1 HOLIDAY_START=0101 HOLIDAY_END=0103 DESCRIPTION=NEW_YEAR</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="1024" abbr="NM"/>  
+     <param name="INDEX" datatype="string" option="O" min="1" max="1024" abbr="I"/>  
+     <param name="HOLIDAY_START" datatype="string" option="O" abbr="HS"/>  
+     <param name="HOLIDAY_END" datatype="string" option="O" abbr="HE"/>  
+     <param name="DESCRIPTION" datatype="string" option="O" min="1" max="1024" abbr="D"/>  
+    </mmi>  
+    <mmi id="6002" level="C" name="CHG-HOLI" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># HOLIDAY 변경 시(변경 가능한 값 : NAME)</usage>  
+     <usage>CHG-HOLI NUM|N=holi_num NAME|NM=string</usage>  
+     <usage># HOLIDAY RECORD(INDEX) 변경 시</usage>  
+     <usage>CHG-HOLI NUM|N=holi_num INDEX|I=holiday_index HOLIDAY_START|HS=MOMTH/DAY HOLIDAY_END|HE=MONTH/DAY DESCRIPTION|D=string</usage>  
+     <desc lang="ko">Holiday 정보를 수정합니다.</desc>  
+     <example>CHG-HOLI NUM=1 NAME=inticube</example>  
+     <example>CHG-HOLI NUM=1 INDEX=1 HOLIDAY_START=0101 HOLIDAY_END=0103 DESCRIPTION=holiday</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="NAME" datatype="string" option="O" min="1" max="1024" abbr="NM"/>  
+     <param name="INDEX" datatype="string" option="O" min="1" max="1024" abbr="I"/>  
+     <param name="HOLIDAY_START" datatype="string" option="O" abbr="HS"/>  
+     <param name="HOLIDAY_END" datatype="string" option="O" abbr="HE"/>  
+     <param name="DESCRIPTION" datatype="string" option="O" min="1" max="1024" abbr="D"/>  
+    </mmi>  
+           <mmi id="6003" level="C" name="DEL-HOLI" password="FALSE">  
+                <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+                <usage># Holiday 삭제 시</usage>  
+                <usage>DEL-HOLI NUM|N=holi_num</usage>  
+     <usage># Holiday Record(Index) 삭제 시</usage>  
+     <usage>DEL-HOLI NUM|N=holi_num INDEX|I=holiday_index</usage>  
+     <desc lang="ko">Holiday Table 정보를 삭제합니다.</desc>  
+     <example>DEL-HOLI NUM=1</example>  
+     <example>DEL-HOLI NUM=1 INDEX=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="65535" abbr="N"/>  
+     <param name="INDEX" datatype="int" option="O" min="1" max="65535" abbr="I"/>  
+     </mmi>  
+    <mmi id="6004" level="C" name="SHOW-SER-HOURS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-SER-HOURS NUM|N=Service Hours Table|ALL</usage>  
+     <desc lang="ko">Service Hours Table의 정보를 조회합니다.</desc>  
+     <example>SHOW-SER-HOURS NUM=1</example>  
+     <example>SHOW-SER-HOURS NUM=ALL</example>  
+     <param name="NUM" datatype="string" option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="6005" level="C" name="ADD-SER-HOURS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># SERVICE HOURS 추가 시</usage>  
+     <usage>ADD-SER-HOURS NUM|N=ser_hour_num NAME|NM=string</usage>  
+     <usage># SERVICE HOURS RECORD(INDEX) 추가 시</usage>  
+     <usage>ADD-SER-HOURS NUM|N=ser_hour_num INDEX|I=service_hours_index WDAY|W=MON|TUE|WED|THU|FRI|SAT|SUN START_TIME|ST=HOUR/MIN END_TIME|ET=HOUR/MIN</usage>  
+     <desc lang="ko">Service Hours Table의 정보를 추가합니다.</desc>  
+     <example>ADD-SER-HOURS NUM=1 NAME=INTICUBE</example>  
+     <example>ADD-SER-HOURS NUM=1 INDEX=1 WDAY=MON START_TIME=0850 END_TIME=1810</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="NAME" datatype="string" min="1" max="1024" option="M" abbr="NM"/>  
+     <param name="INDEX" datatype="string" option="M" abbr="I"/>  
+     <param name="WDAY" datatype="string" option="M" value="MON|TUE|WED|THU|FRI|SAT|SUN" abbr="W"/>  
+     <param name="START_TIME" datatype="string" option="M" value="HOUR/MIN" abbr="ST"/>  
+     <param name="END_TIME" datatype="string" option="M" value="HOUR/MIN" abbr="ET"/>  
+    </mmi>  
+    <mmi id="6006" level="C" name="CHG-SER-HOURS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># SERVICE HOURS 수정 시(변경 가능한 값 : NAME)</usage>  
+     <usage>CHG-SER-HOURS NUM|N=ser_hour_num NAME|NM=string</usage>  
+     <usage># SERVICE HOURS RECORD(INDEX) 수정 시</usage>  
+     <usage>CHG-SER-HOURS NUM|N=ser_hour_num INDEX|I=service_hours_index [WDAY|W=MON|TUE|WED|THU|FRI|SAT|SUN] [START_TIME|ST=HOUR/MIN] [END_TIME|ET=HOUR/MIN]</usage>  
+     <desc lang="ko">Service Hours Table의 정보를 수정합니다.</desc>  
+     <example>CHG-SER-HOURS NUM=1 NAME=INTICUBE</example>  
+     <example>CHG-SER-HOURS NUM=1 INDEX=1 WDAY=MON START_TIME=0850 END_TIME=1810</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="NAME" datatype="string" min="1" max="1024" option="M" abbr="NM"/>  
+     <param name="INDEX" datatype="string" option="M" abbr="I"/>  
+     <param name="WDAY" datatype="string" option="M" value="MON|TUE|WED|THU|FRI|SAT|SUN" abbr="W"/>  
+     <param name="START_TIME" datatype="string" option="M" value="HOUR/MIN" abbr="ST"/>  
+     <param name="END_TIME" datatype="string" option="M" value="HOUR/MIN" abbr="ET"/>  
+    </mmi>  
+    <mmi id="6007" level="C" name="DEL-SER-HOURS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage># SERVICE HOURS 삭제 시</usage>  
+     <usage>DEL-SER-HOURS NUM|N=ser_hours_num</usage>  
+     <usage># SERVICE HOURS RECORD(INDEX) 삭제 시</usage>  
+     <usage>DEL-SER-HOURS NUM|N=ser_hours_num INDEX|N=ser_hours_index WDAY|W=MON|TUE|WED|THU|FRI|SAT|SUN</usage>  
+     <desc lang="ko">Service Hours Table의 정보를 삭제합니다.</desc>  
+     <example>DEL-SER-HOURS NUM=1</example>  
+     <example>DEL-SER-HOURS NUM=1 INDEX=1 WDAY=SUN</example>  
+     <param name="NUM" datatype="int" min="1" max="65535" option="M" abbr="N"/>  
+     <param name="INDEX" datatype="string" option="O" abbr="I"/>  
+     <param name="WDAY" datatype="string" option="O" value="MON|TUE|WED|THU|FRI|SAT|SUN" abbr="W"/>  
+    </mmi>  
+    <mmi id="6008" level="C" name="SHOW-VEC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-VEC [VDN|V=vdn_num|ALL] [NUM|N=vector_num|ALL]</usage>  
+     <desc lang="ko">Vector 또는 VDN 정보를 조회합니다.</desc>  
+     <example>SHOW-VEC VDN=1001</example>  
+     <example>SHOW-VEC VDN=ALL</example>  
+     <example>SHOW-VEC NUM=1</example>  
+     <example>SHOW-VEC NUM=ALL</example>  
+     <param name="VDN" datatype="string"  option="M" abbr="V"/>  
+     <param name="NUM" datatype="string"  option="M" abbr="N"/>  
+    </mmi>  
+    <mmi id="6009" level="A" name="EDIT-VEC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>EDIT-VEC</usage>  
+     <desc lang="ko">Vector Script를 수정합니다.</desc>  
+     <example>EDIT-VEC</example>  
+    </mmi>  
+    <mmi id="6010" level="A" name="LOAD-VEC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>LOAD-VEC NUM|N=vector_num</usage>  
+     <desc lang="ko">해당 Vector를 로드합니다.</desc>  
+     <example>LOAD-VEC NUM=123</example>  
+    </mmi>  
+    <mmi id="6011" level="A" name="CRT-MS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>CRT-MS</usage>  
+     <desc lang="ko">MS pool을 생성</desc>  
+    </mmi>  
+    <mmi id="6012" level="A" name="SHOW-MS" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-MS [ID|I=ms_id] [CHAN|C=ALL]</usage>  
+     <desc lang="ko">Media Server의 상태및 채널 정보를 출력</desc>  
+     <example>SHOW-MS</example>  
+     <example>SHOW-MS ID=ALL</example>  
+     <example>SHOW-MS CHAN=ALL</example>  
+     <param name="ID" datatype="string" option="O" abbr="I"/>  
+     <param name="CHAN" datatype="string" option="O" abbr="C"/>  
+    </mmi>  
+    <mmi id="6013" level="A" name="CHK-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>CHK-CALL</usage>  
+     <desc lang="ko">비정상 call의 검사, long term call(stable), 비정상호(unstable)</desc>  
+     <example>CHK-CALL</example>  
+    </mmi>  
+    <mmi id="6014" level="C" name="CRT-VEC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="2" sync="FALSE"/>  
+     <usage>CRT-VEC</usage>  
+     <desc lang="en">create and initialize shmmem for CALL.</desc>  
+     <desc lang="ko">VECTOR의 공유 메모리를 생성, 초기화합니다.</desc>  
+     <example>CRT-VEC</example>  
+    </mmi>  
+    <mmi id="6015" level="A" name="LOAD-CL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>LOAD-CL</usage>  
+     <desc lang="ko">LM initialize</desc>  
+     <example>LOAD-CL</example>  
+    </mmi>  
+    <mmi id="6016" level="A" name="SHOW-LICENSE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="FALSE" return="1" sync="FALSE"/>  
+     <usage>SHOW-LICENSE</usage>  
+     <desc lang="ko">License 정보를 조회합니다.</desc>  
+     <example>SHOW-LICENSE</example>  
+    </mmi>  
+    <mmi id="6017" level="A" name="ADD-CALL-CAUSE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-CALL-CAUSE CAUSE|C=cause TYPE|T=type ARG|A=arg SIGNAL|S=signal</usage>  
+     <desc lang="ko">Call Cause 정보를 추가합니다.</desc>  
+     <example>ADD-CALL-CAUSE C=SUCCESS T=0 A=0 S=200</example>  
+     <example>ADD-CALL-CAUSE CAUSE=SUCCESS TYPE=0 ARG=0 SIGNAL=200</example>  
+     <example>ADD-CALL-CAUSE CAUSE=CALL_IS_BEING_FORWARED TYPE=0 ARG=0 SIGNAL=181</example>  
+     <param name="CAUSE" datatype="string" option="M" abbr="C"/>  
+     <param name="TYPE" datatype="int" option="O" abbr="T"/>  
+     <param name="ARG" datatype="int" option="O" abbr="A"/>  
+     <param name="SIGNAL" datatype="int" option="M" abbr="S"/>  
+    </mmi>  
+    <mmi id="6018" level="C" name="SHOW-TENANT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-TENANT NUM=num|ALL</usage>  
+     <desc lang="en">Show Tenant.</desc>  
+     <desc lang="ko">Tenant 정보를 조회합니다.</desc>  
+     <example>SHOW-TENANT NUM=ALL</example>  
+     <example>SHOW-TENANT NUM=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="63" abbr="N"/>  
+    </mmi>  
+    <mmi id="6019" level="A" name="CHG-TENANT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-TENANT NUM|N=num [MOH|M=moh] [LOC_PRX|L=loc_prefix DESC|D=desc PERM|P=perm_id ALLOW|A=TRUE|FALSE</usage>  
+     <desc lang="en">Change Tenant.</desc>  
+     <desc lang="ko">Tenant 정보를 수정합니다.</desc>  
+     <example>CHG-TENANT NUM=1 MOH=34 LOC_PRX=101 DESC=tenant_1 PERM=2 ALLOW=TRUE</example>  
+     <example>CHG-TENANT N=1 M=34 L=NULL D=tenant_1</example>  
+     <example>CHG-TENANT N=1 P=2 A=F</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="63" abbr="N"/>  
+     <param name="MOH" datatype="int" option="M" min="0" max="99" abbr="M"/>  
+     <param name="LOC_PRX" datatype="int" option="M" min="0" max="9999" abbr="L"/>  
+     <param name="DESC" datatype="string" option="M" min="0" max="99" abbr="D"/>  
+     <param name="PERM" datatype="int" option="M" min="0" max="99" abbr="P"/>  
+     <param name="ALLOW" datatype="string" option="M" min="0" max="99" abbr="A"/>  
+    </mmi>  
+    <mmi id="6020" level="A" name="ADD-TENANT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-TENANT NUM|N=num MOH|M=moh LOC_PRX|L=loc_prefix DESC|D=desc</usage>  
+     <desc lang="en">Add Tenant.</desc>  
+     <desc lang="ko">Tenant 정보를 추가합니다.</desc>  
+     <example>ADD-TENANT NUM=1 MOH=34 LOC_PRX=101 DESC=tenant_1</example>  
+     <example>ADD-TENANT N=1 M=34</example>  
+     <example>ADD-TENANT N=1</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="63" abbr="N"/>  
+     <param name="MOH" datatype="string" option="M" min="0" max="99" abbr="M"/>  
+     <param name="LOC_PRX" datatype="string" option="M" min="0" max="999" abbr="L"/>  
+     <param name="DESC" datatype="string" option="M" min="0" max="99" abbr="D"/>  
+    </mmi>  
+    <mmi id="6021" level="A" name="DEL-TENANT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-TENANT NUM|N=num</usage>  
+     <desc lang="en">Delete Tenant.</desc>  
+     <desc lang="ko">Tenant 정보를 삭제합니다.</desc>  
+     <example>DEL-TENANT NUM=1</example>  
+     <param name="NUM" datatype="string" option="M" min="1" max="63" abbr="N"/>  
+    </mmi>  
+    <mmi id="6022" level="A" name="ADD-TONE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-TONE NUM|N=num NAME|NM=name COMB|C=combination F_FEQ1|FF1=first_feq1 F_FEQ2|FF2=first_feq2 F_ON_DUR|FON=first_on_duration F_OFF_DUR|FOF=first_off_duration S_FEQ1|SF1=second_feq1 S_FEQ2|SF2=second_feq2 S_ON_DUR|SON=second_on_duration S_OFF_DUR|SOF=second_off_duration TIME|T=time DESC|D=desc</usage>  
+     <desc lang="en">Add Tone.</desc>  
+     <desc lang="ko">Tone 정보를 추가합니다.</desc>  
+     <example>ADD-TONE N=1 NM=tone C=1 FF1=300 FF2=400 FON=500 FOF=600 T=30 D=tone</example>  
+     <example>ADD-TONE N=1 NM=tone C=2 FF1=300 FF2=400 FON=500 FOF=600 SF1=300 SF2=400 SON=500 SOF=600 T=30 D=tone</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="10" abbr="N"/>  
+     <param name="NAME" datatype="string" option="M" min="0" max="9999" abbr="NM"/>  
+     <param name="COMB" datatype="int" option="M" min="1" max="2" abbr="C"/>  
+     <param name="F_FEQ1" datatype="string" option="M" min="0" max="9999" abbr="FF1"/>  
+     <param name="F_FEQ2" datatype="string" option="M" min="0" max="9999" abbr="FF2"/>  
+     <param name="F_ON_DUR" datatype="string" option="M" min="0" max="9999" abbr="FON"/>  
+     <param name="F_OFF_DUR" datatype="string" option="M" min="0" max="9999" abbr="FOF"/>  
+     <param name="S_FEQ1" datatype="string" option="O" min="0" max="9999" abbr="SF1"/>  
+     <param name="S_FEQ2" datatype="string" option="O" min="0" max="9999" abbr="SF2"/>  
+     <param name="S_ON_DUR" datatype="string" option="O" min="0" max="9999" abbr="SON"/>  
+     <param name="S_OFF_DUR" datatype="string" option="O" min="0" max="9999" abbr="SOF"/>  
+     <param name="TIME" datatype="string" option="M" min="0" max="9999" abbr="T"/>  
+     <param name="DESC" datatype="string" option="M" min="0" max="9999" abbr="D"/>  
+    </mmi>  
+    <mmi id="6023" level="A" name="DEL-TONE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-TONE NUM|N=num</usage>  
+     <desc lang="en">Delete Tone.</desc>  
+     <desc lang="ko">Tone 정보를 삭제합니다.</desc>  
+     <example>DEL-TONE NUM=1</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="10" abbr="N"/>  
+    </mmi>  
+    <mmi id="6024" level="A" name="ADD-ANNC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-ANNC NUM=announce_num TYPE=TONE/ANNC NAME=name PATH=wave_path TONE_ID=id DESC=description</usage>  
+     <desc lang="en">Add tone or announce info.</desc>  
+     <desc lang="ko">Tone또는 안내방송의 정보를 추가합니다.</desc>  
+     <example>ADD-ANNC NUM=50 T=ANNC NAME=success_annc PATH=/inticube/cubex/annc/success_annc.wav TONE_ID=3 DESC=success_annoucement</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="100" abbr="N"/>  
+     <param name="TYPE" datatype="string" option="M" value="TONE|ANNC" abbr="T"/>  
+     <param name="NAME" datatype="string" option="M" min="1" max="24" abbr="NM"/>  
+     <param name="PATH" datatype="string" option="M" min="1" max="64" abbr="P"/>  
+     <param name="TONE_ID" datatype="int" option="M" min="1" max="10" abbr="TID"/>  
+     <param name="DESC" datatype="string" option="M" min="1" max="24" abbr="D"/>  
+    </mmi>  
+    <mmi id="6025" level="A" name="ADD-FAC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-FAC NUM|N=num FAC|F=fac DESC|D=description</usage>  
+     <desc lang="en">add FAC info </desc>  
+     <desc lang="ko">FAC 정보를 추가합니다.</desc>  
+     <example>ADD-FAC N=1 F="*22" D=DND_active</example>  
+     <param name="NUM" datatype="string" option="M" min="0" max="100" abbr="N"/>  
+     <param name="FAC" datatype="string" option="M" min="0" max="9999" abbr="F"/>  
+     <param name="DESC" datatype="string" option="M" min="0" max="9999" abbr="D"/>  
+    </mmi>  
+     <mmi id="6026" level="A" name="DEL-FAC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-FAC NUM=service_num</usage>  
+     <desc lang="en">delete FAC info </desc>  
+     <desc lang="ko">FAC 정보를 삭제합니다.</desc>  
+     <example>DEL-FAC NUM=1</example>  
+    </mmi>  
+    <mmi id="6027" level="A" name="DEL-ANNC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-ANNC NUM=announce_num</usage>  
+     <desc lang="en">Delete tone or announce info.</desc>  
+     <desc lang="ko">Tone 또는 안내방송정보를 삭제합니다.</desc>  
+     <example>DEL-ANNC NUM=10</example>  
+     <param name="NUM" datatype="int" option="M" min="1" max="100" abbr="N"/>  
+    </mmi>  
+    <mmi id="1080" level="C" name="DEL-CALL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-CALL ID|I=ALL|call_id</usage>  
+     <desc lang="en">delete call infor </desc>  
+     <desc lang="ko">Call 정보를 삭제합니다.</desc>  
+     <example>DEL-CALL ID=ALL</example>  
+     <example>DEL-CALL ID=1</example>  
+     <param name="ID" datatype="string" option="M" abbr="I"/>  
+    </mmi>  
+    <mmi id="6029" level="A" name="ADD-STA-MODEL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>ADD-STA-MODEL ID|I=model_id NAME|N=model_name HEADER|H=ANSWER-MODE|ALERT-INFO|CALL-INFO VALUE|V=value</usage>  
+     <desc lang="en">add Station Model.</desc>  
+     <desc lang="ko">Station Model 정보를 추가합니다.</desc>  
+     <example>ADD-STA-MODEL I=1 N=H420 H=CALL-INFO V=Auto</example>  
+     <param name="ID" datatype="string" option="M" min="0" max="10" abbr="I"/>  
+     <param name="NAME" datatype="string" option="M" min="0" max="9999" abbr="N"/>  
+     <param name="HEADER" datatype="string" option="M" min="0" max="9999" abbr="H"/>  
+     <param name="VALUE" datatype="string" option="M" min="0" max="9999" abbr="V"/>  
+    </mmi>  
+    <mmi id="6030" level="A" name="DEL-STA-MODEL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>DEL-STA-MODEL ID|I=id</usage>  
+     <desc lang="en">Delete Station Model.</desc>  
+     <desc lang="ko">Station Model 정보를 삭제합니다.</desc>  
+     <example>DEL-STA-MODEL ID=1</example>  
+     <param name="ID" datatype="string" option="M" min="0" max="10" abbr="I"/>  
+    </mmi>  
+    <mmi id="6031" level="A" name="CHG-STA-MODEL" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-STA-MODEL ID|I=model_id NAME|N=model_name HEADER|H=ANSWER-MODE|ALERT-INFO|CALL-INFO VALUE|V=value TYPE|T=EXT|PRIV|PUB|PRI|BRDG ALERT|A=alert_info</usage>  
+     <desc lang="en">Change Station Model Info </desc>  
+     <desc lang="ko">Station Model 정보를 수정합니다. </desc>  
+     <example>CHG-STA-MODEL I=1 N=H420 H=CALL-INFO V=Auto T=EXT A="alert_info"</example>  
+     <param name="ID" datatype="string" option="M" min="0" max="10" abbr="I"/>  
+     <param name="NAME" datatype="string" option="M" min="0" max="9999" abbr="N"/>  
+     <param name="HEADER" datatype="string" option="M" min="0" max="9999" abbr="H"/>  
+     <param name="VALUE" datatype="string" option="M" min="0" max="9999" abbr="V"/>  
+     <param name="TYPE" datatype="string" option="M" min="0" max="9999" abbr="T"/>  
+     <param name="ALERT" datatype="string" option="M" min="0" max="9999" abbr="A"/>  
+    </mmi>  
+    <mmi id="6032" level="C" name="SHOW-TARGET" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-TARGET </usage>  
+     <desc lang="ko">Target List에서 target 정보를 조회합니다.</desc>  
+     <example>SHOW-TARGET </example>  
+    </mmi>  
+    <mmi id="6033" level="C" name="SHOW-TOPIC" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-TOPIC </usage>  
+     <desc lang="ko">TOPIC List에서 topic 정보를 조회합니다.</desc>  
+     <example>SHOW-TOPIC </example>  
+    </mmi>  
+    <mmi id="6034" level="C" name="SHOW-ENTRY" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-ENTRY </usage>  
+     <desc lang="ko">Entry List에서 entry 정보를 조회합니다.</desc>  
+     <example>SHOW-ENTRY</example>  
+    </mmi>  
+    <mmi id="6035" level="C" name="SHOW-ITEM" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-ITEM </usage>  
+     <desc lang="ko">Item List에서 item 정보를 조회합니다.</desc>  
+     <example>SHOW-ITEM </example>  
+    </mmi>  
+    <mmi id="6036" level="C" name="SHOW-EVENT" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-EVENT [START|S=start_time END|E=end_time] [TYPE|T=OCCUR|CLEAR] [OBJECT|O=SERVER|MEDIA|APP]</usage>  
+     <desc lang="ko">장애 이력을 조회합니다.</desc>  
+     <example>SHOW-EVENT</example>  
+     <example>SHOW-EVENT START=20130910 END=20130912 TYPE=OCCUR OBJECT=APP</example>  
+     <param name="START" datatype="string" option="O" abbr="S"/>  
+     <param name="END" datatype="string" option="O" abbr="E"/>  
+     <param name="TYPE" datatype="string" option="O" abbr="T"/>  
+     <param name="OBJECT" datatype="string" option="O" abbr="O"/>  
+    </mmi>  
+    <mmi id="6037" level="C" name="CHK-TRUNK" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHK-TRUNK</usage>  
+     <desc lang="ko">SIP TRUNK 상태를 체크합니다.</desc>  
+     <example>CHK-TRUNK</example>  
+    </mmi>  
+    <mmi id="6038" level="C" name="CHG-POLI-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>CHG-POLI-RTE VDN|V=vdn_num [TYPE|T=100_COUNT|MAX_COUNT|HALF_HOUR|HOUR|WEEKLY] [MAX_COUNT|M=max] [INDEX|I=index ROUTE|R=route_to_vdn RATE|RT=rate]</usage>  
+     <desc lang="ko">POLICY ROUTE 테이블 수정.</desc>  
+     <example>CHG-POLI-RTE VDN=1000 TYPE=100_COUNT</example>  
+     <example>CHG-POLI-RTE VDN=1000 TYPE=MAX_COUNT MAX_COUNT=1000</example>  
+     <example>CHG-POLI-RTE VDN=1000 INDEX=1 ROUTE=1001 RATE=50</example>  
+     <param name="VDN" datatype="string" option="M" min="0" max="13" abbr="V"/>  
+     <param name="TYPE" datatype="string" option="O" min="0" max="10" abbr="T"/>  
+     <param name="MAX_COUNT" datatype="int" option="M" min="1" max="1000" abbr="M"/>  
+     <param name="INDEX" datatype="int" option="M" min="1" max="10" abbr="I"/>  
+     <param name="ROUTE" datatype="string" option="M" min="0" max="13" abbr="R"/>  
+     <param name="RATE" datatype="int" option="M" min="0" max="100" abbr="RT"/>  
+    </mmi>  
+    <mmi id="6039" level="C" name="SHOW-POLI-RTE" password="FALSE">  
+     <info server="ALL" dir="cmd" nms="TRUE" omc="TRUE" return="1" sync="FALSE"/>  
+     <usage>SHOW-POLI-RTE VDN|V=vdn_num</usage>  
+     <desc lang="ko">POLICY ROUTE 테이블 조회.</desc>  
+     <example>SHOW-POLI-RTE VDN=1000</example>  
+     <param name="VDN" datatype="string" option="M" min="0" max="13" abbr="V"/>  
+    </mmi>  
+   </category>  
+  </mmilist>

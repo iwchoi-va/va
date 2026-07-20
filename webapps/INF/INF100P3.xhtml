@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var file,ds;
+var result      = null;
+var svcId;
+var v_url = "service::wfm.info.inf040.do";
+
+var colArray = [] ;
+function page_load(event) {
+	try{
+		XwingObject();
+		
+	}catch(e){
+		xwing.Dialog.alert(e);
+	}
+}
+
+function getProduct(){
+	var param	= {			
+			_sqlName: "wfm.info.info040.getproduct.sel,wfm.info.info040.getistp.sel",
+		};	
+		var opt 	= {
+			reqId: "getProduct",
+			url: v_url,
+			param: param
+		};
+		
+		Xwing.request(opt, callback);
+}
+
+//*********************************************************************************************************
+//Call Back Action
+//********************************************************************************************************/
+function callback(reqId, res, err, xhr) {
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+//	case "f_codebook_sel" : 
+//		
+//		$DS_ISTP.setData(res.COM003.column, res.COM003.record);
+//		$DS_PRODUCT.setData(res.COM004.column, res.COM004.record);
+//		break;
+		case "getProduct" : 
+		
+		$DS_PRODUCT.setData(res.DS_PRODUCT.column, res.DS_PRODUCT.record);
+		$DS_ISTP.setData(res.DS_ISTP.column, res.DS_ISTP.record);
+		break;
+		case "getExcelFile" : 
+			$grd_authMenu_0.setBinddataset('');
+			$DS_UPLOAD.clearData();
+			
+			$DS_UPLOAD.setData(res.DS_UPLOAD.column, res.DS_UPLOAD.record);
+			$DS_UPLOAD.removeRow(0); //엑셀 헤더삭제
+			$edit_rowcnt_s.setValue($DS_UPLOAD.size());
+			
+			var regExp = /[\{\}\[\]\/?.,;:|\)*!`!^\-_+<>@\#$%&\\\=\(\'\"]/gi;
+			
+			var path = "E:/SponsorRec/UPLOAD/"+g_toDate()+"/";
+			//console.log($DS_UPLOAD);
+				if($DS_UPLOAD.size()>100){
+					for(var idx=0 ; idx<100 ; idx++){
+						$DS_UPLOAD_TMP.addRow();
+						$DS_UPLOAD_TMP.copyRowFrom(idx, "DS_UPLOAD", idx);
+						$DS_UPLOAD_TMP.setValue("REG_ID",global("G_USER_ID"));
+						$DS_UPLOAD_TMP.setValue("REC_START_TIME",$DS_UPLOAD.getValue(idx,"A").replace(regExp,""));
+						$DS_UPLOAD_TMP.setValue("ORGFILEFULLPATH",$DS_UPLOAD.getValue(idx,"B"));
+						var index = $DS_UPLOAD.getValue(idx,"B").lastIndexOf('/');
+						var str = $DS_UPLOAD.getValue(idx,"B").substr(index+1);
+						//$DS_UPLOAD_TMP.setValue("ORGFILENAME",$DS_UPLOAD.getValue(idx,"B"));
+						$DS_UPLOAD_TMP.setValue("ORGFILENAME",str);
+						$DS_UPLOAD_TMP.setValue("REQ_ID",$DS_UPLOAD.getValue(idx,"C"));
+					}
+				}else{
+					for(var idx=0 ; idx<$DS_UPLOAD.size() ; idx++){
+						$DS_UPLOAD_TMP.addRow();
+						$DS_UPLOAD_TMP.copyRowFrom(idx, "DS_UPLOAD", idx);
+						$DS_UPLOAD_TMP.setValue("REG_ID",global("G_USER_ID"));
+						$DS_UPLOAD_TMP.setValue("REC_START_TIME",$DS_UPLOAD.getValue(idx,"A").replace(regExp,""));
+						$DS_UPLOAD_TMP.setValue("ORGFILEFULLPATH",$DS_UPLOAD.getValue(idx,"B"));
+						
+						var index = $DS_UPLOAD.getValue(idx,"B").lastIndexOf('/');
+						var str = $DS_UPLOAD.getValue(idx,"B").substr(index+1);
+						
+						$DS_UPLOAD_TMP.setValue("ORGFILENAME",str);
+						$DS_UPLOAD_TMP.setValue("REQ_ID",$DS_UPLOAD.getValue(idx,"C"));
+					}
+				}
+				//console.log($DS_UPLOAD_TMP);
+				$grd_authMenu_0.setBinddataset('DS_UPLOAD_TMP');
+				
+				if(validateCheck($DS_UPLOAD)==0){
+					$btn_fileUpload.setVisible(true);
+				}else{
+					$btn_fileUpload.setVisibvle(false);
+				};
+			
+			break;
+		case "dataSave" : 
+			alert('저장되었습니다.');
+			parent.Xwing.getDialog("script_upload").close();
+			//parent.grd_codetype_click();
+			break;
+	
+	}	
+}
+
+
+function validateCheck(dataset){
+	var CheckValue=0;
+	for(var idx=0;idx<$DS_UPLOAD.size() ; idx++){
+		
+		if(g_isEmpty($DS_UPLOAD.getValue(idx,"A")) ||  $DS_UPLOAD.getValue(idx,"A").length != 8 ){
+			alert("녹취일자를 확인해 주세요("+(idx+1)+"번째 데이터)");
+			return -1;
+		}
+		
+		if(g_isEmpty($DS_UPLOAD.getValue(idx,"B"))){
+			alert("파일패스를 입력해 주세요("+(idx+1)+"번째 데이터)");
+			return -1;
+		} 
+		if(g_isEmpty($DS_UPLOAD.getValue(idx,"C"))){
+			alert("요청자를 입력해 주세요("+(idx+1)+"번째 데이터)");
+			return -1;
+		} 
+		if(!/.wav$/.test($DS_UPLOAD.getValue(idx,"B")) ) { 
+			alert("업로드할 파일의 확장자는 *.wav 만 가능합니다."); 
+			return -1;
+		}
+		/*	
+		if(fidnRow($DS_PRODUCT,dataset.getValue(idx,"A").trim()) == false ){
+			alert("상품 테이블에 존재하지 않는 상품코드가 있습니다. ("+(idx+1)+"번째 데이터) 상품명이 들어가지 않습니다.");
+		}
+		if(fidnRow($DS_ISTP,dataset.getValue(idx,"B").trim()) == false ){
+			alert("등록되지 않은 보험종목 코드입니다. "+(idx+1)+"번째 데이터를 확인하세요.");
+			CheckValue=1;
+			return CheckValue;
+		}
+	*/
+	}
+	
+	return CheckValue;
+}
+
+function fidnRow(arrayList, obj) {
+    for(var i=0; i<arrayList.size(); i++) {    	
+    	if (arrayList.getValue(i,"CODEID") == obj){ 
+        	return true;
+        }
+    }
+    return false;
+}
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 조회 버튼을 클릭.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+ function btn_fileUpload_sch_click(event) {
+	 $DS_UPLOAD_TMP.clearData();
+		
+	var MAX_SIZE 		= 1024 * 1024 * 100;
+
+	if($DS_FILE.size() == 0) {
+		
+		xwing.Dialog.alert("업로드할 파일을 선택해 주세요."); return;
+	}
+	
+	if(!/.xls$/.test($DS_FILE.getValue("FILE_NAME")) && !/.xlsx$/.test($DS_FILE.getValue("FILE_NAME")) && !/.csv$/.test($DS_FILE.getValue("FILE_NAME"))) { 
+		
+		xwing.Dialog.alert("업로드할 파일의 확장자는 xls,xlsx,csv만 가능합니다."); return;
+	}
+	
+	if(parseInt($DS_FILE.getValue("FILE_SIZE")) > MAX_SIZE) {
+		
+		xwing.Dialog.alert("업로드할 파일의 용량이 "+ MAX_SIZE/1024/1024 +"Mb 를 초과하였습니다."); return;
+	}
+	
+	var param = {
+			
+			LIST: "01"
+	};
+	$file_upload_icon.send(param, file_callback);	
+}
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	파일업로드 콜백함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function file_callback(response) {
+	//파일 CALLBACK함수는 일반 CALLBACK함수와 구조가 다름.
+	var res = eval("("+response+")"); // String 으로 받은 데이터를 JSON으로 파싱.
+	
+	if (res.Error != '0') {
+		
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return; 
+	}
+	
+	// 업로드한 파일경로를 데이터셋에 담음.
+	$DS_SCRIPT_LIST.setValue("FILE_PATH", res.FilePath);
+	$DS_SCRIPT_LIST.setValue("SCRIPT_FILE", $DS_FILE.getValue("FILE"));
+	
+	var fileGubun = "";
+	if(/.xlsx$/.test($DS_FILE.getValue("FILE_NAME"))){
+		fileGubun = "xlsx";	
+		
+	}else if(/.xls$/.test($DS_FILE.getValue("FILE_NAME"))){
+		fileGubun = "xls";	
+		
+	}else if(/.csv$/.test($DS_FILE.getValue("FILE_NAME"))) { 		
+		fileGubun = "csv";	
+	}
+
+	var opt = {
+
+			reqId: "getExcelFile",
+			url: "service::list.excelUtil.do",
+			param: {
+				cmd:"getExcelFile",
+				filePath: $DS_SCRIPT_LIST.getValue(5),
+				FILE_NAME : $DS_FILE.getValue("FILE_NAME"),
+				fileGubun : fileGubun,
+				useyn: "Y"
+			},
+			indicator: null,
+			showError: true
+	};
+
+	Xwing.request(opt, callback);	
+}
+function filedataSave(){
+	xwing.Dialog.confirm("저장하시겠습니까?", $page.getTitle(), function(e){
+		if(e){
+			var param	= {			
+					_sqlName: "inf.inf100.insertExcelFile.ins",
+					batchlist:$DS_UPLOAD_TMP
+				};	
+				var opt 	= {
+					reqId: "dataSave",
+					url: v_url,
+					param: param
+				};
+				
+				Xwing.request(opt, callback);
+			}
+		});
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 업로드버튼을 클릭.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_fileUpload_click(event) {
+	filedataSave();
+}
+
+
+
+function file_upload_icon_click(event) {
+	//getProduct(); //존재하는 파일,보종 데이터 확인
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_UPLOAD">
+		<xwing:dataset-column id="ORGFILENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REQ_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ORGFILEFULLPATH"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_START_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FILE">
+		<xwing:dataset-column id="FILE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_SIZE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_PATH"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_COL">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>A</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>B</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>C</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>D</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>E</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>F</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>G</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>H</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>I</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>J</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>K</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>L</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>M</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>O</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>P</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Q</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>R</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>S</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SCRIPT_LIST">
+		<xwing:dataset-column id="SCRIPT_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_FILE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_PATH"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_iD"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+			<xwing:dataset-cell></xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_UPLOAD_TMP">
+		<xwing:dataset-column id="ORGFILENAME"></xwing:dataset-column>
+		<xwing:dataset-column id="REQ_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ORGFILEFULLPATH"></xwing:dataset-column>
+		<xwing:dataset-column id="REC_START_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="CUST_ANL_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_RESULT"></xwing:dataset-column>
+		<xwing:dataset-column id="UPLOAD_FILE"></xwing:dataset-column>
+		<xwing:dataset-column id="LIST_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="ANL_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_DATETIME"></xwing:dataset-column>
+		<xwing:dataset-column id="EXEC_NAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_ISTP">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PRODUCT">
+		<xwing:dataset-column id="column0"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_FILE1">
+		<xwing:dataset-column id="FILE_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_SIZE"></xwing:dataset-column>
+		<xwing:dataset-column id="FILE_PATH"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="고객업로드" width="615" height="428" load="page_load" scroll="false">
+		<xwing:group id="grp_setting" left="0" top="0" width="615" height="428" scroll="false" anchor="all" enabled="true" visible="true" styles="div_perform" bgcolor="#fdfdf5" borderstyle="none" borderwidth="0">
+			<xwing:panel id="bg_btn" left="0" top="368" width="615" height="60" bgcolor="#E7EBEE" anchor="right bottom" bgimagerepeat="no-repeat">
+				<xwing:button id="btn_fileUpload" value="저 장" left="540" top="17" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_fileUpload_click" visible="false"></xwing:button>
+			</xwing:panel>
+			<xwing:label id="lbl_menuName" value="파일" left="15" top="55" halign="left" width="100" styles="label_lititle" height="25"></xwing:label>
+			<xwing:checkbox id="chk_all_0" left="-43" top="-24" width="14" halign="center" truevalue="Y" falsevalue="N" value="N" click="chk_all_click" height="20"></xwing:checkbox>
+			<xwing:label id="lbl_page_title_0" left="15" top="0" value="엑셀 업로드" fontweight="bold" height="39" width="600" style="titletext" styles="lbl_grid_title" anchor="none" fontfamily="WallBoardFond" shadow="#B8C4D1 0 1 0 0"></xwing:label>
+			<xwing:edit id="edit_rowcnt_s" left="555" top="89" width="45" height="25" halign="right" anchor="right" readonly="true"></xwing:edit>
+			<xwing:edit id="edit_file" left="61" top="55" width="509" height="25" anchor="right left" styles="edit_mand_readonly" binddataset="DS_FILE" bindcolumn="FILE_NAME" enabled="true" readonly="true"></xwing:edit>
+			<xwing:datagrid id="grd_authMenu_0" left="17" top="127" width="583" height="233" rownum="false" binddataset="DS_UPLOAD_TMP" anchor="all" resizable="true" sortable="true" cursor="pointer" textwrap="prewrap">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="150"></xwing:datagrid-column>
+					<xwing:datagrid-column width="250"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="녹취일자"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="파일명"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="요청자 ID"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="REC_START_TIME"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="ORGFILEFULLPATH"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="REQ_ID"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:button id="btn_fileUpload_sch" left="526" top="89" height="25" width="25" styles="btn_normal" iconmargin="-2 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_upload.png" bgimagealign="center center" click="btn_fileUpload_sch_click"></xwing:button>
+			<xwing:file id="file_upload_icon" left="575" top="55" width="25" height="25" action="../jsp/fileUpload2.jsp " anchor="right" borderwidth="1" bordercolor="#C6C6C6" binddataset="DS_FILE" filenamecolumn="FILE_NAME" filesizecolumn="FILE_SIZE" shadow="1 1 2 0 #d0d0d0" styles="btn_normal" visible="true"></xwing:file>
+			<xwing:label id="lbl_ban_keyword" left="16" top="100" height="25" width="383" anchor="none" value="※ 암호화된 엑셀은 업로드가 불가능 합니다." fontcolor="#c60000" visible="false"></xwing:label>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

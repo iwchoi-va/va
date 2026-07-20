@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript"	charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/xwing.dataset.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*//*******************************************************************************
+* FormID(명) : 
+* Form 설명  : 
+* 작성자     : 
+* 작성일     : 
+=================================================================
+* 변경내역 : 
+* * YYYYMMDD 담당자명 변경내용(Why?,What?)
+* =================================================================
+*******************************************************************************/
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	전역변수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+var v_url = "service::wfm.info.inf100m.do";
+
+// 조회 시 필요한 변수
+var useYn = "";
+var caption = "";
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 페이지 로드합수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function page_load(event) {
+	setTimeout(function(){
+		XwingObject();
+		f_getCodes();
+		f_getMenu();
+	},500);
+	
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//* 권한 코드 로드 함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getCodes() {
+	var param	= {			
+			cmd : "getCodes",
+			codeType : "SYS001",
+			useyn : "Y"
+	};
+
+	var opt 	= { 		
+			reqId: "GETCODES",
+			url: "service::cs.com.codeutil.do",
+			param: param,
+			indicator : false
+	};
+	
+	Xwing.request(opt, callback);	
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	콜백함수.
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function callback(reqId, res, err, xhr) {
+
+	if (res.Error != '0') {
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '<br/>' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch(reqId) {
+	case "GETCODES" :
+		$DS_SYS001.setData(res.SYS001.column, res.SYS001.record);
+		for(var i = 0; i< $DS_SYS001.size(); i++){
+			var codeId = $DS_SYS001.getValue(i,"CODEID");
+			var bindcol = "chk_"+ codeId;
+			$DS_LIST.addColumn(bindcol);
+		}
+		f_makeGrid();
+		//setTimeout("f_makeGrid();",500); //20180413
+		break;
+		
+	case "MENU_SCH" :
+		$DS_MENU.setData(res.DS_MENU.column, res.DS_MENU.record);
+		
+		if($DS_LIST.size() != -1){
+			$DS_LIST.clearData();
+		}
+		
+		for(var i = 0; i< $DS_MENU.size(); i++){
+
+			$DS_LIST.addRow();
+			var _menu_id = $DS_MENU.getValue(i,"MENU_ID");
+			var _parent_caption = $DS_MENU.getValue(i,"PARENT_CAPTION");
+			var _caption = $DS_MENU.getValue(i,"CAPTION");
+			var _authority_cd = $DS_MENU.getValue(i,"AUTHORITY_CD");
+			
+			$DS_LIST.setValue($DS_LIST.getCursor(),"MENU_ID",_menu_id);
+			$DS_LIST.setValue($DS_LIST.getCursor(),"PARENT_CAPTION",_parent_caption);
+			$DS_LIST.setValue($DS_LIST.getCursor(),"CAPTION",_caption);
+			
+			f_getAuthority($DS_LIST.getCursor(), _authority_cd);
+		}
+		
+		Xwing.getDataGrid('grd_list').setBinddataset('DS_LIST');
+		$DS_LIST.setCursor(0);
+		break;
+		
+	case "AUTH_UPD" :
+		xwing.Dialog.alert("저장되었습니다.", $page.getTitle());
+		f_getMenu();
+		break;
+	}
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	메뉴별 권한 등급 갖고오는 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getMenu(){
+	
+	var param = {
+		_sqlName : "cs.info.info200m.menu.sel",	
+		useyn : useYn,
+		caption : caption
+	};
+	
+	var opt = {
+		reqId: "MENU_SCH",
+		url: v_url,
+		param: param,
+		indiractor : false
+	};
+	
+	Xwing.request(opt, callback);	
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	datagrid 그리는 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_makeGrid(){
+	
+	var f_column = "<xwing:datagrid-colgroup>" +
+			"<xwing:datagrid-column fixed='true'></xwing:datagrid-column>" +
+			"<xwing:datagrid-column width='155' fixed='true'></xwing:datagrid-column>";
+	
+	for(var i = 0; i< $DS_SYS001.size(); i++){
+		f_column += "<xwing:datagrid-column fixed='false' width='104'></xwing:datagrid-column>";
+	}
+	
+	f_column += "</xwing:datagrid-colgroup>";
+	
+	
+	var colspan = $DS_SYS001.size();
+	
+	var f_head = "<xwing:datagrid-head >"
+	   	   + "<xwing:datagrid-row height='30'>"
+	   	   + "<xwing:datagrid-cell text='대분류명' rowspan='2'></xwing:datagrid-cell>"
+	   	   + "<xwing:datagrid-cell text='화면명' rowspan='2'></xwing:datagrid-cell>"
+	   	   + "<xwing:datagrid-cell text='권한코드명' colspan='"+colspan
+	   	   + "'></xwing:datagrid-cell>" 
+	   	   + "</xwing:datagrid-row>";
+
+	f_head += "<xwing:datagrid-row height='30'>";
+	
+	for(var i = 0; i< $DS_SYS001.size(); i++){
+		f_head += "<xwing:datagrid-cell text='"+$DS_SYS001.getValue(i, "CODENAME")+"'></xwing:datagrid-cell>";
+	}
+	
+	f_head += "</xwing:datagrid-row>" +
+			"</xwing:datagrid-head>";
+	
+	var f_body = "<xwing:datagrid-body>"
+		   + "<xwing:datagrid-row>"
+		   + "<xwing:datagrid-cell bindcolumn='PARENT_CAPTION'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='CAPTION'></xwing:datagrid-cell>";
+	
+	for(var i = 0; i< $DS_SYS001.size(); i++){
+		f_body+= "<xwing:datagrid-cell bindcolumn='chk_"+ $DS_SYS001.getValue(i, "CODEID") +"' displaytype='checkbox' truevalue='"+$DS_SYS001.getValue(i, "CODEID")+"' falsevalue=''></xwing:datagrid-cell>"
+	}
+	
+	f_body += "</xwing:datagrid-row>"
+ 	   +"</xwing:datagrid-body>";
+	
+	var f_context = f_column + f_head + f_body;
+	$grd_list.addContent(f_context, true);
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	권한 체크하는 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function f_getAuthority(idx, _authority_cd){
+	var v_auth = _authority_cd.split(",");
+
+	for(var i = 0; i< v_auth.length; i++){
+		$DS_LIST.setValue(idx,"chk_"+v_auth[i], v_auth[i]);
+	}
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	메뉴별 권한 업데이트
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_sav_click(event) {
+	
+	var idx = Xwing.getDataGrid('grd_list').getCheckedIdx();
+	$DS_SAV_AUTH.clearData();
+	
+	for(var i = 0; i< idx.length; i++){
+		var _menu_id = $DS_LIST.getValue(idx[i],"MENU_ID");
+		var flag = false;
+		var authority_cd = "";
+		
+		for(var j = 0; j< $DS_SYS001.size(); j++){
+			var v_auth = $DS_LIST.getValue(idx[i],"chk_"+$DS_SYS001.getValue(j,"CODEID"));
+			if(v_auth != ""){
+				if(flag == false){
+					flag = true;
+					authority_cd = v_auth;
+				}else{
+					authority_cd += "," + v_auth;
+				}
+			}
+		}
+		
+//		if(authority_cd == ""){ //아무 권한도 선택하지 않았을 경우 권한없음 코드를 넣어주기 위해
+//			authority_cd = "01";
+//		}
+		
+		$DS_SAV_AUTH.addRow();
+		$DS_SAV_AUTH.setValue($DS_SAV_AUTH.getCursor(),"MENU_ID",_menu_id);
+		$DS_SAV_AUTH.setValue($DS_SAV_AUTH.getCursor(),"AUTHORITY_CD",authority_cd);
+		
+	}
+	
+	var param = {
+			_sqlName : "cs.info.info200m.auth.upd"	,
+			ds_sav_auth : $DS_SAV_AUTH
+	};
+	
+	var opt 	= {
+			reqId: "AUTH_UPD",
+			url: v_url,
+			param: param,
+			indicator : null,
+			showError : true
+		};
+		
+	Xwing.request(opt, callback);	
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	메뉴명 검색에 따른 조회
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function btn_sel_click(event) {
+	caption = $edt_name.getValue();
+	if($chk_useyn.getValue() == 'true'){
+		useYn = 'N';
+	}else{
+		useYn = '';
+	}
+	
+	f_getMenu();	
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	메뉴명 작성 후 엔터 클릭 시
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function edt_name_keyup(event) {
+	if (event.event.keyCode == 13) {	
+		btn_sel_click();
+	}
+}
+
+
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+//*	권한 변경 시 해당열 체크 표시하는 함수
+//*〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓〓
+function grd_list_click(event) {
+
+	var idx = Xwing.getDataGrid('grd_list').getSelection();
+	var checked_idx = Xwing.getDataGrid('grd_list').getCheckedIdx();
+	var flag = false; // 현재 체크 여부를 판단하는 flag
+	var cell_idx = event.cell._getColIndex();
+	if(cell_idx > 1){ // 체크박스가 그려진 cell인지 확인하기 위해 id를 통해 비교
+		for(var i = 0; i< checked_idx.length; i++){
+			if(idx == checked_idx[i]){
+				flag = true;
+				break;
+			}
+		}
+	
+		if(flag == false){
+			Xwing.getDataGrid('grd_list').setChecking(idx);
+		}
+	}
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_SYS001"></xwing:dataset>
+	<xwing:dataset id="DS_MENU">
+		<xwing:dataset-column id="MENU_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="MENU_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="PARENT_CAPTION"></xwing:dataset-column>
+		<xwing:dataset-column id="CAPTION"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_SAV_AUTH">
+		<xwing:dataset-column id="MENU_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="AUTHORITY_CD"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="메뉴별 권한조회" width="1050" height="780" load="page_load" scroll="false" top="-5">
+		<xwing:label id="lbl_subtitle1_0" value="메뉴별 권한조회" left="10" top="55" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		<xwing:group id="group0" left="0" top="0" width="1050" height="55" anchor="top right left" styles="div_search" borderwidth="0">
+			<xwing:label id="label5" value="메뉴명" left="15" top="15" fontweight="bold" halign="right" width="60" height="25" styles="label_subtitle" anchor="top left"></xwing:label>
+			<xwing:edit id="edt_name" left="80" top="15" width="100" height="25" anchor="top left" tabindex="1" keyup="edt_name_keyup"></xwing:edit>
+			<xwing:button id="btn_sel" value="조 회" left="320" top="15" anchor="none" styles="btn_search" width="60" tabindex="9" height="25" iconalign="left" borderwidth="0" shadow="1 1 2 0 #d0d0d0" bgcolor="#1FABE0" click="btn_sel_click"></xwing:button>
+			<xwing:checkbox id="chk_useyn" label="미사용포함" left="200" top="15" fontweight="normal" width="100" enabled="true" value="false" height="25" fontsize="12"></xwing:checkbox>
+		</xwing:group>
+		<xwing:button id="btn_sav" value="저 장" left="976" top="743" anchor="right bottom" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_sav_click" borderstyle="none"></xwing:button>
+		<xwing:datagrid id="grd_list" left="15" top="107" width="1020" height="622" rownum="true" checkbox="true" anchor="all" sortable="true" resizable="true" pageable="false" autofit="false" borderwidth="1" binddataset="DS_LIST" styles="table_border" virtual="false" editsuppress="false" click="grd_list_click">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="대분류명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="화면명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="권한코드명"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="대분류명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="화면명"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="권한코드명"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row>
+					<xwing:datagrid-cell halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="center" suppress="true"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="center" suppress="true" displaytype="checkbox"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+	</xwing:page>
+</body>
+</html>

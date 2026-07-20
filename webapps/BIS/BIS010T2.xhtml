@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+
+function page_load(event) {
+	XwingObject();
+	//$DS_VSS160.copyFrom(parent.$DS_VSS160);
+
+	f_daily_makeGrid();
+	f_monthly_makeGrid();
+}
+
+
+function f_daily_makeGrid(){
+
+	var f_column = "<xwing:datagrid-colgroup>"
+		 + "<xwing:datagrid-column width='80'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='100'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='120'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='120'></xwing:datagrid-column>";
+	
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_column += "<xwing:datagrid-column width='150'></xwing:datagrid-column>";
+	}
+		
+	f_column += "</xwing:datagrid-colgroup>";
+	
+	var f_head = "<xwing:datagrid-head>"
+		   	   + "<xwing:datagrid-row>"
+		   	   + "<xwing:datagrid-cell text='설계번호'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='센터'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='팀'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='상담사'></xwing:datagrid-cell>";
+	
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_head += "<xwing:datagrid-cell text='"+$DS_VSS160.getValue(i, "CODENAME")+"'></xwing:datagrid-cell>";
+	}
+	
+	f_head += "</xwing:datagrid-row>"
+		   + "</xwing:datagrid-head>";
+	
+	
+	var f_body = "";
+	var f_body = "<xwing:datagrid-body>"
+		   + "<xwing:datagrid-row>"
+		   + "<xwing:datagrid-cell bindcolumn='STOCK_NUM' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='ORG1_CD' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='ORG2_CD' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='USER_ID' suppress='true' halign='center'></xwing:datagrid-cell>";;
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_body += "<xwing:datagrid-cell bindcolumn='ITEM_"+(i+1)+"' suppress='true' halign='center'  expr='setColor'></xwing:datagrid-cell>";
+	}
+	
+	f_body += "</xwing:datagrid-row>"
+    	   +"</xwing:datagrid-body>";
+
+	var f_context = f_column + f_head + f_body ;
+
+	
+	$grd_daily_list.addContent(f_context, true);
+
+}
+
+function f_monthly_makeGrid(){
+
+
+	var f_column = "<xwing:datagrid-colgroup>"
+		 + "<xwing:datagrid-column width='80'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='100'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='120'></xwing:datagrid-column>"
+		 + "<xwing:datagrid-column width='120'></xwing:datagrid-column>";
+	
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_column += "<xwing:datagrid-column width='150'></xwing:datagrid-column>";
+	}
+		
+	f_column += "</xwing:datagrid-colgroup>";
+	
+	var f_head = "<xwing:datagrid-head>"
+		   	   + "<xwing:datagrid-row>"
+		   	   + "<xwing:datagrid-cell text='증권번호'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='센터'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='팀'></xwing:datagrid-cell>"
+		   	   + "<xwing:datagrid-cell text='상담사'></xwing:datagrid-cell>";
+	
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_head += "<xwing:datagrid-cell text='"+$DS_VSS160.getValue(i, "CODENAME")+"'></xwing:datagrid-cell>";
+	}
+	
+	f_head += "</xwing:datagrid-row>"
+		   + "</xwing:datagrid-head>";
+	
+	
+	var f_body = "";
+	var f_body = "<xwing:datagrid-body>"
+		   + "<xwing:datagrid-row>"
+		   + "<xwing:datagrid-cell bindcolumn='STOCK_NUM' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='ORG1_CD' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='ORG2_CD' suppress='true' halign='center'></xwing:datagrid-cell>"
+		   + "<xwing:datagrid-cell bindcolumn='USER_ID' suppress='true' halign='center'></xwing:datagrid-cell>";;
+	
+	for(var i =0; i< $DS_VSS160.size(); i++){
+		f_body += "<xwing:datagrid-cell bindcolumn='ITEM_"+(i+1)+"' suppress='true' halign='center'  expr='setColor'></xwing:datagrid-cell>";
+	}
+	
+	f_body += "</xwing:datagrid-row>"
+    	   +"</xwing:datagrid-body>";
+
+	var f_context = f_column + f_head + f_body ;
+	
+	$grd_monthly_list.addContent(f_context, true);
+
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_VSS160">
+		<xwing:dataset-column id="CODEID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODENAME"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>01</xwing:dataset-cell>
+			<xwing:dataset-cell>집중관리항목1</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>02</xwing:dataset-cell>
+			<xwing:dataset-cell>집중관리항목2</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>03</xwing:dataset-cell>
+			<xwing:dataset-cell>집중관리항목3</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>04</xwing:dataset-cell>
+			<xwing:dataset-cell>집중관리항목4</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>05</xwing:dataset-cell>
+			<xwing:dataset-cell>집중관리항목5</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset description="결과용 테스트 데이터(주간)" id="DS_DAILY_RES">
+		<xwing:dataset-column id="ORG1_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="ITEM_1"></xwing:dataset-column>
+		<xwing:dataset-column id="ITEM_2"></xwing:dataset-column>
+		<xwing:dataset-column id="ITEM_3"></xwing:dataset-column>
+		<xwing:dataset-column id="ITEM_4"></xwing:dataset-column>
+		<xwing:dataset-column id="STOCK_NUM"></xwing:dataset-column>
+		<xwing:dataset-column id="ITEM_5"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>A센터</xwing:dataset-cell>
+			<xwing:dataset-cell>A팀</xwing:dataset-cell>
+			<xwing:dataset-cell>김상담</xwing:dataset-cell>
+			<xwing:dataset-cell>15</xwing:dataset-cell>
+			<xwing:dataset-cell>20</xwing:dataset-cell>
+			<xwing:dataset-cell>3</xwing:dataset-cell>
+			<xwing:dataset-cell>30</xwing:dataset-cell>
+			<xwing:dataset-cell>11111111</xwing:dataset-cell>
+			<xwing:dataset-cell>45</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>B센터</xwing:dataset-cell>
+			<xwing:dataset-cell>A팀</xwing:dataset-cell>
+			<xwing:dataset-cell>이상담</xwing:dataset-cell>
+			<xwing:dataset-cell>26</xwing:dataset-cell>
+			<xwing:dataset-cell>35</xwing:dataset-cell>
+			<xwing:dataset-cell>45</xwing:dataset-cell>
+			<xwing:dataset-cell>60</xwing:dataset-cell>
+			<xwing:dataset-cell>12345678</xwing:dataset-cell>
+			<xwing:dataset-cell>69</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>C센터</xwing:dataset-cell>
+			<xwing:dataset-cell>A팀</xwing:dataset-cell>
+			<xwing:dataset-cell>최상담</xwing:dataset-cell>
+			<xwing:dataset-cell>56</xwing:dataset-cell>
+			<xwing:dataset-cell>44</xwing:dataset-cell>
+			<xwing:dataset-cell>20</xwing:dataset-cell>
+			<xwing:dataset-cell>35</xwing:dataset-cell>
+			<xwing:dataset-cell>22222222</xwing:dataset-cell>
+			<xwing:dataset-cell>80</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="700" load="page_load" scroll="false" top="-5">
+		<xwing:panel id="pan_daily_statics" left="0" top="0" width="1050" height="688" anchor="top right left" visible="true" scroll="false" styles="pan_box_title">
+			<xwing:label id="lbl_subtitle1" value="설계번호별통계" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:datagrid id="grd_daily_list" left="15" top="50" width="1020" height="640" rownum="true" binddataset="DS_DAILY_RES" anchor="all" resizable="true" sortable="true" autofit="false" styles="table_border">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="상담유형(대)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="상담유형(중)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="상담유형(소)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="일치"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="불일치"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="합계"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="일치율(%)"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="CLASS_DATE" suppress="true" halign="center" expr="setColor" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="MAIN_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="SUB_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DTL_CNSL_CD_NM" suppress="true" expr="setColor"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="AGREE_CNT" halign="right" mask="comma" expr="setColor" cursor="pointer"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DISAGREE_AUTO_CNT" halign="right" mask="comma" cursor="pointer" expr="setColor"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DISAGREE_AGT_CNT" halign="right" mask="comma" cursor="pointer" expr="setColor"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DISAGREE_CNT" halign="right" mask="comma" cursor="pointer" expr="setColor"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:edit id="edit_rowcnt" left="960" top="7" width="45" height="25" halign="right" anchor="top right" readonly="true"></xwing:edit>
+			<xwing:button id="btn_excel" left="1009" top="7" height="25" width="25" click="btn_excel_click" styles="btn_normal" iconmargin="0 0 0 0" textpadding="0 0 0 5" borderwidth="1" anchor="top right" tabindex="10" bgimage="../images/ico_excel.png" bgimagealign="center center"></xwing:button>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

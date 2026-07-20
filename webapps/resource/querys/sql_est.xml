@@ -1,0 +1,902 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>	
+	<!-- ######## 평가표 개발에 필요한 쿼리들 ################ -->
+	
+	<sql-service name='msens.est.hansol.getInitParameter_1'  datasource="aig_tm" paging="false" type="prepared">
+		<description>평가표 화면 로드에 필요한 기본 파라미터 조회</description>
+		<result-name>DS_PARAM</result-name>
+		<query><![CDATA[
+				SELECT TM_NO, -- TM설계번호
+				       CON_ENT_DGN_NO, -- 가입설계번호
+				       CON_APP_DATE, -- 청약일자
+				       CON_I_KIND_CD -- 상품코드
+				FROM TSOWN.TB_INSU_PLAN_MAST
+				WHERE CON_ENT_DGN_NO = ?ENT_DGN_NO
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getInitParameter_2'  datasource="aig_tm" paging="false" type="prepared">
+		<description>평가표 화면 로드에 필요한 기본 파라미터 조회</description>
+		<result-name>DS_PARAM</result-name>
+		<query><![CDATA[
+				SELECT USERID, -- 사용자ID
+					   USERNAME, -- 사용자명
+					   CALLAUTH, -- 제휴사구분
+					   TREATYCD, -- 취급자코드
+					   TREATYBRHCD AS ORG2_CD, -- 센터 
+       				   TREATYDEPTCD AS ORG3_CD  -- 팀
+				FROM TSOWN.TB_USER
+				WHERE USERID = ?USER_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getTMCodes.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>AIGEN CODEBOOK 조회</description>
+		<result-name>DS_TM_CODE</result-name>
+		<query><![CDATA[
+				SELECT CODETYPE, 
+				       CODE, 
+				       CODENAME, 
+				       ETCCODE1, 
+				       ETCCODE2
+				FROM TSOWN.TB_CODEBOOK
+				WHERE CODETYPE = ?CODETYPE
+				AND CODE <> '000000'
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getWorkDate.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>기준일자를 기준으로 휴일,주말을 제외한 영업일자</description>
+		<result-name>DS_WORKDATE</result-name>
+		<query><![CDATA[
+			SELECT
+			    CASE WHEN TO_CHAR(SYSDATE,'YYYYMMDD') > MIN(BASE_DATE) THEN 'Y' ELSE 'N' END AS CLSE_YN     --마감일자 체크
+    			,CASE WHEN TO_CHAR(SYSDATE,'YYYYMM') = SUBSTR(?APP_DATE,0,6) THEN 'Y' ELSE 'N' END AS MOD_YN    --당월이면 Y, 아니면 N
+			FROM TSOWN.TB_WORKDATE
+			WHERE DOW_TC NOT IN ('6','0') -- DOW_TC : 요일코드
+			AND BNK_HDAY_YN != 'Y' -- BNK_HDAY_YN : 휴일 여부
+			AND BASE_DATE >= TO_CHAR(ADD_MONTHS(TO_DATE(SUBSTR(?APP_DATE,0,6) || ?CLSE_DAY,'YYYYMMDD'),1),'YYYYMMDD')
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getDmboStatus.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>사망담보 존재 여부 조회</description>
+		<result-name>DS_DMBO_STATUS</result-name>
+		<query><![CDATA[
+			SELECT
+			    DMBO_CD
+			FROM TSOWN.TBIC063
+			WHERE TM_NO = ?TM_NO
+		]]></query>
+	</sql-service>
+	
+	<!-- 선심사 QA통판 심사상태 조회 -->
+	<sql-service name='msens.est.hansol.getQAEvaluateStatus.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>QA 심사 상태 조회</description>
+		<result-name>DS_QA_STATUS</result-name>
+		<query><![CDATA[
+			SELECT TIPM.TM_PROCESSING_GB                                                 AS PRE_TM_PROCESSING_GB   /** 현심사상태 */
+			     , ( SELECT DECODE(COUNT(CON_ENT_DGN_NO), 0, 'N', 'Y')
+			          FROM TSOWN.TB_PRE_EST_HISTORY 
+			         WHERE CON_ENT_DGN_NO = TIPM.CON_ENT_DGN_NO
+			           AND QACD  = ?QACD )                                               AS RESULT_YN             /** 결과여부 */
+			     , (SELECT MAX(ESTRESULTCD) KEEP(DENSE_RANK FIRST ORDER BY HTID DESC)
+			       FROM  TSOWN.TB_PRE_EST_HISTORY TEH
+			       WHERE TEH.CON_ENT_DGN_NO = TIPM.CON_ENT_DGN_NO)                       AS RESULT_CD              /** 심사결과 */
+			     , (SELECT MAX(QACD) KEEP(DENSE_RANK FIRST ORDER BY HTID DESC)
+			       FROM  TSOWN.TB_PRE_EST_HISTORY TEH
+			       WHERE TEH.CON_ENT_DGN_NO = TIPM.CON_ENT_DGN_NO)                       AS CUR_QACD              /** 최종심사단계 */
+			     , NVL((SELECT MAX(HTID) KEEP(DENSE_RANK FIRST ORDER BY HTID DESC)
+			       FROM  TSOWN.TB_PRE_EST_HISTORY TEH
+			       WHERE TEH.CON_ENT_DGN_NO = TIPM.CON_ENT_DGN_NO),0)                    AS CUR_HTID              /** 최종HTID값 */
+			     , NVL((SELECT MAX(HTDGREE) KEEP(DENSE_RANK FIRST ORDER BY HTID DESC)
+			       FROM  TSOWN.TB_PRE_EST_HISTORY TEH
+			       WHERE TEH.CON_ENT_DGN_NO = TIPM.CON_ENT_DGN_NO),0)                      AS CUR_HTDGREE           /** 최종HTDGREE값 */
+			     , CASE WHEN PLS_DECRYPT_B64(TIPM.CON_P_PSN_NO) = PLS_DECRYPT_B64(TIPD.CON_IP_ISD_CD) THEN 'Y' ELSE 'N' END  AS PSN_YN
+                 , TIPM.CON_POL_NO                                                         AS CON_POL_NO            /** 증권번호 */
+                 , TIPM.CON_ENT_DGN_NO                                                     AS CON_ENT_DGN_NO        /** 설계번호 */
+                 , TIPM.CON_I_KIND_CD                                                      AS CON_I_KIND_CD         /** 상품코드 **/
+                 , TIPM.CON_P_CUST_NO                                                 	   AS CUSTNO
+                 , TIPM.CON_P_CONT_NAME                                                    AS CON_P_NAME
+                 , TIPD.CON_IP_INS_CUST_NO                                                 AS CON_IP_CUST_NO
+                 , PLS_DECRYPT_B64(TIPM.CON_P_PSN_NO)                                      AS CON_P_PSN_NO
+     			 , TIPM.CON_APP_DATE                                                       AS CON_APP_DATE
+     			 , NVL(TIPM.DSGN_DEL_YN,'N')											   AS DEL_YN
+     			 , NVL(CON_ETC_FIELD_1,'N')                                                AS AUTO_YN
+     			 , TIPM.CON_CON_EXP_Y_CNT												   AS CON_CON_EXP_Y_CNT
+     			 , TIPD.CON_IP_CONT_AGE													   AS CON_IP_CONT_AGE
+     			 , PLS_DECRYPT_B64(TIPD.CON_IP_ISD_CD)									   AS CON_IP_ISD_CD
+     			 , CASE WHEN TIPM.CON_POL_NO IS NOT NULL THEN 'N'
+						WHEN TO_CHAR(SYSDATE, 'YYYYMM') <> SUBSTR(TIPM.CON_CON_OLT_PROP_YMD, 1 ,6) THEN 'Y'
+		            	WHEN TIPM.POA_WAIT_YN = 'Y' AND TO_CHAR(SYSDATE, 'YYYYMM') = SUBSTR(TIPM.CON_CON_OLT_PROP_YMD, 1 ,6) THEN 'N'
+		            	WHEN TO_CHAR(SYSDATE, 'YYYYMMDD') BETWEEN SUBSTR(TIPM.CON_CON_OLT_PROP_YMD, 1, 8) AND TO_CHAR(TO_DATE(TIPM.CON_CON_OLT_PROP_YMD, 'YYYYMMDDHH24MISS') + 9,'YYYYMMDD') THEN 'N'
+		            	ELSE 'Y'
+					END																		AS EXPIRED_YN
+              FROM TSOWN.TB_INSU_PLAN_MAST TIPM
+              	  ,TSOWN.TB_INSU_PLAN_DETAIL TIPD
+             WHERE TIPM.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+             AND   TIPM.TM_NO = TIPD.TM_NO
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getViewStatus.sel' datasource="aig_tm" paging="false" type="prepared">
+		<description>화면 오픈여부 조회</description>
+		<result-name>DS_VIEW_STATUS</result-name>
+		<query><![CDATA[
+			  SELECT
+			    CASE WHEN CON_ETC_FIELD_4 IS NOT NULL THEN SUBSTR(CON_ETC_FIELD_4,1,8) ELSE '' END AS USERID
+                ,CASE WHEN CON_ETC_FIELD_4 IS NOT NULL THEN (SELECT USERNAME FROM TSOWN.TB_USER WHERE USERID = SUBSTR(CON_ETC_FIELD_4,0,8))  ELSE '' END AS USERNM
+			    ,CASE WHEN CON_ETC_FIELD_4 IS NOT NULL THEN (SELECT TREATYBRHNM FROM TSOWN.TB_USER WHERE USERID = SUBSTR(CON_ETC_FIELD_4,0,8)) ELSE '' END AS USER_TEAM
+                , CASE WHEN CON_ETC_FIELD_4 IS NOT NULL 
+                       THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK 
+                             WHERE CODETYPE = 'SYS999' 
+                             AND CODE = (SELECT USERLEVEL FROM TSOWN.TB_USER WHERE USERID = SUBSTR(CON_ETC_FIELD_4,1,8))
+                             ) 
+                       ELSE '' END AS USER_LEVEL
+			    ,CASE WHEN CON_ETC_FIELD_4 IS NOT NULL THEN TO_CHAR(TO_DATE(SUBSTR(CON_ETC_FIELD_4,9),'YYYYMMDDHH24MISS'),'YYYY.MM.DD HH24:MI:SS') ELSE '' END AS OPEN_DATE
+			    ,CASE WHEN CON_ETC_FIELD_4 IS NOT NULL THEN 'Y' ELSE 'N' END AS OPEN_YN
+                , CON_ETC_FIELD_4
+			FROM TSOWN.TB_INSU_PLAN_MAST
+			WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.setViewStatus.upd' datasource='aig_tm' type='prepared' batch='false'>
+		<description>화면 조회 상태 업데이트</description>
+		<query><![CDATA[
+			UPDATE TSOWN.TB_INSU_PLAN_MAST 
+			SET CON_ETC_FIELD_4 = ?type
+			WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO 
+        ]]></query>
+        <parameter name='TYPE' value="" default="" >
+			<condition key="open" value="?USER_ID || TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')"/>
+			<condition key="close" value="NULL"/>
+		</parameter> 
+	</sql-service>
+	
+	<!-- 선심사 QA통판 심사결과 이력 조회 -->
+	<sql-service name='msens.est.hansol.getOpinionDetailQc.sel' datasource="aig_tm" paging="false" type="prepared">
+		<description>선심사 QA통판 심사결과 이력을 검색</description>
+		<result-name>DS_QC_OPINION</result-name>
+		<query><![CDATA[
+			  SELECT ROWNUM                   AS NO           	/** 순번 */
+                 , DTL.ESTRESULTCD          AS ESTRESULTCDGD  	/** 심사결과코드_Grid */
+                 , DTL.ESTRESULTCD          AS ESTRESULTCD  	/** 심사결과코드 */
+                 , DTL.ESTREGISTDT          AS ESTREGISTDT  	/** 심사일자 */
+                 , DTL.PROCESS_DATE      	AS PROCESS_DATE		/** 수정일자 */
+                 , DTL.RT_PROCESS_DATE      AS RT_PROCESS_DATE	/** 재심일자 */
+                 , DTL.CON_ENT_DGN_NO		AS CON_ENT_DGN_NO 	/** 설계번호 */
+                 , DTL.QACD                 AS QACD         	/** 심사항목QACD	*/
+                 , DTL.HTDGREE              AS HTDGREE      	/** 보완차수 */
+                 , DTL.HTID                 AS HTID         	/** 이력ID */
+                 , DTL.ESTOPINION           AS ESTOPINION   	/** 심사자의견 */
+                 , DTL.QAOPINION            AS QAOPINION    	/** QA심사의뢰 의견*/
+                 , DTL.RTOPINION            AS RTOPINION    	/** 상담원의견 */
+                 , (SELECT USERNAME FROM TSOWN.TB_USER WHERE USERID = DTL.ESTREGISTID) AS ESTREGISTID  	/** 심사자 */
+                 , DTL.EST_ITEM_VER			AS EST_ITEM_VER		/** 평가표VER */
+                 , (SELECT A.RTOPINION FROM TSOWN.TB_PRE_EST_HISTORY A WHERE A.QACD = '' AND A.CON_ENT_DGN_NO = DTL.CON_ENT_DGN_NO AND A.HTID = DTL.HTID) AS RTOPINION1  /** 상담원재심의견 */
+                 , DTL.MOD_YN               AS MODYN
+              FROM (
+                     SELECT ESTRESULTCD   	AS ESTRESULTCD
+                          , ESTREGISTDT     AS ESTREGISTDT  		/** 심사일자		*/
+                          , PROCESS_DATE 	AS PROCESS_DATE      	/** 수정일자		*/                         
+		                  , RT_PROCESS_DATE AS RT_PROCESS_DATE      /** 재심일자		*/
+                          , CON_ENT_DGN_NO	AS CON_ENT_DGN_NO
+                          , QACD          	AS QACD
+                          , HTDGREE       	AS HTDGREE
+                          , HTID          	AS HTID
+                          , ESTOPINION    	AS ESTOPINION
+                          , QAOPINION     	AS QAOPINION 
+                          , RTOPINION     	AS RTOPINION
+                          , ESTREGISTID   	AS ESTREGISTID
+                          , EST_ITEM_VER	AS EST_ITEM_VER
+                          , (SELECT CASE WHEN COUNT(HTID) > 0 THEN 'Y' ELSE 'N' END FROM TSOWN.TB_PRE_EST_HIST_DT WHERE HTID = A.HTID AND HTDGREE = A.HTDGREE) AS MOD_YN
+                      FROM TSOWN.TB_PRE_EST_HISTORY A
+                      WHERE 1=1
+                        AND CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+                        AND QACD    = ?QACD
+                      ORDER BY HTDGREE DESC
+                   ) DTL
+		]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getEvaluateCodes.sel' datasource="aig_tm" paging="false" type="prepared">
+		<description>평가항목 관리 코드 조회</description>
+		<result-name>DS_EST_CODE</result-name>
+		<query><![CDATA[
+			  SELECT
+			    CODETYPE
+			    ,CODE
+			    ,CODENAME
+			    ,CODEGROUP
+			    ,SORTKEY
+			    ,ISCHANGABLE
+			    ,CODEDEPTH
+			    ,(SELECT MAX(TO_NUMBER(CODE)) FROM TSOWN.TB_CODEBOOK WHERE CODEGROUP = 'RST' AND NVL(CODEDEPTH,'NULL') != '1') AS MAXCODE
+			FROM TSOWN.TB_CODEBOOK
+			WHERE CODEGROUP = 'RST'
+			?code_type
+			?code_depth
+			ORDER BY SORTKEY ASC
+					,CODENAME ASC
+		]]></query>
+		<parameter name='code_type' value="AND CODE != '000000' AND CODETYPE = ?CODETYPE" default="" />
+		<parameter name='code_depth' value="" default="" >
+			<condition key="1" value="AND CODEDEPTH = '1'"/>
+			<condition key="2" value="AND CODEDEPTH = '1' AND CODE = '000000'"/>
+			<condition key="3" value="AND NVL(CODEDEPTH,'NULL') != '1'"/>
+		</parameter> 
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getEvalListNew.sel' datasource="aig_tm" paging="false" type="prepared">
+		<description>평가항목 관리 리스트 조회(신버전)</description>
+		<result-name>DS_EST_LIST</result-name>
+		<query><![CDATA[
+			  SELECT
+			    A.EST_ITEM_VER
+			    ,A.EST_CD_ID
+			    ,A.ESTFCATCD
+			    ,A.ESTSCATCD
+			    ,A.ESTSCATNM
+			    ,A.ESTTCATCD
+			    ,A.ESTTCATNM
+			    ,A.MAIN_NO
+			    ,A.SMALL_NO
+			    ,CASE WHEN A.SMALL_NO = 0 THEN TO_CHAR(A.MAIN_NO) 
+                      ELSE TO_CHAR(A.MAIN_NO) || '-' || TO_CHAR(A.SMALL_NO) END AS TOT_NO
+			    ,A.QST_CONT
+			    ,A.ORD_NO
+			    ,A.ESTUSEYN
+			    ,A.QACD
+			    ,A.ESTETC
+			    ,B.ESTRESULTCD
+			    ,B.ESTRESULTCD AS ETCCD    
+			    ,CASE WHEN A.ESTETC = 'RST999' THEN 'checkbox' WHEN A.ESTETC = 'RST888' THEN 'normal' ELSE 'combo' END AS ETCGB
+			    ,B.QUEST_MEMO AS QUEST_MEMO
+			    ,B.RCV_MEMO AS RCV_MEMO
+			    ,A.ESTREGISTDT
+			    ,A.ESTREGISTID
+			    ,CASE WHEN B.CNT IS NOT NULL THEN 'Y' ELSE 'N' END AS CNTYN
+			FROM TSOWN.TB_PRE_EST_ITEM A
+			    ,(
+			        SELECT
+			            A.HTID
+			            ,A.ESTTCATCD
+			            ,A.ESTRESULTCD
+			            ,A.QUEST_MEMO
+			            ,A.RCV_MEMO 
+			            ,B.EST_ITEM_VER
+			            ,B.SC_CD_ID
+			            ,ROWNUM AS CNT
+			        FROM TSOWN.TB_PRE_EST_RESULT_HIST A
+			             ,TSOWN.TB_PRE_EST_HISTORY B
+			        WHERE A.HTID = B.HTID
+			        AND B.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+			        ?qacd
+			        ?htid
+			    ) B
+			WHERE A.ESTTCATCD = B.ESTTCATCD(+)
+			AND A.EST_ITEM_VER = DECODE(B.EST_ITEM_VER,'',(SELECT MAX(EST_ITEM_VER) FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTUSEYN='Y'),B.EST_ITEM_VER)
+			ORDER BY ORD_NO ASC
+			        ,MAIN_NO ASC
+			        ,SMALL_NO ASC
+		]]></query>
+		<parameter name='qacd' value="AND B.QACD = ?QACD" default="" />
+		<parameter name='htid' value="AND A.HTID = ?HTID" default="" />
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getEvalList.sel' datasource="aig_tm" paging="false" type="prepared">
+		<description>평가항목 관리 리스트 조회(구버전)</description>
+		<result-name>DS_EST_LIST</result-name>
+		<query><![CDATA[
+			 SELECT
+			    A.EST_ITEM_VER
+			    ,A.EST_CD_ID
+			    ,A.ESTFCATCD
+			    ,A.ESTSCATCD
+			    ,A.ESTSCATNM
+			    ,A.ESTTCATCD
+			    ,A.ESTTCATNM
+			    ,A.MAIN_NO
+			    ,A.SMALL_NO
+			    ,CASE WHEN A.SMALL_NO = 0 THEN TO_CHAR(A.MAIN_NO) 
+                      ELSE TO_CHAR(A.MAIN_NO) || '-' || TO_CHAR(A.SMALL_NO) END AS TOT_NO
+			    ,A.QST_CONT
+			    ,A.ORD_NO
+			    ,A.ESTUSEYN
+			    ,A.QACD
+			    ,A.ESTETC
+			    ,B.ESTRESULTCD
+			    ,B.ESTRESULTCD AS ETCCD
+			    ,CASE WHEN A.ESTETC = '99' THEN 'checkbox' WHEN NVL(A.ESTETC,'NULL') = 'NULL' THEN 'normal' ELSE 'combo' END AS ETCGB    
+			    ,B.QUEST_MEMO AS QUEST_MEMO
+			    ,B.RCV_MEMO AS RCV_MEMO
+			    ,A.ESTREGISTDT
+			    ,A.ESTREGISTID
+			    ,CASE WHEN B.CNT IS NOT NULL THEN 'Y' ELSE 'N' END AS CNTYN
+			FROM TSOWN.TB_PRE_EST_ITEM A
+			    ,(
+			        SELECT
+			            A.HTID
+			            ,A.ESTTCATCD
+			            ,A.ESTRESULTCD
+			            ,A.QUEST_MEMO
+			            ,A.RCV_MEMO 
+			            ,B.EST_ITEM_VER
+			            ,B.SC_CD_ID
+			            ,ROWNUM AS CNT
+			        FROM TSOWN.TB_PRE_EST_RESULT_HIST A
+			             ,TSOWN.TB_PRE_EST_HISTORY B
+			        WHERE A.HTID = B.HTID
+			        AND B.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+			        ?QACD
+			        ?HTID
+			    ) B
+			WHERE A.ESTTCATCD = B.ESTTCATCD(+)
+			AND A.EST_ITEM_VER = '1' -- 평가표 VERSION 1만 형태가 달라서 이렇게 쿼리를 따로 둠
+			ORDER BY ORD_NO ASC
+			         ,MAIN_NO ASC
+			         ,SMALL_NO ASC
+		]]></query>
+		<parameter name='qacd' value="AND B.QACD = ?QACD" default="" />
+		<parameter name='htid' value="AND A.HTID = ?HTID" default="" />
+	</sql-service>
+	
+	<!-- 선심사 QA통판 심사 가능한지 체크  -->
+	<sql-service name='msens.est.hansol.getTmProcessingGB.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>선심사 QA통판 심사 가능한지 체크</description>
+		<result-name>DS_PROCESSING_GB</result-name>
+		<query><![CDATA[
+				SELECT
+	            	TM_PROCESSING_GB
+	            	, CON_CAMP_CD
+					, CON_TREATY_CD
+					, CASE WHEN CON_CAMP_CD IS NOT NULL THEN  CON_CAMP_CD ELSE CON_TREATY_CD END AS DGN_USER_ID
+            FROM TSOWN.TB_INSU_PLAN_MAST
+			WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+		]]></query>
+	</sql-service>
+	
+	<!-- 선심사결과 이력 Table의 Max 이력 ID 조회 -->
+	<sql-service name='msens.est.hansol.getMaxSEQ_HOLI_SEQ.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>통화품질 모니터링(QA통판) 심사결과 이력 Table의 Max 이력 ID을 검색</description>
+		<result-name>SEQ_HOLI_SEQ</result-name>
+		<query><![CDATA[
+				SELECT TSOWN.SEQ_HOLI_SEQ.NEXTVAL AS HTID FROM DUAL
+		]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY  : SAVE_GB = INSERT2 Insert -->
+	<sql-service name='msens.est.hansol.savetbPreEstHistory.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사결과 이력을 저장</description>
+		<batch-name>DS_EST_HIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HISTORY         
+                 ( CON_ENT_DGN_NO                      
+                 , QACD                       
+                 , HTDGREE                    
+                 , HTID                       
+                 , ESTRESULTCD                
+                 , ESTOPINION                 
+                 , RTOPINION                  
+                 , ESTREGISTDT                
+                 , ESTREGISTID                 
+                 , QAOPINION
+                 , EST_ITEM_VER
+                 , SC_CD_ID
+                 , EVAL_SCOR )              
+            VALUES 
+                 ( ?CON_ENT_DGN_NO
+                 , ?QACD
+                 , DECODE(?ESTRESULTCD,'',0,(SELECT NVL(MAX(HTDGREE), 0) + 1 FROM TSOWN.TB_PRE_EST_HISTORY WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO))        
+                 , ?HTID
+                 , ?ESTRESULTCD
+                 , ?ESTOPINION
+                 , ?RTOPINION
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?ESTREGISTID
+                 , ?QAOPINION
+                 , ?EST_ITEM_VER
+                 , ?SC_CD_ID
+                 , ?EVAL_SCOR )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY : SAVE_GB = INSERT Insert -->
+	<sql-service name='msens.est.hansol.savetbPreEstHistory2.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사결과 이력을 저장</description>
+		<batch-name>DS_EST_HIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HISTORY         
+                 ( CON_ENT_DGN_NO                      
+                 , QACD                       
+                 , HTDGREE                    
+                 , HTID                       
+                 , ESTRESULTCD                
+                 , ESTOPINION                 
+                 , RTOPINION                  
+                 , ESTREGISTDT                
+                 , ESTREGISTID                 
+                 , RT_PROCESS_DATE
+                 , QAOPINION
+                 , EST_ITEM_VER
+                 , SC_CD_ID
+                 , EVAL_SCOR )              
+            VALUES 
+                 ( ?CON_ENT_DGN_NO
+                 , ?QACD
+                 , (SELECT NVL(MAX(HTDGREE), 0) + 1 FROM TSOWN.TB_PRE_EST_HISTORY WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO)        
+                 , ?HTID
+                 , ?ESTRESULTCD
+                 , ?ESTOPINION
+                 , ?RTOPINION
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?ESTREGISTID
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?QAOPINION
+                 , ?EST_ITEM_VER
+                 , ?SC_CD_ID
+                 , ?EVAL_SCOR )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_RESULT_HIST Insert -->
+	<sql-service name='msens.est.hansol.savetbPreEstResultHist.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사항목별 심사결과 이력을 저장</description>
+		<batch-name>DS_EST_RES_HIST</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_RESULT_HIST         
+                 ( HTID                      
+                 , ESTTCATCD                       
+                 , ESTRESULTCD
+                 , QUEST_MEMO
+                 , RCV_MEMO  )              
+            VALUES 
+                 ( ?HTID
+                 , ?ESTTCATCD
+                 , ?ESTRESULTCD
+                 , ?QUEST_MEMO
+                 , ?RCV_MEMO  )
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name='msens.est.hansol.getMaxLogSeqId.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>심사결과 이력 Table의 Max LOGSEQID을 검색</description>
+		<result-name>LOGSEQID</result-name>
+		<query><![CDATA[
+			SELECT TSOWN.SEQ_HOLI_SEQ.NEXTVAL AS LOGSEQID FROM DUAL
+		]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_RESULT_HIST_LOG Insert -->
+	<sql-service name='msens.est.hansol.savetbPreEstResultHistLog.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사항목별 심사결과 이력의 저장로그를 저장</description>
+		<batch-name>DS_EST_RES_HIST_LOG</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_RST_HIST_LOG         
+                 ( LOGSEQID
+                 , HTID                      
+                 , ESTTCATCD                       
+                 , ESTRESULTCD
+                 , QUEST_MEMO
+                 , RCV_MEMO )              
+            VALUES 
+                 ( ?LOGSEQID
+                 , ?HTID
+                 , ?ESTTCATCD
+                 , ?ESTRESULTCD
+                 , ?QUEST_MEMO
+                 , ?RCV_MEMO )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY_LOG Insert :: SAVE_GB - INSERT2 -->
+	<sql-service name='msens.est.hansol.savetbPreEstHistoryLog.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사결과이력의 로그를 저장</description>
+		<batch-name>DS_EST_HIST_LOG</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HISTORY_LOG         
+                 ( LOGSEQID
+                 , CON_ENT_DGN_NO                      
+                 , QACD                       
+                 , HTDGREE                    
+                 , HTID                       
+                 , ESTRESULTCD                
+                 , ESTOPINION                 
+                 , RTOPINION                  
+                 , ESTREGISTDT                
+                 , ESTREGISTID                 
+                 , QAOPINION
+                 , EST_ITEM_VER
+                 , SC_CD_ID )              
+            VALUES 
+                 ( TSOWN.SEQ_HOLI_SEQ.NEXTVAL
+                 , ?CON_ENT_DGN_NO
+                 , ?QACD
+                 , ?HTDGREE   
+                 , ?HTID
+                 , ?ESTRESULTCD
+                 , ?ESTOPINION
+                 , ?RTOPINION
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?ESTREGISTID
+                 , ?QAOPINION
+                 , ?EST_ITEM_VER
+                 , ?SC_CD_ID )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY_LOG Insert :: SAVE_GB :: INSERT -->
+	<sql-service name='msens.est.hansol.savetbPreEstHistoryLog2.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사결과이력의 로그를 저장</description>
+		<batch-name>DS_EST_HIST_LOG</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HISTORY_LOG         
+                 ( LOGSEQID
+                 , CON_ENT_DGN_NO                      
+                 , QACD                       
+                 , HTDGREE                    
+                 , HTID                       
+                 , ESTRESULTCD                
+                 , ESTOPINION                 
+                 , RTOPINION                  
+                 , ESTREGISTDT                
+                 , ESTREGISTID                 
+                 , RT_PROCESS_DATE
+                 , QAOPINION
+                 , EST_ITEM_VER
+                 , SC_CD_ID )              
+            VALUES 
+                 ( TSOWN.SEQ_HOLI_SEQ.NEXTVAL
+                 , ?CON_ENT_DGN_NO
+                 , ?QACD
+                 , (SELECT NVL(MAX(HTDGREE), 0) FROM TSOWN.TB_PRE_EST_HISTORY WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO)
+                 , ?HTID
+                 , ?ESTRESULTCD
+                 , ?ESTOPINION
+                 , ?RTOPINION
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?ESTREGISTID
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?QAOPINION
+                 , ?EST_ITEM_VER
+                 , ?SC_CD_ID )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY_LOG Insert :: SAVE_GB :: UPDATE -->
+	<sql-service name='msens.est.hansol.savetbPreEstHistoryLog3.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사결과이력의 로그를 저장</description>
+		<batch-name>DS_EST_HIST_LOG</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HISTORY_LOG         
+                 ( LOGSEQID
+                 , CON_ENT_DGN_NO                      
+                 , QACD                       
+                 , HTDGREE                    
+                 , HTID                       
+                 , ESTRESULTCD                
+                 , ESTOPINION                 
+                 , RTOPINION                  
+                 , RTREGISTDT                 
+                 , ESTREGISTID                 
+                 , PROCESS_DATE 
+                 , QAOPINION
+                 , EST_ITEM_VER
+                 , SC_CD_ID )
+            VALUES 
+                 ( TSOWN.SEQ_HOLI_SEQ.NEXTVAL
+                 , ?CON_ENT_DGN_NO
+                 , ?QACD
+                 , (SELECT NVL(MAX(HTDGREE), 0) FROM TSOWN.TB_PRE_EST_HISTORY WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO)
+                 , ?HTID
+                 , ?ESTRESULTCD
+                 , ?ESTOPINION
+                 , ?RTOPINION
+                 , ?RTREGISTDT
+                 , ?ESTREGISTID
+                 , TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ?QAOPINION
+                 , ?EST_ITEM_VER
+                 , ?SC_CD_ID )
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HIST_DT Insert-->
+	<sql-service name='msens.est.hansol.savetbPreEstHistDT.ins' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 수정이력을 저장</description>
+		<batch-name>DS_EST_LIST_IN</batch-name>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_PRE_EST_HIST_DT
+			(
+			    HTID
+			    ,REG_DT
+			    ,REG_TM
+			    ,HTDGREE
+			    ,PRE_RST_CD
+			    ,MOD_RST_CD
+			    ,EST_CD_ID
+			    ,EST_ITEM_VER
+			    ,ESTTCATCD
+			    ,ORD_NO
+			)
+			VALUES
+			(
+			    ?HTID
+			    ,TO_CHAR(SYSDATE,'YYYYMMDD')
+			    ,TO_CHAR(SYSDATE,'HH24MISS')
+			    ,?HTDGREE
+			    ,?PRE_RST_CD
+			    ,?MOD_RST_CD
+			    ,?EST_CD_ID
+			    ,?EST_ITEM_VER
+			    ,?ESTTCATCD
+			    ,(SELECT NVL(MAX(ORD_NO),0)+1 FROM TSOWN.TB_PRE_EST_HIST_DT)
+			)
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY Update -->
+	<sql-service name='msens.est.hansol.updatetbPreEstHistory.upd' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사항목별 심사결과 이력을 수정</description>
+		<batch-name>DS_EST_HIST</batch-name>
+		<query><![CDATA[
+			UPDATE TSOWN.TB_PRE_EST_HISTORY
+            SET
+                   ESTOPINION  	= ?ESTOPINION
+                 , QAOPINION   	= ?QAOPINION
+                 , PROCESS_DATE	= TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , RTREGISTDT  	= ?RTREGISTDT		--수정자
+                 , EVAL_SCOR 	= ?EVAL_SCOR
+             WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+             AND HTID = ?HTID
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_HISTORY Update :: SAVE_GB : UPDATE2 -->
+	<sql-service name='msens.est.hansol.updatetbPreEstHistory2.upd' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사항목별 심사결과 이력을 수정</description>
+		<batch-name>DS_EST_HIST</batch-name>
+		<query><![CDATA[
+			UPDATE TSOWN.TB_PRE_EST_HISTORY
+            SET
+                   ESTRESULTCD 	= ?ESTRESULTCD
+                 , HTDGREE		= HTDGREE+1
+                 , ESTOPINION  	= ?ESTOPINION
+                 , QAOPINION   	= ?QAOPINION
+                 , ESTREGISTDT  = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 , ESTREGISTID  = ?ESTREGISTID
+                 , EVAL_SCOR	= ?EVAL_SCOR
+             WHERE CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+             AND HTID = ?HTID
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_PRE_EST_RESULT_HIST Update -->
+	<sql-service name='msens.est.hansol.updatetbPreEstResultHist.upd' datasource='aig_tm' type='prepared' batch='true'>
+		<description>QA통판 심사항목별 심사결과 이력을 수정</description>
+		<batch-name>DS_EST_RES_HIST</batch-name>
+		<query><![CDATA[
+			UPDATE TSOWN.TB_PRE_EST_RESULT_HIST 
+			SET
+            	ESTRESULTCD = ?ESTRESULTCD
+               ,QUEST_MEMO = ?QUEST_MEMO
+               ,RCV_MEMO = ?RCV_MEMO
+            WHERE HTID        = ?HTID
+            AND   ESTTCATCD   = ?ESTTCATCD 
+        ]]></query>
+	</sql-service>
+	
+	<!-- TB_INSU_PLAN_MAST2 Update -->
+	<sql-service name='msens.est.hansol.updatetbInsuPlanMast.upd' datasource='aig_tm' type='prepared' batch='true'>
+		<description>심사결과 최종상태값을 수정</description>
+		<batch-name>DS_INSU_PLAN_MAST</batch-name>
+		<query><![CDATA[
+			UPDATE TSOWN.TB_INSU_PLAN_MAST
+               SET TM_PROCESSING_GB 		= ?TM_PROCESSING_GB
+                 , CON_CONT_STATE			= ?CON_CONT_STATE
+                 , TM_UPDATE_PRE_JUDGE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDD')
+                 , TM_UPDATE_PRE_QA     	= ?TM_UPDATE_PRE_QA
+                 , TM_UPDATE_ID				= ?TM_UPDATE_PRE_QA
+                 , TM_UPDATE_DATE			= TO_CHAR(SYSDATE, 'YYYYMMDD')
+                 , CON_ISTAR_CONT_DATE		= ?CON_ISTAR_CONT_DATE
+                 , CON_IEND_CONT_DATE		= ?CON_IEND_CONT_DATE
+                 ?CON_ETC_FIELD_3
+                 ?ESTRESULTCD
+             WHERE CON_ENT_DGN_NO 			= ?CON_ENT_DGN_NO
+        ]]></query>
+        <parameter name='ESTRESULTCD' value="" default="" >
+			<condition key="62" value=", CON_INSU_YN = DECODE(CON_INSU_YN,'','','05')"/>
+		</parameter> 
+		<parameter name='CON_ETC_FIELD_3' value=" , CON_ETC_FIELD_3     		= ?CON_ETC_FIELD_3 " default="" >
+		</parameter> 
+	</sql-service>
+	
+	<!-- 선심사 QA통판 변경이력 조회 -->
+	<sql-service name='msens.est.hansol.getPreEstItemModListNew.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>선심사 QA통판 심사결과 이력을 검색</description>
+		<result-name>DS_MOD_HIST</result-name>
+		<query><![CDATA[
+			SELECT
+			     HTID            	AS HTID
+			    ,HTDGREE        	AS HTDGREE
+			    ,CASE WHEN B.ESTETC = 'RST999' THEN CASE WHEN PRE_RST_CD = '1' THEN '선택' ELSE '미선택' END 
+                      ELSE CASE WHEN B.ESTETC != 'RST999' AND B.ESTETC != 'RST888' THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK WHERE CODETYPE = B.ESTETC AND CODE = PRE_RST_CD) ELSE PRE_RST_CD END END  AS PRE_RST_CD
+                ,CASE WHEN B.ESTETC = 'RST999' THEN CASE WHEN MOD_RST_CD = '1' THEN '선택' ELSE '미선택' END
+                      ELSE CASE WHEN B.ESTETC != 'RST999' AND B.ESTETC != 'RST888' THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK WHERE CODETYPE = B.ESTETC AND CODE = MOD_RST_CD) ELSE MOD_RST_CD END END  AS MOD_RST_CD					    
+			    ,B.ESTSCATNM AS ESTSCATNM
+                ,B.ESTTCATNM ESTTCATNM
+                ,B.MAIN_NO AS MAIN_NO
+                ,B.SMALL_NO AS SMALL_NO
+                ,CASE WHEN B.SMALL_NO = 0 THEN TO_CHAR(B.MAIN_NO) 
+                      ELSE TO_CHAR(B.MAIN_NO) || '-' || TO_CHAR(B.SMALL_NO) END AS TOT_NO
+                ,REG_DT || REG_TM   AS REG_DT
+			FROM TSOWN.TB_PRE_EST_HIST_DT A
+				,TSOWN.TB_PRE_EST_ITEM B
+			WHERE HTID = ?HTID
+			AND HTDGREE = ?HTDGREE
+			AND A.EST_ITEM_VER = B.EST_ITEM_VER
+            AND A.EST_CD_ID = B.EST_CD_ID
+            AND A.ESTTCATCD = B.ESTTCATCD
+			ORDER BY A.ESTTCATCD ASC
+					,MAIN_NO ASC
+					,SMALL_NO ASC
+		]]></query>
+	</sql-service>
+	
+	<!-- 선심사 QA통판 변경이력 조회 -->
+	<sql-service name='msens.est.hansol.getPreEstItemModList.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>선심사 QA통판 심사결과 이력을 검색</description>
+		<result-name>DS_MOD_HIST</result-name>
+		<query><![CDATA[
+			SELECT A.HTID,
+                        A.HTDGREE,
+                        A.PRE_RST_CD,
+                        A.MOD_RST_CD,
+                        A.REG_DT,
+                        A.ESTSCATNM,
+                        A.ESTTCATNM,
+                        A.MAIN_NO,
+                        A.SMALL_NO,
+                        CASE WHEN A.SMALL_NO = 0 THEN TO_CHAR(A.MAIN_NO) 
+                             ELSE TO_CHAR(A.MAIN_NO) || '-' || TO_CHAR(A.SMALL_NO) END AS TOT_NO
+			FROM
+				(SELECT
+				     HTID            	AS HTID
+				    ,HTDGREE        	AS HTDGREE
+				    ,CASE WHEN PRE_RST_CD = '0' OR PRE_RST_CD = '1' THEN CASE WHEN PRE_RST_CD = '1' THEN '선택' ELSE '미선택' END 
+	                      ELSE CASE WHEN LENGTH(PRE_RST_CD) = 2 THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK WHERE CODETYPE = 'EST201' AND CODE = PRE_RST_CD) ELSE PRE_RST_CD END END  AS PRE_RST_CD
+	                ,CASE WHEN MOD_RST_CD = '0' OR MOD_RST_CD = '1' THEN CASE WHEN MOD_RST_CD = '1' THEN '선택' ELSE '미선택' END 
+	                      ELSE CASE WHEN LENGTH(MOD_RST_CD) = 2 THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK WHERE CODETYPE = 'EST201' AND CODE = MOD_RST_CD) ELSE MOD_RST_CD END END  AS MOD_RST_CD
+				    ,REG_DT || REG_TM   AS REG_DT
+				    ,(SELECT ESTSCATNM FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTTCATCD = A.ESTTCATCD AND EST_ITEM_VER = ?EST_ITEM_VER) AS ESTSCATNM
+				    ,(SELECT ESTTCATNM FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTTCATCD = A.ESTTCATCD AND EST_ITEM_VER = ?EST_ITEM_VER) AS ESTTCATNM
+				    ,(SELECT MAIN_NO FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTTCATCD = A.ESTTCATCD AND EST_ITEM_VER = ?EST_ITEM_VER) AS MAIN_NO
+				    ,(SELECT SMALL_NO FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTTCATCD = A.ESTTCATCD AND EST_ITEM_VER = ?EST_ITEM_VER) AS SMALL_NO
+				    ,A.ESTTCATCD
+				FROM TSOWN.TB_PRE_EST_HIST_DT A
+				WHERE HTID = ?HTID
+				AND HTDGREE = ?HTDGREE
+				) A
+			ORDER BY ESTTCATCD ASC, MAIN_NO ASC, SMALL_NO ASC
+		]]></query>
+	</sql-service>
+	
+	<!-- 활동이력등록 -->
+	<sql-service name='msens.est.hansol.saveTbAppActHist.ins' datasource='aig_tm' type='prepared' batch='false'>
+		<description>활동이력등록</description>
+		<query><![CDATA[
+			INSERT INTO TSOWN.TB_APP_ACT_HIST
+			   (  HIST_SEQ
+			   ,  APP_ACT
+			   ,  CON_ENT_DGN_NO
+			   ,  PRT_CD
+			   ,  REG_DT
+			   ,  REG_TM
+			   ,  CUST_NO
+			   ,  CON_IP_PSN_NAME
+			   ,  REL_CD
+			   ,  ACT_HIST
+			   ,  CENTER_CD
+			   ,  TEAM_CD
+			   ,  AGENT_ID
+			   ,  AGENT_NM
+			   ,  CALL_ID
+			   ,  REC_ID
+			   )
+		   VALUES
+		   (  	  SEQ_USERLOG.NEXTVAL
+			   ,  ?APP_ACT
+			   ,  NVL(TRIM(?CON_ENT_DGN_NO), ' ')
+			   ,  ?PRT_CD
+			   ,  TO_CHAR(SYSDATE, 'YYYYMMDD')
+			   ,  TO_CHAR(SYSDATE, 'HH24MISS')
+			   ,  ?CUST_NO
+			   ,  ?CON_IP_PSN_NAME
+			   ,  ?REL_CD
+			   ,  ?ACT_HIST
+			   ,  ?CENTER_CD
+			   ,  ?TEAM_CD
+			   ,  ?AGENT_ID
+			   ,  ?AGENT_NM
+			   ,  ?CALL_ID
+			   ,  ?UCID
+		   )
+        ]]></query>
+	</sql-service>
+	
+	<!-- 선심사 QA통판 변경이력 조회 -->
+	<sql-service name='msens.est.hansol.getEstListExcel.sel'  datasource="aig_tm" paging="false" type="prepared">
+		<description>선심사 QA통판 심사결과 이력을 검색</description>
+		<result-name>DS_EST_LIST_EXCEL</result-name>
+		<query><![CDATA[
+			SELECT ESTSCATNM, 
+			       ESTTCATNM,
+			       TOT_NO,
+			       QST_CONT,
+			       CASE WHEN A.ETCGB = 'combo' THEN (SELECT CODENAME FROM TSOWN.TB_CODEBOOK
+			                                         WHERE CODEGROUP = 'RST'
+			                                         AND NVL(CODEDEPTH,'NULL') != '1' AND CODE = ETCCD) 
+			            WHEN A.ETCGB = 'checkbox' THEN DECODE(NVL(ETCCD,0), 0, '미선택', '선택')
+			            ELSE NVL(ETCCD,'') END AS ETCGB_NM,
+			       CASE WHEN ESTETC = 'RST999' THEN 'checkbox' WHEN ESTETC = 'RST888' THEN 'normal' ELSE 'combo' END AS ETCGB,
+                   ESTRESULTCD AS ETCCD,
+			       QUEST_MEMO,
+			       RCV_MEMO
+			FROM
+			(SELECT
+						    A.EST_ITEM_VER
+						    ,A.EST_CD_ID
+						    ,A.ESTFCATCD
+						    ,A.ESTSCATCD
+						    ,A.ESTSCATNM
+						    ,A.ESTTCATCD
+						    ,A.ESTTCATNM
+						    ,A.MAIN_NO
+						    ,A.SMALL_NO
+						    ,CASE WHEN A.SMALL_NO = 0 THEN TO_CHAR(A.MAIN_NO) 
+			                      ELSE TO_CHAR(A.MAIN_NO) || '-' || TO_CHAR(A.SMALL_NO) END AS TOT_NO
+						    ,A.QST_CONT
+						    ,A.ORD_NO
+						    ,A.ESTUSEYN
+						    ,A.QACD
+						    ,A.ESTETC
+						    ,B.ESTRESULTCD
+						    ,B.ESTRESULTCD AS ETCCD    
+						    ,CASE WHEN A.ESTETC = 'RST999' THEN 'checkbox' WHEN A.ESTETC = 'RST888' THEN 'normal' ELSE 'combo' END AS ETCGB
+						    ,B.QUEST_MEMO AS QUEST_MEMO
+						    ,B.RCV_MEMO AS RCV_MEMO
+						    ,A.ESTREGISTDT
+						    ,A.ESTREGISTID
+						    ,CASE WHEN B.CNT IS NOT NULL THEN 'Y' ELSE 'N' END AS CNTYN
+						FROM TSOWN.TB_PRE_EST_ITEM A
+						    ,(
+						        SELECT
+						            A.HTID
+						            ,A.ESTTCATCD
+						            ,A.ESTRESULTCD
+						            ,A.QUEST_MEMO
+						            ,A.RCV_MEMO 
+						            ,B.EST_ITEM_VER
+						            ,B.SC_CD_ID
+						            ,ROWNUM AS CNT
+						        FROM TSOWN.TB_PRE_EST_RESULT_HIST A
+						             ,TSOWN.TB_PRE_EST_HISTORY B
+						        WHERE A.HTID = B.HTID
+						        AND B.CON_ENT_DGN_NO = ?CON_ENT_DGN_NO
+						        ?qacd
+						        ?htid
+						    ) B
+						WHERE A.ESTTCATCD = B.ESTTCATCD(+)
+						AND A.EST_ITEM_VER = DECODE(B.EST_ITEM_VER,'',(SELECT MAX(EST_ITEM_VER) FROM TSOWN.TB_PRE_EST_ITEM WHERE ESTUSEYN='Y'),B.EST_ITEM_VER)
+						ORDER BY ORD_NO ASC
+						        ,MAIN_NO ASC
+						        ,SMALL_NO ASC
+			) A
+		]]></query>
+		<parameter name='qacd' value="AND B.QACD = ?QACD" default="" />
+		<parameter name='htid' value="AND A.HTID = ?HTID" default="" />
+	</sql-service>
+	
+	
+</query-collection>

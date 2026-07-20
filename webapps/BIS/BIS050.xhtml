@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<meta http-equiv="cache-control" content="no-cache"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/anlstatutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/productutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var gubun= "",sdate="",edate="";
+var ced_no = "", grade="", new_user_id="",anl_stat="";//조회조건파라미터용
+var stime='000000',etime='235959',start="",end="";
+var v_url="service::bis.bis050.sel.do";
+
+function page_load(event) {
+	XwingObject();
+	
+
+	g_createDate("pnl_date","Y","Y","Y", "설계일시","Y"); //기간 샛성
+	
+	$cmb_gubun.setValue('D');
+	_gubun_change();
+	$sdate.setValue(g_addDate("m", -1, g_toDate(), ""));
+	$edate.setValue(g_toDate());
+	gubun = g_dateToParam().gubun;
+	g_createOrg("pan_dept", 3, "Y", "Y", "Y", "", "전체",false,true);
+	g_createAnlStat("pnl_anlstat");
+	g_createproduct("pnl_product", 2, "", "", "전체", "N");
+	
+	f_codebook_sel();
+}
+
+function f_codebook_sel() {
+	var param = {
+			cmd : "getCodes",
+			codeType : "VSS160",
+			useyn : "Y"
+		};
+		var opt = {
+			reqId : "f_codebook_sel",
+			url : "service::cs.com.codeutil.do",
+			param : param
+		};
+		Xwing.request(opt, callback);
+}
+/* ***********************************************************
+ * 	조회 조건 파라미터 셋팅함수(기간구분되는 콤보박스사용)
+ *************************************************************/
+function getSrcParam(){
+	if(g_dateToParam()){
+		gubun = g_dateToParam().gubun;
+		sdate = g_dateToParam().sdate;
+		edate = g_dateToParam().edate;
+		if(gubun == 'H') { stime=g_dateToParam().stime+'0000';  etime=g_dateToParam().etime+'5959'; }
+		return true;
+	}
+}
+function btn_search_click(event) {
+	if(getSrcParam()){
+		ced_no = $edt_ced_no.getValue();
+		grade = $cmb_grade.getValue();
+		new_user_id = $chk_new_user.getValue();
+		start = gubun=="H"?sdate+stime:sdate;
+		end = gubun=="H"?edate+etime:edate;
+		
+		$DS_PROD.clearData();
+		$DS_GRADE.clearData();
+		$DS_MULTI_RES.clearData();
+		getProdList();
+		
+	}	
+}
+
+function f_makeGrid(){
+	$DS_COL.copyFrom($DS_VSS160);
+	$DS_COL.removeRow(0);
+	
+		var f_column = "<xwing:datagrid-colgroup>"
+			+ "<xwing:datagrid-column width='70'></xwing:datagrid-column>";
+		f_column +="<xwing:datagrid-column width='320'></xwing:datagrid-column>";
+		f_column += "<xwing:datagrid-column width='85'></xwing:datagrid-column>"
+			+ "<xwing:datagrid-column width='85'></xwing:datagrid-column>"
+			+ "<xwing:datagrid-column width='85'></xwing:datagrid-column>"
+//			+ "<xwing:datagrid-column width='120'></xwing:datagrid-column>"
+			+ "<xwing:datagrid-column width='110'></xwing:datagrid-column>"
+//			+ "<xwing:datagrid-column width='130'></xwing:datagrid-column>"
+			+ "<xwing:datagrid-column width='110'></xwing:datagrid-column>"
+			+ "<xwing:datagrid-column width='120'></xwing:datagrid-column>";
+
+
+			for(var i =0; i< $DS_COL.size(); i++){ 
+				f_column += "<xwing:datagrid-column width='80'></xwing:datagrid-column>";
+			}
+
+		f_column += "</xwing:datagrid-colgroup>";
+
+		var f_head = "<xwing:datagrid-head>"
+			   	   + "<xwing:datagrid-row height='30'>"
+				   + "<xwing:datagrid-cell text='보험종목'></xwing:datagrid-cell>";
+		   f_head += "<xwing:datagrid-cell text='상품'></xwing:datagrid-cell>";
+		   f_head += "<xwing:datagrid-cell text='총설계건수'></xwing:datagrid-cell>"
+				   + "<xwing:datagrid-cell text='Grade평점'></xwing:datagrid-cell>"
+				   + "<xwing:datagrid-cell text='평균준수율'></xwing:datagrid-cell>"
+				   + "<xwing:datagrid-cell text='금칙어평균건수'></xwing:datagrid-cell>"
+		//		   + "<xwing:datagrid-cell text='집중관리처리율(%)'></xwing:datagrid-cell>"
+				   + "<xwing:datagrid-cell text='개인정보처리율'></xwing:datagrid-cell>"
+		//		   + "<xwing:datagrid-cell text='필수멘트평균건수(회)'></xwing:datagrid-cell>"
+				   + "<xwing:datagrid-cell text='전월QC평가평점'></xwing:datagrid-cell>";
+				   for(var i =0; i< $DS_COL.size(); i++){
+						f_head += "<xwing:datagrid-cell text='"+$DS_COL.getValue(i,"CODENAME")+"'></xwing:datagrid-cell>";
+					}
+				  f_head += "</xwing:datagrid-row>"
+					  	 + "</xwing:datagrid-head>";
+		var f_body = "";
+		var f_body = "<xwing:datagrid-body>"
+					+ "<xwing:datagrid-row height='25'>"
+			  		+ "<xwing:datagrid-cell bindcolumn='ISTP_NM' suppress='true' halign='center'></xwing:datagrid-cell>";
+			  	    f_body += "<xwing:datagrid-cell bindcolumn='PROD_NM'></xwing:datagrid-cell>";  
+			  		f_body += "<xwing:datagrid-cell bindcolumn='CED_CNT' halign='right'></xwing:datagrid-cell>"
+			   		+ "<xwing:datagrid-cell bindcolumn='GRADE_SCORE' halign='right'></xwing:datagrid-cell>"
+			   		+ "<xwing:datagrid-cell bindcolumn='VRS_SCORE' halign='right'></xwing:datagrid-cell>"
+			   		+ "<xwing:datagrid-cell bindcolumn='AVG_BAN_CNT' halign='right'></xwing:datagrid-cell>"
+			//   		+ "<xwing:datagrid-cell bindcolumn='FOC_SCORE' halign='right'></xwing:datagrid-cell>"
+			   		+ "<xwing:datagrid-cell bindcolumn='SEC_SCORE' halign='right'></xwing:datagrid-cell>"
+			//  		+ "<xwing:datagrid-cell bindcolumn='AVG_MEN_CNT' halign='right'></xwing:datagrid-cell>"
+			   		+ "<xwing:datagrid-cell bindcolumn='BEF_SCORE' halign='right'></xwing:datagrid-cell>";
+		
+		
+					for(var i =0; i< $DS_COL.size(); i++){
+						f_body += "<xwing:datagrid-cell bindcolumn='GRADE"+(i+1)+"_CNT' halign='right'></xwing:datagrid-cell>";
+					}
+			   		f_body += "</xwing:datagrid-row>"
+			   				+ "</xwing:datagrid-body>";
+		var f_context = f_column + f_head + f_body ;
+		
+		 $grd_prod_list.addContent(f_context, true);
+
+		 btn_search_click();
+
+}
+
+function getProdList() {
+
+	//if (g_checkDate(sdate,edate)== false)	return;
+
+	//parameters
+	var param = {};
+	var sqlName="", grpby="";
+
+	sqlName="bis.bis050.getProdStats.prod.sel";
+	
+	//new_user_id = new_user_id=="true"?"AND Z.USER_ID IN (SELECT USER_ID FROM ms_usermaster WHERE WORK_MONTH <= (SELECT ETC1 FROM ms_codebook where code_type='SYS103' and code_id != 00))":"";
+	new_user_id = new_user_id=="true"?"true":"";
+
+	param= {
+			_sqlName: sqlName,
+			new_user_id : new_user_id,
+			CED_NO : ced_no,
+			GRADE : grade,
+			SDATE: start,
+			EDATE: end
+		
+	};
+	g_orgToParam("", param);
+	g_productToParam("",param);
+	g_analStatToParam("",param);
+
+	var opt 	= {
+			reqId: "getProdList",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+		xwing.Dialog.alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+
+		case 'f_codebook_sel' :
+			$DS_VSS160.setData(res.VSS160.column, res.VSS160.record);
+			$DS_VSS160.insertRow(0,["VSS160", "", "전체", "", "", "", "", "", "", "", "", ""]);
+			setTimeout(function(){f_makeGrid();},500);
+			break;	
+		case 'getProdList' :
+			$DS_PROD.setData(res.DS_LIST.column, res.DS_LIST.record);
+			
+			if($DS_PROD.size()>0){
+				grd_prod_list_click();
+			}
+			break;
+		case 'getCedDateList' :
+				$DS_MULTI_RES.setData(res.DS_DATE_LIST.column, res.DS_DATE_LIST.record);
+				drawTotalChart();
+			break;
+	
+		}
+	}
+
+function grd_prod_list_click(event) {
+
+	var idx = $DS_PROD.getCursor();
+	
+	$lbl_subtitle2.setValue($DS_PROD.getValue(idx, "PROD_NM") + "의 상세통계");
+	if(event != undefined){
+		var nCell = event.cell._getColIndex();
+		
+		switch (nCell) {
+
+		default:
+			drawPieChart(idx);
+			getCedDateList(idx);
+			break;
+		}
+
+	}else{
+		drawPieChart(idx);
+		getCedDateList(idx);
+	}
+}
+
+function drawPieChart(idx){
+	$DS_GRADE.clearData();
+	for(var i=0, len = $DS_COL.size(); i<len ; i++){
+	 $DS_GRADE.addRow();
+	 $DS_GRADE.setValue(i,"GRADE",$DS_COL.getValue(i,"CODENAME"));
+	 $DS_GRADE.setValue(i,"COUNT",$DS_PROD.getValue(idx,"GRADE"+(i+1)+"_CNT"));
+	}
+	//setTimeout(function(){$pnl_pie_chart.setUrl("../chart/pie-chart-BIS050.html");},500);
+	$pnl_pie_chart.setUrl("../chart/pie-chart-BIS050.html");
+
+}
+
+function getCedDateList(idx){
+	$DS_MULTI_RES.clearData();
+	var param = {};
+	var sqlName="", dateLen="";
+	var istp_cd = "", prod_cd ="";
+
+	istp_cd = $DS_PROD.getValue(idx,"ISTP_CD");
+	prod_cd = $DS_PROD.getValue(idx,"PROD_CD");
+
+	sqlName="bis.bis050.getProdStats.cedDate.sel";
+
+	new_user_id = new_user_id=="true"?"true":"";
+
+	param= {
+			_sqlName: sqlName,
+			new_user_id : new_user_id,
+			CED_NO : ced_no,
+			GRADE : grade,
+			SDATE: start,
+			EDATE: end,
+			dateLen : gubun
+	};
+
+	g_orgToParam("", param);
+	g_productToParam("",param);
+	param.ISTP_CD = istp_cd;
+	param.PROD_CD = prod_cd;
+	
+	g_analStatToParam("",param);
+
+	var opt 	= {
+			reqId: "getCedDateList",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+function drawTotalChart(idx){
+	
+	setDate('DS_MULTI_RES', gubun,start, end);
+	if(gubun == "W"){
+	 var tmp_obj = Xwing.createDataset('DS_TMP'); 
+	 tmp_obj.setColumnInfo($DS_MULTI_RES.getColumnInfo());
+	 var date = "", week = "", date_nm=[];
+		 
+	 for(var i = 0, len=$DS_MULTI_RES.size(); i< len; i++){
+		 var tmp_nm = $DS_MULTI_RES.getValue(i,"DATE_NM");
+		 if(date_nm.indexOf(tmp_nm) == -1) date_nm.push(tmp_nm);
+	 }
+	 //현재 존재하는 데이터들로 통계 데이터 합산하여 계산.
+	 for(var i =0, len = date_nm.length; i<len ; i++){
+			
+		 tmp_obj.addRow();
+		 tmp_obj.setValue(tmp_obj.size()-1,"DATE",date_nm[i]); //일부로 DATE컬럼에 넣음. 나중에 차트그리기위해.
+		 tmp_obj.setValue(tmp_obj.size()-1,"DATE_NM",date_nm[i]); 
+		 tmp_obj.setValue(tmp_obj.size()-1,"CED_CNT",$DS_MULTI_RES.sum("CED_CNT","[DATE_NM == '"+date_nm[i]+"']"));
+		 tmp_obj.setValue(tmp_obj.size()-1,"VRS_SCORE",($DS_MULTI_RES.avg("VRS_SCORE","[DATE_NM == '"+date_nm[i]+"']")).toFixed(2));
+		 tmp_obj.setValue(tmp_obj.size()-1,"AVG_BAN_CNT",$DS_MULTI_RES.sum("AVG_BAN_CNT","[DATE_NM == '"+date_nm[i]+"']"));
+		 tmp_obj.setValue(tmp_obj.size()-1,"BEF_SCORE",($DS_MULTI_RES.avg("BEF_SCORE","[DATE_NM == '"+date_nm[i]+"']")).toFixed(2));
+	//	 tmp_obj.setValue(tmp_obj.size()-1,"FOC_SCORE",($DS_MULTI_RES.avg("FOC_SCORE","[DATE_NM == '"+date_nm[i]+"']")).toFixed(2));
+		 tmp_obj.setValue(tmp_obj.size()-1,"SEC_SCORE",($DS_MULTI_RES.avg("SEC_SCORE","[DATE_NM == '"+date_nm[i]+"']")).toFixed(2));
+	//	 tmp_obj.setValue(tmp_obj.size()-1,"AVG_MEN_CNT",$DS_MULTI_RES.sum("AVG_MEN_CNT","[DATE_NM == '"+date_nm[i]+"']"));
+		 tmp_obj.setValue(tmp_obj.size()-1,"GRADE_SCORE",($DS_MULTI_RES.avg("GRADE_SCORE","[DATE_NM == '"+date_nm[i]+"']")).toFixed(2));
+	}
+	 noDataWeekInsert(tmp_obj,$DS_MULTI_RES);
+	
+	}
+	$pnl_multi_chart.setUrl("../chart/line-bar-BIS050.html");
+}
+
+
+/* ***********************************************************
+ * 키워드 엔터 이벤트 함수 
+ *************************************************************/
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_search_click();
+	}
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_GRADE" description="Grade별 건수">
+		<xwing:dataset-column id="GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="COUNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MULTI_RES" description="금칙어,준수율 건수">
+		<xwing:dataset-column id="DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="SECRET_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="FOCUS_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_SCORE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_PROD">
+		<xwing:dataset-column id="ISTP_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ISTP_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="PROD_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="USER_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="VRS_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="AVG_BAN_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="SEC_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="FOC_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="AVG_MEN_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="BEF_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE1_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE2_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE3_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE4_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE5_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="평가항목" id="DS_VSS160"></xwing:dataset>
+	<xwing:dataset description="평가항목" id="DS_COL"></xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page title="메뉴관리" left="0" top="0" height="780" width="1050" id="page" scroll="false" load="page_load">
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="110" anchor="right left" borderstyle="solid" scroll="false" styles="div_search">
+			<xwing:checkbox id="chk_new_user" label="신규상담사" left="367" top="77" styles="label_subtitle" halign="right" width="90" height="22" value="false"></xwing:checkbox>
+			<xwing:button id="btn_search" value="조 회" left="939" top="75" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			<xwing:label id="lbl12" left="15" top="45" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:panel id="pan_dept" left="80" top="45" width="420" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="lbl10" left="490" top="15" value="가입설계번호" height="25" width="83" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:edit id="edt_ced_no" left="575" top="15" height="25" keyup="edt_sch_keyup" width="210" fontsize="11" maxlength="12" mask="ani"></xwing:edit>
+			<xwing:label id="lbl_grade" value="Grade" left="15" top="75" height="25" halign="right" width="60" styles="label_subtitle" visible="true"></xwing:label>
+			<xwing:panel id="pnl_anlstat" left="194" top="75" width="160" height="25" scroll="false">
+			</xwing:panel>
+			<xwing:panel id="pnl_date" left="15" top="15" width="420" height="25" scroll="true">
+			</xwing:panel>
+			<xwing:combo id="cmb_grade" left="80" top="75" width="100" height="25" enabled="true" visible="true" domaindataset="DS_VSS160" domaincodecolumn="CODEID" domaintextcolumn="CODENAME"></xwing:combo>
+			<xwing:panel id="pnl_product" left="515" top="45" width="481" height="25"></xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pan_multi_chart" left="0" top="455" width="1050" height="323" anchor="all" visible="true" scroll="false">
+			<xwing:panel id="pnl_pie_chart" left="5" top="45" width="350" height="273" anchor="top bottom left">
+			</xwing:panel>
+			<xwing:label id="lbl_subtitle2" value="상세통계" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:panel id="pnl_multi_chart" left="350" top="45" width="700" height="281" anchor="all"></xwing:panel>
+		</xwing:panel>
+		<xwing:panel id="pan_statics" left="0" top="115" width="1050" height="328" anchor="top right left" visible="true">
+			<xwing:label id="lbl_subtitle1" value="상품별통계" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+			<xwing:datagrid id="grd_prod_list" left="15" top="48" width="1020" height="273" rownum="true" anchor="all" resizable="true" sortable="true" autofit="false" styles="table_border" binddataset="DS_PROD" visible="true" click="grd_prod_list_click" dblclick="grd_prod_list_dblclick">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="85"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="80"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="130"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="보험종목"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="상품"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="총설계건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade평점"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="평균준수율"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="금칙어평균건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="집중관리처리율"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="개인정보처리율"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="필수멘트평균건수(회)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="전월평가평균점수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade1(건)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade2(건)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade3(건)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade4(건)"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="Grade5(건)"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar" left="0" top="450" height="5" borderwidth="0" width="1050" cursor="n-resize" bindwidget="r:pan_multi_chart,r:pan_statics" bartype="vertical" anchor="right left" visible="true" shadow="#58728d 0 -3 0 0"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

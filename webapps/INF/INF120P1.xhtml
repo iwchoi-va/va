@@ -1,0 +1,635 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var gv_device_id;
+var gv_device_gu;
+var gv_mib_id = "";
+var gv_mib_flag = "INSERT";
+var gv_oid_flag = "INSERT";
+
+function page_load(event) {
+	gv_device_id = Xwing.param.p_device_id;
+	gv_device_gu = Xwing.param.P_device_gu;
+	f_mib_search();
+	f_device_search();
+}
+
+function f_device_search() {
+	param	= {
+			_sqlName: "w_mgmt.sys.device_pop.sch"
+		};
+		
+	var opt = { 
+		reqId: "DEVICE_SCH",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);
+}
+
+function f_mib_search() {
+		
+	param	= {
+			_sqlName: "w_mgmt.sys.schmib.sch",
+			device_id: gv_device_id
+		};
+		
+	var opt = { 
+		reqId: "MIB_SCH",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function callback(reqId, res, err, xhr) {
+	
+	if (res.Error != '0') { // * Response 시 에러 발생한 경우
+		alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch(reqId) {
+		case "DEVICE_SCH":
+			Xwing.getDataset("DS_DEVICE").setData(res.DS_DEVICE.column, res.DS_DEVICE.record);
+			Xwing.getEdit("edt_t_sysid").setValue(gv_device_id);
+			Xwing.getCombo("cmb_o_sysid").setItemindex("0");
+			break;
+	
+		case "MIB_SCH":
+			Xwing.getDataset("DS_MIBLIST").setData(res.DS_MIBLIST.column, res.DS_MIBLIST.record);
+			Xwing.getDataset("DS_MIBLIST_COPY").setColumnInfo(res.DS_MIBLIST.column);
+			
+			if(Xwing.getDataset("DS_MIBLIST").size() == 0){
+				Xwing.getButton("btn_copypop").setEnabled(true);
+			} else {
+				Xwing.getButton("btn_copypop").setEnabled(false);
+			}
+			Xwing.getGroup("pop_copy").setVisible(false);
+			
+			btn_mib_refresh_click();
+			break;
+			
+		case "OID_SCH":
+			Xwing.getDataset("DS_OIDLIST").setData(res.DS_OIDLIST.column, res.DS_OIDLIST.record);
+			Xwing.getDataset("DS_OIDLIST_COPY").setColumnInfo(res.DS_OIDLIST.column);
+			break;
+			
+		case "MIB_INS":
+			f_mib_search();
+			btn_mib_refresh_click();
+			alert("저장이 완료 되었습니다.");
+			break;
+			
+		case "MIB_UPD":
+			f_mib_search();
+			btn_mib_refresh_click();
+			alert("수정이 완료 되었습니다.");
+			break;
+			
+		case "OID_INS":
+			f_oid_search();
+			btn_oid_refresh_click();
+			alert("저장이 완료 되었습니다.");
+			break;
+			
+		case "OID_UPD":
+			f_oid_search();
+			btn_oid_refresh_click();
+			alert("수정이 완료 되었습니다.");
+			break;
+			
+		case "OID_DEL":
+			f_oid_search();
+			btn_oid_refresh_click();
+			alert("삭제가 완료 되었습니다.");
+			break;
+		
+		case "MIB_DEL":
+			f_mib_search();
+			btn_mib_refresh_click();
+			alert("삭제가 완료 되었습니다.");
+			break;
+		
+		case "MIB_COPY":
+			f_mib_search();
+			btn_mib_refresh_click();
+			alert("복사가 완료 되었습니다.");
+			break;
+	}
+}
+
+function grd_mib_click(event) {
+	gv_mib_flag = "UPDATE"; // 수정모드로
+	
+	Xwing.getDataset("DS_MIBLIST_COPY").clearData();
+	Xwing.getDataset("DS_MIBLIST_COPY").addRow();
+	
+	var row  = Xwing.getDataset("DS_MIBLIST").getCursor();
+	Xwing.getDataset("DS_MIBLIST_COPY").copyRowFrom(0, "DS_MIBLIST", row);
+	
+	gv_mib_id = Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "MIB_ID");
+	btn_oid_refresh_click();
+	f_oid_search();
+}
+
+function f_oid_search() {
+	param	= {
+			_sqlName: "w_mgmt.sys.schoid.sch",
+			mib_id: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "MIB_ID")
+		};
+		
+	var opt = { 
+		reqId: "OID_SCH",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+
+function grd_oid_click(event) {
+	gv_oid_flag = "UPDATE"; // 수정모드로
+	
+	Xwing.getDataset("DS_OIDLIST_COPY").clearData();
+	Xwing.getDataset("DS_OIDLIST_COPY").addRow();
+	
+	var row  = Xwing.getDataset("DS_OIDLIST").getCursor();
+	Xwing.getDataset("DS_OIDLIST_COPY").copyRowFrom(0, "DS_OIDLIST", row);
+}
+
+function btn_mib_refresh_click(event) {
+	gv_mib_flag = "INSERT"; // 수정모드로
+	
+	Xwing.getDataset("DS_OIDLIST_COPY").clearData();
+	Xwing.getDataset("DS_OIDLIST").clearData();
+	
+	Xwing.getDataset("DS_MIBLIST_COPY").clearData();
+	Xwing.getDataset("DS_MIBLIST_COPY").addRow();
+	Xwing.getDataset("DS_MIBLIST_COPY").setValue(0, "DEVICE_ID", gv_device_id);
+	Xwing.getDataset("DS_MIBLIST_COPY").setValue(0, "OID_TYPE", "M");
+	Xwing.getDataset("DS_MIBLIST_COPY").setValue(0, "USE_YN", "Y");
+	Xwing.getDataset("DS_MIBLIST_COPY").setValue(0, "DEVICE_GU",  gv_device_gu);
+	
+	gv_mib_id = "";
+}
+
+function btn_mib_save_click(event) {
+	if(g_isEmpty(Xwing.getEdit("edt_mib_id").getValue())) {
+		alert("MIB_ID를 입력해주세요.");
+		return;
+	}
+	
+	if(g_isEmpty(Xwing.getEdit("edt_oid_group").getValue())) {
+		alert("OID_GROUP을 입력해주세요.");
+		return;
+	}
+	
+	
+	if(gv_mib_flag == "INSERT"){
+		f_mib_insert();
+	} else {
+		f_mib_update();
+	}
+}
+
+function f_mib_insert() {
+	param	= {
+			_sqlName: "w_mgmt.sys.insertmib.insert",
+			DEVICE_GU: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "DEVICE_GU"),
+			DEVICE_ID: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "DEVICE_ID"),
+			OID_TYPE: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_TYPE"),
+			OID_GROUP: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_GROUP"),
+			OID_DESC: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_DESC"),
+			SCH_INTERVL: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "SCH_INTERVL"),
+			SCH_TIME: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "SCH_TIME"),
+			USE_YN: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "USE_YN")
+		};
+		
+	var opt = { 
+		reqId: "MIB_INS",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function f_mib_update() {
+	param	= {
+			_sqlName: "w_mgmt.sys.updatemib.update",
+			MIB_ID: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "MIB_ID"),
+			OID_TYPE: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_TYPE"),
+			OID_GROUP: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_GROUP"),
+			OID_DESC: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "OID_DESC"),
+			SCH_INTERVL: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "SCH_INTERVL"),
+			SCH_TIME: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "SCH_TIME"),
+			USE_YN: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "USE_YN")
+		};
+		
+	var opt = { 
+		reqId: "MIB_UPD",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function btn_oid_refresh_click(event) {
+	if(g_isEmpty(gv_mib_id)) {
+		alert("MIB를 먼저 선택해주세요.");
+		return;
+	}
+	
+	gv_oid_flag = "INSERT"; // 수정모드로
+		
+	Xwing.getDataset("DS_OIDLIST_COPY").clearData();
+	Xwing.getDataset("DS_OIDLIST_COPY").addRow();
+	Xwing.getDataset("DS_OIDLIST_COPY").setValue(0, "MIB_ID", gv_mib_id);
+}
+
+function btn_oid_save_click(event) {
+	if(g_isEmpty(Xwing.getEdit("edt_oid_name").getValue())) {
+		alert("OID_NAME을 입력해주세요.");
+		return;
+	}
+	
+	if(g_isEmpty(Xwing.getEdit("edt_oid").getValue())) {
+		alert("OID을 입력해주세요.");
+		return;
+	}
+	
+	if(gv_oid_flag == "INSERT") {
+		f_oid_insert();
+	} else {
+		f_oid_update();
+	}
+}
+
+function f_oid_insert() {
+	param	= {
+			_sqlName: "w_mgmt.sys.insertoid.insert",
+			MIB_ID: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "MIB_ID"),
+			OID_NAME: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID_NAME"),
+			OID: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID"),
+			OID_DESC: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID_DESC")
+		};
+		
+	var opt = { 
+		reqId: "OID_INS",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function f_oid_update() {
+	param	= {
+			_sqlName: "w_mgmt.sys.updateoid.update",
+			MIB_ID: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "MIB_ID"),
+			SEQ: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "SEQ"),
+			OID_NAME: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID_NAME"),
+			OID: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID"),
+			OID_DESC: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "OID_DESC")
+		};
+		
+	var opt = { 
+		reqId: "OID_UPD",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function btn_oid_delete_click(event) {
+	if(g_isEmpty(Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "SEQ"))) {
+		alert("OID을 선택해주세요");
+		return;
+	}
+	
+	param	= {
+			_sqlName: "w_mgmt.sys.deleteoid.delete",
+			MIB_ID: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "MIB_ID"),
+			SEQ: Xwing.getDataset("DS_OIDLIST_COPY").getValue(0, "SEQ"),
+		};
+		
+	var opt = { 
+		reqId: "OID_DEL",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function btn_mib_delete_click(event) {
+	if(g_isEmpty(Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "MIB_ID"))) {
+		alert("MIB을 선택해주세요");
+		return;
+	}
+	
+	param	= {
+			_sqlName: "w_mgmt.sys.deletemib.delete1,w_mgmt.sys.deletemib.delete2",
+			MIB_ID: Xwing.getDataset("DS_MIBLIST_COPY").getValue(0, "MIB_ID")
+		};
+		
+	var opt = { 
+		reqId: "MIB_DEL",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}
+
+function btn_copypop_click(event) {
+	if(Xwing.getGroup("pop_copy").getVisible() == false){
+		Xwing.getGroup("pop_copy").setVisible(true);
+	} else {
+		Xwing.getGroup("pop_copy").setVisible(false);
+	}
+}
+
+function btn_mib_copy_click(event) {
+	param	= {
+			_sqlName: "w_mgmt.sys.copymib_oid",
+			O_DEVICE_ID: Xwing.getCombo("cmb_o_sysid").getValue(),
+			T_DEVICE_ID: Xwing.getEdit("edt_t_sysid").getValue()
+		};
+		
+	var opt = { 
+		reqId: "MIB_COPY",
+		url: "service::w_mgmt.sys.schsys.sch.do",
+		param: param
+	};
+		
+	Xwing.request(opt, callback);	
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_MIBLIST">
+		<xwing:dataset-column id="MIB_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="OID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_INTERVL"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_UPDATED"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_VALUE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHECK_NUM_OIDS"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DATA_GATHERED"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_MIBLIST_COPY">
+		<xwing:dataset-column id="MIB_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_TYPE"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_GROUP"></xwing:dataset-column>
+		<xwing:dataset-column id="OID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_DESC"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_INTERVL"></xwing:dataset-column>
+		<xwing:dataset-column id="SCH_TIME"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_UPDATED"></xwing:dataset-column>
+		<xwing:dataset-column id="LAST_VALUE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CHECK_NUM_OIDS"></xwing:dataset-column>
+		<xwing:dataset-column id="USE_YN"></xwing:dataset-column>
+		<xwing:dataset-column id="DATA_GATHERED"></xwing:dataset-column>
+		<xwing:dataset-column id="DEVICE_GU"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_OID_TYPE">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>M</xwing:dataset-cell>
+			<xwing:dataset-cell>M</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>H</xwing:dataset-cell>
+			<xwing:dataset-cell>H</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>C</xwing:dataset-cell>
+			<xwing:dataset-cell>C</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>S</xwing:dataset-cell>
+			<xwing:dataset-cell>S</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>P</xwing:dataset-cell>
+			<xwing:dataset-cell>P</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_USE_YN">
+		<xwing:dataset-column id="CODE_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="CODE_NM"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+			<xwing:dataset-cell>Y</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+			<xwing:dataset-cell>N</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+	<xwing:dataset id="DS_OIDLIST">
+		<xwing:dataset-column id="MIB_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="OID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_OIDLIST_COPY">
+		<xwing:dataset-column id="MIB_ID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_NAME"></xwing:dataset-column>
+		<xwing:dataset-column id="SEQ"></xwing:dataset-column>
+		<xwing:dataset-column id="OID"></xwing:dataset-column>
+		<xwing:dataset-column id="OID_DESC"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DEVICE">
+		<xwing:dataset-column id="DEVICE_ID"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="WRK020M010P" width="850" height="600" left="-5" top="-55" load="page_load">
+		<xwing:label id="stc_label" left="10" top="10" fontsize="12" fontweight="bolder" fontcolor="#000000" height="20" width="111" iconmargin="-1 5 0 0" anchor="top right left" icon="../images/icon_page_title.png" value="MIB목록"></xwing:label>
+		<xwing:datagrid id="grd_mib" left="10" top="35" width="420" height="386" binddataset="DS_MIBLIST" rownum="true" click="grd_mib_click">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="80"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column width="90"></xwing:datagrid-column>
+				<xwing:datagrid-column width="70"></xwing:datagrid-column>
+				<xwing:datagrid-column width="60"></xwing:datagrid-column>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="MID_ID" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="OID_TYPE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="OID_GROUP" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="SCH_INTERVL" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="SCH_TIME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="USE_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="OID_DESC" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="26">
+					<xwing:datagrid-cell bindcolumn="MIB_ID" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="OID_TYPE" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="OID_GROUP" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SCH_INTERVL" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SCH_TIME" mask="time" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="USE_YN" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="OID_DESC" halign="left"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:datagrid id="grd_oid" left="435" top="35" width="405" height="386" binddataset="DS_OIDLIST" rownum="true" click="grd_oid_click">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column></xwing:datagrid-column>
+				<xwing:datagrid-column width="40"></xwing:datagrid-column>
+				<xwing:datagrid-column width="170"></xwing:datagrid-column>
+				<xwing:datagrid-column width="200"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell text="OID_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="SEQ" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="OID" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="OID_DESC" halign="center"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="26">
+					<xwing:datagrid-cell bindcolumn="OID_NAME" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="SEQ" halign="center"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="OID" halign="left"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="OID_DESC" halign="left"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:label id="stc_label_0" left="435" top="10" fontsize="12" fontweight="bolder" fontcolor="#000000" height="20" width="111" iconmargin="-1 5 0 0" anchor="top right left" icon="../images/icon_page_title.png" value="OID목록"></xwing:label>
+		<xwing:group id="group1" left="10" top="430" width="420" styles="div_perform" height="135">
+			<xwing:label id="label0_0_1_1_2" value="시스템ID" left="10" top="9" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_sysid" left="111" top="9" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_0" value="SCH_TIME" left="219" top="69" width="86" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_sch_time" left="310" top="69" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="SCH_TIME" tabindex="14"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1" value="SCH_INTERVL" left="10" top="69" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_sch_intervl" left="111" top="69" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="SCH_INTERVL" tabindex="13"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_0_1" value="OID_GROUP" left="219" top="39" width="86" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_oid_group" left="309" top="39" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="OID_GROUP" tabindex="16" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_0_1" value="사용여부" left="219" top="99" width="86" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:combo id="cmb_useyn" left="311" top="99" height="25" width="100" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_MIBLIST_COPY" bindcolumn="USE_YN" tabindex="20" styles="edit_mand"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_2" value="OID_DESC" left="9" top="98" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_oid_desc" left="111" top="99" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="OID_DESC" tabindex="13"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_1" value="MIB_ID" left="219" top="9" width="86" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_mib_id" left="309" top="9" width="101" height="25" binddataset="DS_MIBLIST_COPY" bindcolumn="MIB_ID" tabindex="8" readonly="false" enabled="true"></xwing:edit>
+			<xwing:combo id="cmb_oid_type" left="111" top="39" height="25" width="100" domaindataset="DS_OID_TYPE" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" styles="combo_mand" binddataset="DS_MIBLIST_COPY" bindcolumn="OID_TYPE" tabindex="11"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_1_0" value="OID_TYPE" left="10" top="39" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:group id="group1_0" left="20" top="457" width="385" styles="div_perform" height="118" anchor="right bottom left">
+				<xwing:label id="label0_0_1_1_2_0" value="시스템ID" left="9" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_1" left="86" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_0" value="SCH_TIME" left="194" top="59" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_ip1_0" left="271" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP2" tabindex="14"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0" value="SCH_INTERVL" left="3" top="59" width="80" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainip_0" left="86" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_1_0" value="OID_GROUP" left="194" top="34" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_server_0" left="271" top="34" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_DESC" tabindex="16" styles="edit_mand"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0_1_0" value="사용여부" left="194" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:combo id="cmb_useyn_0" left="271" top="84" height="20" width="100" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="USE_YN" tabindex="20"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_2_0" value="OID_DESC" left="9" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainport_0" left="86" top="84" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_PORT" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_1_0" value="MIB_ID" left="194" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_0_0" left="271" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:combo id="cmb_loc_0_0" left="86" top="34" height="20" width="100" domaindataset="DS_SYS003_D" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" styles="combo_mand" binddataset="DS_SYSTEM_COPY" bindcolumn="DCD" tabindex="11"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_1_0_0" value="OID_TYPE" left="9" top="34" width="74" height="20" halign="right"></xwing:label>
+			</xwing:group>
+			<xwing:button id="btn_refresh_0" value="초기화" left="240" top="580" height="20" width="60" click="btn_refresh_click" tabindex="29" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_save_0" value="저장" left="305" top="580" height="20" width="48" styles="btn_action" click="btn_save_click" tabindex="30" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_delete_0" value="삭제" left="357" top="580" height="20" width="48" styles="btn_action" tabindex="31" click="btn_delete_click" anchor="right bottom"></xwing:button>
+		</xwing:group>
+		<xwing:button id="btn_mib_refresh" value="초기화" left="235" top="570" height="25" width="60" tabindex="29" anchor="none" click="btn_mib_refresh_click" styles="btn_reset" shadow="0 0 0 0" borderwidth="1"></xwing:button>
+		<xwing:button id="btn_mib_save" value="저장" left="300" top="570" height="25" width="60" styles="btn_action" tabindex="30" anchor="none" click="btn_mib_save_click"></xwing:button>
+		<xwing:button id="btn_mib_delete" value="삭제" left="367" top="570" height="25" width="60" styles="btn_action" tabindex="31" anchor="none" click="btn_mib_delete_click"></xwing:button>
+		<xwing:group id="group1_1" left="435" top="430" width="404" styles="div_perform" height="135" anchor="none">
+			<xwing:label id="label0_0_1_1_2_2" value="MIB_ID" left="10" top="9" width="83" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_mib_id_oid" left="101" top="9" width="141" height="25" binddataset="DS_OIDLIST_COPY" bindcolumn="MIB_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_1" value="OID" left="10" top="69" width="83" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_oid" left="101" top="69" width="286" height="25" binddataset="DS_OIDLIST_COPY" bindcolumn="OID" tabindex="13" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_0_1_1" value="OID_NAME" left="10" top="38" width="83" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_oid_name" left="101" top="39" width="141" height="25" binddataset="DS_OIDLIST_COPY" bindcolumn="OID_NAME" tabindex="16" styles="edit_mand"></xwing:edit>
+			<xwing:label id="label0_0_1_1_2_0_1_2_1" value="OID_DESC" left="10" top="99" width="83" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_oid_desc_oid" left="101" top="99" width="286" height="25" binddataset="DS_OIDLIST_COPY" bindcolumn="OID_DESC" tabindex="13"></xwing:edit>
+			<xwing:group id="group1_0_0" left="20" top="457" width="385" styles="div_perform" height="118" anchor="right bottom left">
+				<xwing:label id="label0_0_1_1_2_0_2" value="시스템ID" left="9" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_1_0" left="86" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_0_0" value="SCH_TIME" left="194" top="59" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_ip1_0_0" left="271" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP2" tabindex="14"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0_0" value="SCH_INTERVL" left="3" top="59" width="80" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainip_0_0" left="86" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_1_0_0" value="OID_GROUP" left="194" top="34" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_server_0_0" left="271" top="34" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_DESC" tabindex="16" styles="edit_mand"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0_1_0_0" value="사용여부" left="194" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:combo id="cmb_useyn_0_0" left="271" top="84" height="20" width="100" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="USE_YN" tabindex="20"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_2_0_0" value="OID_DESC" left="9" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainport_0_0" left="86" top="84" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_PORT" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_1_0_0" value="MIB_ID" left="194" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_0_0_0" left="271" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:combo id="cmb_loc_0_0_0" left="86" top="34" height="20" width="100" domaindataset="DS_SYS003_D" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" styles="combo_mand" binddataset="DS_SYSTEM_COPY" bindcolumn="DCD" tabindex="11"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_1_0_0_0" value="OID_TYPE" left="9" top="34" width="74" height="20" halign="right"></xwing:label>
+			</xwing:group>
+			<xwing:button id="btn_refresh_0_0" value="초기화" left="240" top="580" height="20" width="60" click="btn_refresh_click" tabindex="29" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_save_0_0" value="저장" left="305" top="580" height="20" width="48" styles="btn_action" click="btn_save_click" tabindex="30" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_delete_0_0" value="삭제" left="357" top="580" height="20" width="48" styles="btn_action" tabindex="31" click="btn_delete_click" anchor="right bottom"></xwing:button>
+		</xwing:group>
+		<xwing:button id="btn_oid_refresh" value="초기화" left="645" top="570" height="25" width="60" tabindex="29" anchor="none" click="btn_oid_refresh_click" styles="btn_reset" borderwidth="1"></xwing:button>
+		<xwing:button id="btn_oid_save" value="저장" left="710" top="570" height="25" width="60" styles="btn_action" tabindex="30" anchor="none" click="btn_oid_save_click"></xwing:button>
+		<xwing:button id="btn_oid_delete" value="삭제" left="777" top="570" height="25" width="60" styles="btn_action" tabindex="31" anchor="none" click="btn_oid_delete_click"></xwing:button>
+		<xwing:button id="btn_copypop" value="복 사" left="10" top="570" height="25" width="60" tabindex="29" anchor="right bottom" click="btn_copypop_click" enabled="false" styles="btn_reset" borderwidth="1"></xwing:button>
+		<xwing:group id="pop_copy" left="100" top="187" width="239" styles="div_perform" height="110" anchor="right bottom left" visible="false">
+			<xwing:label id="label0_0_1_1_2_3" value="시스템ID" left="20" top="9" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:edit id="edt_t_sysid" left="120" top="9" width="101" height="25" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+			<xwing:combo id="cmb_o_sysid" left="121" top="44" height="25" width="100" domaindataset="DS_DEVICE" domaincodecolumn="DEVICE_ID" domaintextcolumn="DEVICE_ID" styles="combo_mand" tabindex="11" size="10"></xwing:combo>
+			<xwing:label id="label0_0_1_1_2_0_1_1_0_1" value="원본 시스템ID" left="20" top="44" width="95" height="25" halign="right" styles="label_lititle"></xwing:label>
+			<xwing:group id="group1_0_1" left="20" top="457" width="385" styles="div_perform" height="118" anchor="right bottom left">
+				<xwing:label id="label0_0_1_1_2_0_3" value="시스템ID" left="9" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_1_1" left="86" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_0_1" value="SCH_TIME" left="194" top="59" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_ip1_0_1" left="271" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP2" tabindex="14"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0_2" value="SCH_INTERVL" left="3" top="59" width="80" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainip_0_1" left="86" top="59" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_IP" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_0_1_0_1" value="OID_GROUP" left="194" top="34" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_server_0_1" left="271" top="34" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_DESC" tabindex="16" styles="edit_mand"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_0_1_0_1_0_1" value="사용여부" left="194" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:combo id="cmb_useyn_0_1" left="271" top="84" height="20" width="100" domaindataset="DS_USE_YN" domaincodecolumn="CODE_ID" domaintextcolumn="CODE_NM" binddataset="DS_SYSTEM_COPY" bindcolumn="USE_YN" tabindex="20"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_2_0_1" value="OID_DESC" left="9" top="84" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_mainport_0_1" left="86" top="84" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_PORT" tabindex="13"></xwing:edit>
+				<xwing:label id="label0_0_1_1_2_1_0_1" value="MIB_ID" left="194" top="9" width="74" height="20" halign="right"></xwing:label>
+				<xwing:edit id="edt_sysid_0_0_1" left="271" top="9" width="101" height="20" binddataset="DS_SYSTEM_COPY" bindcolumn="DEVICE_ID" tabindex="8" readonly="false" enabled="false"></xwing:edit>
+				<xwing:combo id="cmb_loc_0_0_1" left="86" top="34" height="20" width="100" domaindataset="DS_SYS003_D" domaincodecolumn="CODEID" domaintextcolumn="CODENAME" styles="combo_mand" binddataset="DS_SYSTEM_COPY" bindcolumn="DCD" tabindex="11"></xwing:combo>
+				<xwing:label id="label0_0_1_1_2_0_1_1_0_0_1" value="OID_TYPE" left="9" top="34" width="74" height="20" halign="right"></xwing:label>
+			</xwing:group>
+			<xwing:button id="btn_refresh_0_1" value="초기화" left="240" top="580" height="20" width="60" click="btn_refresh_click" tabindex="29" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_save_0_1" value="저장" left="305" top="580" height="20" width="48" styles="btn_action" click="btn_save_click" tabindex="30" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_delete_0_1" value="삭제" left="357" top="580" height="20" width="48" styles="btn_action" tabindex="31" click="btn_delete_click" anchor="right bottom"></xwing:button>
+			<xwing:button id="btn_mib_copy" value="저장" left="163" top="76" height="25" width="60" styles="btn_action" tabindex="30" anchor="right bottom" click="btn_mib_copy_click"></xwing:button>
+		</xwing:group>
+	</xwing:page>
+</body>
+</html>

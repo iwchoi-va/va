@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+변경일자 : 2010.03.30
+내          용 	: SocketDataSource의 UseQueue 속성 삭제함.
+		  UseQueue %BOOLEAN; "true"
+		  
+변경일자 : 2011.09.20
+내          용 	: SocketDataSource의 InitThreadPoolSize 속성 삭제함.	
+		  InitThreadPoolSize CDATA #IMPLIED 
+-->
+<!ENTITY % BOOLEAN "(true|false)" >
+<!ENTITY % EXHAUSETED_ACTION "(Block|Grow|Fail|1|2|0)" >
+<!ENTITY % LOG_WHEN "(All|Fail|Success)" >
+<!ENTITY % LOG_REQUEST "(log.insertservicelog|log.insertfilelog|log.sendmaillog)" >
+<!ENTITY % PROCEDURE_DIRECTION "(IN|OUT|INOUT)" >
+<!ENTITY % PROCEDURE_TYPE "(String|Integer|Short|Long|Float|Double|BigDecimal|Date|Byte|Bytes|Boolean)" >
+<!ENTITY % VALIDATION_ACTION "(Skip)" >
+<!ENTITY % VALIDATION "(NotNull)" >
+<!ENTITY % DATA_TYPE "(String|Integer|Short|Long|Float|Double)" >
+
+<!ELEMENT DomainConfig (DataSourcePool?,ServiceDefinition?,RequestServiceDefinition?)>
+	<!ELEMENT DataSourcePool (JDBCDataSource|FileDataSource|SocketDataSource|MailDataSource)*>
+		<!ELEMENT JDBCDataSource EMPTY>
+		<!ATTLIST JDBCDataSource 
+			Id ID #REQUIRED
+			DriverName CDATA #REQUIRED
+			Url CDATA #REQUIRED
+			User CDATA #REQUIRED
+			Password CDATA #REQUIRED
+			ExhaustedAction %EXHAUSETED_ACTION; "1" 
+			IdleTimeOut CDATA "900000"
+			MaxBatchSize CDATA "10000"
+			MaxCapacity CDATA "15"
+			MaxIdle CDATA "1"
+			MaxWait CDATA "60000"
+			TestQuery CDATA "SELECT 1 FROM DUAL"
+			>		
+		<!ELEMENT FileDataSource EMPTY>
+		<!ATTLIST FileDataSource
+			Id ID #REQUIRED
+			FilePath CDATA #REQUIRED
+			FileName CDATA #REQUIRED
+			Encoding CDATA #IMPLIED
+			BackupPath CDATA #IMPLIED
+			BackupPostfix CDATA #IMPLIED
+			Remove %BOOLEAN; "false"
+			FromLine CDATA #IMPLIED
+			ToLine CDATA #IMPLIED
+			Delimiter CDATA #IMPLIED
+			FtpUse %BOOLEAN; "false"
+			FtpIp CDATA #IMPLIED
+			FtpUser CDATA #IMPLIED
+			FtpPassword CDATA #IMPLIED
+			FtpPath CDATA #IMPLIED
+			FtpRemove %BOOLEAN; "false"
+			FtpPassiveMode %BOOLEAN; "false"
+			>
+		<!ELEMENT SocketDataSource EMPTY>
+		<!ATTLIST SocketDataSource
+			Id ID #REQUIRED
+			IpAddress CDATA #IMPLIED
+			Port CDATA #IMPLIED
+			SoTimeOut CDATA #IMPLIED
+			ListenPort CDATA #IMPLIED
+			PacketKeyStartIndex CDATA #IMPLIED
+			PacketKeyLength CDATA #IMPLIED
+			MaxThreadPoolSize CDATA #IMPLIED
+			>
+		<!ELEMENT MailDataSource (Property+)>
+		<!ATTLIST MailDataSource
+			Id ID #REQUIRED
+			User CDATA #REQUIRED
+			Password CDATA #REQUIRED						
+			>
+			<!ELEMENT Property EMPTY>
+			<!ATTLIST Property
+				Name CDATA #REQUIRED
+				Value CDATA #REQUIRED
+				>
+	<!ELEMENT ServiceDefinition (Service*)>
+		<!ELEMENT Service (Description?,UserHandlerClass?,UserHandlerScript?,RequestFlow?,Parameter?,LogService*)>
+		<!ATTLIST Service
+			Id ID #REQUIRED
+			Runnable %BOOLEAN; #IMPLIED
+			>
+			<!ELEMENT Description (#PCDATA)>
+			<!ELEMENT UserHandlerClass (#PCDATA)>
+			<!ELEMENT UserHandlerScript (Initialize?,Finalize?)>
+				<!ELEMENT Initialize (#PCDATA)>	
+				<!ELEMENT Finalize (#PCDATA)>	
+			<!ELEMENT Parameter (Field*)>
+			<!ATTLIST Parameter
+					Value CDATA "#param"
+					>
+				<!ELEMENT Field EMPTY>
+				<!ATTLIST Field
+					Name CDATA #REQUIRED
+					Length NMTOKEN #IMPLIED
+					DefaultValue CDATA #IMPLIED
+					Validation %VALIDATION; #IMPLIED
+					DataType %DATA_TYPE; #IMPLIED
+					>
+			<!ELEMENT RequestFlow (RequestGroup+)>
+				<!ELEMENT RequestGroup EMPTY>
+				<!ATTLIST RequestGroup
+					Value CDATA #REQUIRED
+					>
+			<!ELEMENT LogService EMPTY>
+			<!ATTLIST LogService
+				When %LOG_WHEN; #IMPLIED	
+				Request %LOG_REQUEST; #REQUIRED
+				>
+	<!ELEMENT RequestServiceDefinition (RequestService*)>
+		<!ELEMENT RequestService (
+			Description?,
+			UserHandlerClass?,UserHandlerScript?, 
+			((((ResultName,DrainRequestService?)|(BatchName,Envelope?))?,((Query,ProcedureSpec?,Parameter?,CaseQuery*,ExprVariableGroup?)|(FieldLayout,ValidationAction?,ExprVariableGroup?))?)|(RequestPacket,ResponsePacket?))?						
+			)>
+		<!ATTLIST RequestService
+			Id ID #REQUIRED
+			DataSource CDATA #IMPLIED
+			ForwardService IDREF #IMPLIED
+			Immediate %BOOLEAN; "false"		
+			>
+			<!ELEMENT ResultName (#PCDATA)>
+			<!ELEMENT DrainRequestService EMPTY>
+			<!ATTLIST DrainRequestService
+				Value CDATA #REQUIRED
+				DrainBatchSize NMTOKEN "1000"
+				>
+			<!ELEMENT BatchName (#PCDATA)>		
+			<!ELEMENT Query (#PCDATA)>
+			<!ELEMENT CaseQuery (Case+,Default?)>
+			<!ATTLIST CaseQuery
+				Id NMTOKEN #REQUIRED
+				>
+				<!ELEMENT Case (#PCDATA)>	
+				<!ATTLIST Case
+					Expr CDATA #REQUIRED
+					>
+				<!ELEMENT Default (#PCDATA)>	
+			<!ELEMENT ProcedureSpec (Argument+)>
+				<!ELEMENT Argument EMPTY>
+				<!ATTLIST Argument
+					Name CDATA #REQUIRED
+					Direction %PROCEDURE_DIRECTION; #REQUIRED
+					Type %PROCEDURE_TYPE; #REQUIRED
+					>
+			<!ELEMENT FieldLayout (Field+)>
+			<!ELEMENT ValidationAction EMPTY>
+			<!ATTLIST ValidationAction 
+				Value %VALIDATION_ACTION; #REQUIRED
+				> 
+			<!ELEMENT RequestPacket (Field|Group)*>
+				<!ELEMENT Group (Field|Group)*>
+				<!ATTLIST Group
+					Name CDATA #REQUIRED
+					Occurs CDATA "*"
+					LookAhead CDATA #IMPLIED
+					LookAheadStartIndex NMTOKEN #IMPLIED 
+					>
+			<!ELEMENT ResponsePacket (Field|Group)*>
+			<!ELEMENT Envelope (MailFrom,MailTo,MailCc?,MailTitle,MailBody)>
+				<!ELEMENT MailFrom (#PCDATA)>	
+				<!ELEMENT MailTo (#PCDATA)>	
+				<!ELEMENT MailCc (#PCDATA)>	
+				<!ELEMENT MailTitle (#PCDATA)>	
+				<!ELEMENT MailBody (#PCDATA)>	
+			<!ELEMENT ExprVariableGroup (ExprVariable+)>
+				<!ELEMENT ExprVariable EMPTY>
+				<!ATTLIST ExprVariable
+					Name CDATA #REQUIRED
+					Expr CDATA #REQUIRED
+					>

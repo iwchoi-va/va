@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<webpage-config>
+
+	<basic-template>/waf/template/template.jsp</basic-template>
+	<popup-template>/waf/template/popupTemplate.jsp</popup-template>
+	<admin-template>/waf/template/adminTemplate.jsp</admin-template>
+
+	<webpage>
+		<name>admin.hotExec</name>
+		<description>Hot Execution</description>
+		<title>Hot Execution</title>
+		<template-jsp></template-jsp>
+		<page key="body" value="/waf/admin/hotExec/hotExecMain.jsp" />
+		<page key="sidebar" value="" />
+		<page key="menu" value="/waf/admin/common/menu.jsp" />
+		<page key="header" value="/waf/admin/common/header.jsp" />
+		<page key="footer" value="/waf/admin/common/footer.jsp" />
+	</webpage>
+
+</webpage-config>

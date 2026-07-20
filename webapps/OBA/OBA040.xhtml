@@ -1,0 +1,416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/servicemanager.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<link href="../css/msu.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<link href="../css/src020.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/anlstatutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/productutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var gubun="",sdate="",edate="";
+var stime='000000',etime='235959';
+var keyword='';
+var v_url = "service::oba.oba040.getBankeywordRank.sel.do";
+
+var TOP_DEFAULT = 10;    //기본으로 보여줄 탑키워드 추이 갯수
+var num = 0;            //추이 호출시, 증가변수
+var idx = 0;
+var start="", end="";
+var new_user_id = "";
+/* ***********************************************************
+ * 	화면 로드 함수
+ *************************************************************/
+function page_load(event) {
+	XwingObject();
+
+	init();
+
+	page_resize();
+
+}
+
+function page_resize(){
+
+	$btn_apply.setLeft(($grd_top_keyword.getWidth())/2 - 50);
+}
+
+function init(){
+	g_createDate("pnl_date","Y","Y","Y", "설계일시","Y"); //기간 샛성
+	g_createOrg("pan_dept", 3, "Y", "Y", "Y", "", "전체", false, true);
+	g_createproduct("pnl_product", 2, "", "", "전체", "N");
+
+	//권한정의
+	setTimeout(function(){
+		authLevel = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC1");
+		authExcept = top.$DS_GRADEAUTH.getValue(top.$DS_GRADEAUTH.indexOfRow("CODEID",global("G_USER_GRADE")),"ETC2");
+		g_setAuthObj(authLevel, authExcept, global("G_ORG1_CD"),global("G_ORG2_CD"),global("G_ORG3_CD"),global("G_USER_ID"));
+	});
+
+	//temp
+	$cmb_gubun.setValue('D');
+	_gubun_change();
+	
+	$sdate.setValue(g_addDate("m", -1, g_toDate(), ""));
+	$edate.setValue(g_toDate());
+
+	setTimeout(function(){btn_search_click();},700);
+}
+
+function btn_search_click(){
+	if(getSrcParam()) getTopList();
+}
+
+/* ***********************************************************
+ * 	조회 조건 파라미터 셋팅함수(기간구분되는 콤보박스사용)
+ *************************************************************/
+function getSrcParam(){
+	if(g_dateToParam()){
+		gubun = g_dateToParam().gubun;
+		sdate = g_dateToParam().sdate;
+		edate = g_dateToParam().edate;
+		if(gubun == 'H') { stime=g_dateToParam().stime+'0000';  etime=g_dateToParam().etime+'5959'; }
+		start = gubun=="H"?sdate+stime:sdate;
+		end = gubun=="H"?edate+etime:edate;
+		return true;
+	}
+}
+
+function getTopList(){
+	$DS_SERIES.clearData();
+	$DS_DATE_CNT.clearData();
+	$DS_TOP_LIST.clearData();
+	TOP_DEFAULT = 10;
+	num = 0;
+	idx = 0;
+
+
+	var param = {};
+	var sqlName="oba.oba040.getBannedKeywordRank.sel";
+	var new_user_id = $chk_new_user.getValue()=="true"? $chk_new_user.getValue():"";
+
+
+	param= {
+			_sqlName: sqlName,
+			new_user_id : new_user_id,
+			SDATE: start,
+			EDATE: end
+	};
+
+	g_orgToParam("", param);
+	g_productToParam("",param);
+
+	var opt 	= {
+			reqId: "getTopList",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+function getDaily(){
+	$DS_SERIES.clearData();
+	$DS_CHK_BAN.clearData();
+	$DS_DATE_CNT.clearData();
+
+	$DS_TOT_COUNT.clearData();
+	$DS_BAN_RATE.clearData();
+
+	num = 0;	//체크한 개수
+
+	TOP_DEFAULT = Xwing.getDataGrid("grd_top_keyword").getCheckedCnt();
+	var a_chk = Xwing.getDataGrid("grd_top_keyword").getCheckedIdx();
+	for(var i=0; i< Xwing.getDataGrid("grd_top_keyword").getCheckedCnt(); i++){
+		$DS_SERIES.addRow();
+		$DS_CHK_BAN.addRow();
+		$DS_SERIES.setValue( i, 'SERIES', $DS_TOP_LIST.getValue(a_chk[i], "BAN_KEYWORD") );
+		$DS_CHK_BAN.setValue(i, 'BAN_CD', $DS_TOP_LIST.getValue(a_chk[i], "BAN_CD") );
+		$DS_CHK_BAN.setValue(i, 'BAN_KEYWORD', $DS_TOP_LIST.getValue(a_chk[i], "BAN_KEYWORD") );
+		$DS_CHK_BAN.setValue(i, 'BAN_CNT', $DS_TOP_LIST.getValue(a_chk[i], "BAN_CNT") );
+	}
+
+	getDailyTop(num++);
+}
+function getDailyTop(num){
+	
+	var a_chk = Xwing.getDataGrid("grd_top_keyword").getCheckedIdx();
+	var v_sql = "oba.oba040.getDailyBanKeyword.sel";
+	var new_user_id = $chk_new_user.getValue()=="true"?"true":"";
+
+	var param	= {
+			_sqlName: v_sql,
+			BAN_CD : $DS_TOP_LIST.getValue(a_chk[num], "BAN_CD"),
+			new_user_id : new_user_id,
+			SDATE: start,
+			EDATE: end,
+			dateLen : gubun
+	};
+
+	g_orgToParam("", param);
+	g_productToParam("",param);
+
+	var opt 	= {
+			reqId: "getDailyTop",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+}
+
+function getBanProgress(){
+	var a_chk = Xwing.getDataGrid("grd_top_keyword").getCheckedIdx();
+	var ban_cd = "";
+
+	for(var i =0; i< a_chk.length; i++){
+		ban_cd += $DS_TOP_LIST.getValue(a_chk[i], "BAN_CD") + ",";
+	}
+
+	var new_user_id = $chk_new_user.getValue()=="true"?$chk_new_user.getValue():"";
+	var param	= {
+			_sqlName: "oba.oba040.getAllCallCount.sel",
+			BAN_CD : ban_cd.slice(0,-1),
+			new_user_id : new_user_id,
+			SDATE: start,
+			EDATE: end
+	};
+
+	g_orgToParam("", param);
+	g_productToParam("",param);
+
+	var opt 	= {
+			reqId: "getBanProgress",
+			url: v_url,
+			param: param,
+			indicator : null
+	};
+	Xwing.request(opt, callback);
+
+}
+
+
+function btn_apply_click(event) {
+	var n_cnt = Xwing.getDataGrid("grd_top_keyword").getCheckedCnt();
+	if(n_cnt == 0) new xwing.Dialog.alert("선택된 키워드가 없습니다.");
+	else getDaily();
+}
+
+
+
+function grd_top_keyword_click(event) {
+
+
+	var nCell = event.cell._getColIndex();
+	var ban_keyword = $DS_TOP_LIST.getValue(event.rowIdx, "BAN_KEYWORD");
+	var ban_cd = $DS_TOP_LIST.getValue(event.rowIdx, "BAN_CD");
+
+	if(nCell == 3){
+		var opt = {
+				modal: false,
+				resizable: true,
+				id : 'OBA040P1',
+				url : '../OBA/OBA040P1.xhtml',
+				width : 565,
+				height : 525,
+				title : "소속별 금칙어랭킹",
+				draggable:true,
+				param:{
+					ban_keyword : ban_keyword,
+					ban_cd : ban_cd
+				}
+			};
+
+		var dialog = new xwing.Dialog(opt);
+		dialog.open();
+	}
+}
+/* ***********************************************************
+ * 	콜백  함수
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+
+	switch (reqId) {
+		case "getTopList" :
+			$DS_TOP_LIST.setData(res.DS_BAN_KEYWORDS.column, res.DS_BAN_KEYWORDS.record);
+			for(var j=0; j<TOP_DEFAULT; j++) Xwing.getDataGrid('grd_top_keyword').setChecking(j);
+			getDaily();
+		break;
+
+
+		case "getDailyTop":
+			
+			$DS_RES.setData(res.DS_BAN_DAILY.column, res.DS_BAN_DAILY.record);
+			
+			var start = gubun=="H"?sdate+stime:sdate;
+			var end = gubun=="H"?edate+etime:edate;
+
+		if(gubun != "W"){
+			 
+			if( setDate('DS_RES', gubun, start, end) ) {
+				$DS_RES.sort('DATE');
+				$DS_DATE_CNT.appendDataset('DS_RES');
+				
+				//console.log($DS_RES);
+			}
+		}else{
+			setDate('DS_RES', gubun,start, end);
+			 var tmp_obj = Xwing.createDataset('DS_TMP');
+			 tmp_obj.setColumnInfo($DS_RES.getColumnInfo());
+			 var date = "", week = "", date_nm=[];
+
+			 for(var i = 0, len=$DS_RES.size(); i< len; i++){
+				 var tmp_nm = $DS_RES.getValue(i,"DATE_NM");
+				 if(date_nm.indexOf(tmp_nm) == -1) date_nm.push(tmp_nm);
+			 }
+
+
+			 var keyword = $DS_RES.getValue(0,"BAN_KEYWORD");
+			 var ban_cd = $DS_RES.getValue(0,"BAN_CD");
+
+			 //현재 존재하는 데이터들로 통계 데이터 합산하여 계산.
+			 for(var i =0, len = date_nm.length; i<len ; i++){
+
+				 tmp_obj.addRow();
+				 tmp_obj.setValue(tmp_obj.size()-1,"DATE",date_nm[i]); //일부로 DATE컬럼에 넣음. 나중에 차트그리기위해.
+				 tmp_obj.setValue(tmp_obj.size()-1,"DATE_NM",date_nm[i]);
+				 tmp_obj.setValue(tmp_obj.size()-1,"BAN_KEYWORD",keyword);
+				 tmp_obj.setValue(tmp_obj.size()-1,"BAN_CD",ban_cd);
+				 tmp_obj.setValue(tmp_obj.size()-1,"BAN_CNT",$DS_RES.sum("BAN_CNT","[DATE_NM == '"+date_nm[i]+"']"));
+			}
+			 
+			 noDataWeekInsert(tmp_obj,$DS_RES);
+			 $DS_RES.sort('SORT_KEY');
+			$DS_DATE_CNT.appendDataset('DS_RES');
+		}
+
+			if(num < TOP_DEFAULT) {
+				getDailyTop(num++);
+			} else {
+				$pan_multi_line.setUrl("../chart/multi-line-OBA040.html"); //데이터 다 담은 후 차트 생성
+
+				//var a_chk = Xwing.getDataGrid("grd_top_keyword").getCheckedIdx();
+
+				getBanProgress();
+			}
+
+
+		break;
+
+		case "getBanProgress":
+			$DS_TOT_COUNT.setData(res.DS_ALL_CNT.column, res.DS_ALL_CNT.record);
+
+			for(var i =0; i< $DS_CHK_BAN.size();i++){ //체크한 애들 개수
+
+				$DS_BAN_RATE.addRow();
+				$DS_BAN_RATE.setValue($DS_BAN_RATE.size()-1, "BAN_CD", $DS_CHK_BAN.getValue(i,"BAN_CD"));
+				$DS_BAN_RATE.setValue($DS_BAN_RATE.size()-1, "BAN_KEYWORD", $DS_CHK_BAN.getValue(i,"BAN_KEYWORD"));
+
+				var rate =  (parseInt($DS_CHK_BAN.getValue(i,"BAN_CNT"))/parseInt($DS_TOT_COUNT.getValue(0,"TOT_CNT")))*100;
+				$DS_BAN_RATE.setValue($DS_BAN_RATE.size()-1, "RATE",rate.toFixed(2));
+			}
+
+			$pan_bar_horizon.setUrl('../chart/bar-horizon-OBA040.html');
+
+			break;
+	}
+}
+
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_DATE_CNT" description="체크된 키워드의 추이">
+	</xwing:dataset>
+	<xwing:dataset id="DS_SERIES" description="체크된 키워드">
+		<xwing:dataset-column id="SERIES"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_TOP_LIST" description="키워드 순위 리스트">
+		<xwing:dataset-column id="RANK"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_RES2"></xwing:dataset>
+	<xwing:dataset id="DS_RES3"></xwing:dataset>
+	<xwing:dataset id="DS_CATE_COUNT"></xwing:dataset>
+	<xwing:dataset id="DS_BAN_COUNT" description="금칙어 건수"></xwing:dataset>
+	<xwing:dataset id="DS_TOT_COUNT" description="전체 콜건수"></xwing:dataset>
+	<xwing:dataset id="DS_BAN_RATE" description="금칙어 콜 비율">
+		<xwing:dataset-column id="BAN_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="RATE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_CHK_BAN">
+		<xwing:dataset-column id="BAN_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_KEYWORD"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset description="서비스호출결과" id="DS_RES">
+		<xwing:dataset-column id="DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="SCRIPT_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="BAN_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="SECRET_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="FOCUS_SCORE"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_SCORE"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_COPY"></xwing:dataset>
+</xwing:data>
+</head>
+<body style="width:794;height:768;left:0;top:0;">
+	<xwing:page id="page" title="rcm100" width="1050" height="768" scroll="false" left="0" top="-5" bgimagerepeat="repeat" load="page_load" resize="page_resize">
+		<xwing:panel id="pan_multi_line" left="0" top="487" width="1050" height="283" anchor="all" visible="true" scroll="false" styles="pan_box_title" shadow="#58728d 0 -3 0 0">
+			<xwing:label id="lbl_subtitle1_0" value="금칙어 빈도 추이" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="search_box" left="0" top="0" width="1050" height="74" styles="div_search" anchor="right left" borderwidth="0" borderstyle="solid" scroll="false">
+			<xwing:button id="btn_search" value="조 회" left="980" top="40" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " click="btn_search_click" borderstyle="none" bgcolor="#1FABE0"></xwing:button>
+			<xwing:panel id="pan_dept" left="546" top="10" width="420" height="25" visible="true">
+			</xwing:panel>
+			<xwing:label id="lbl12" left="481" top="10" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:panel id="pnl_date" left="15" top="10" width="420" height="25" scroll="true">
+			</xwing:panel>
+			<xwing:panel id="pnl_product" left="20" top="40" width="481" height="25"></xwing:panel>
+			<xwing:checkbox id="chk_new_user" label="신규상담사" left="517" top="40" styles="label_subtitle" halign="right" width="90" height="22" value="false"></xwing:checkbox>
+		</xwing:panel>
+		<xwing:datagrid id="grd_top_keyword" left="15" top="91" width="584" height="349" checkbox="true" binddataset="DS_TOP_LIST" anchor="none" autofit="false" dblclick="grd_top_keyword_dblclick" groupable="false" resizable="true" virtual="true" enabled="true" bggradientdir="vertical" bgimagealign="left top" styles="table_border" click="grd_top_keyword_click" sortable="true" bgcolor="#5E5F66">
+			<xwing:datagrid-colgroup>
+				<xwing:datagrid-column width="100" fixed="true"></xwing:datagrid-column>
+				<xwing:datagrid-column width="300"></xwing:datagrid-column>
+				<xwing:datagrid-column width="100"></xwing:datagrid-column>
+				<xwing:datagrid-column width="40"></xwing:datagrid-column>
+			</xwing:datagrid-colgroup>
+			<xwing:datagrid-head>
+				<xwing:datagrid-row height="34">
+					<xwing:datagrid-cell text="순위" fontfamily="NanumGothicBold" fontcolor="#656668"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="금칙어" fontfamily="NanumGothicBold" fontcolor="#656668"></xwing:datagrid-cell>
+					<xwing:datagrid-cell text="건수" fontfamily="NanumGothicBold" fontcolor="#656668"></xwing:datagrid-cell>
+					<xwing:datagrid-cell></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-head>
+			<xwing:datagrid-body>
+				<xwing:datagrid-row height="30">
+					<xwing:datagrid-cell bindcolumn="RANK" halign="center" fontweight="bolder" fontfamily="NanumGothicBold" fontsize="27" fontstyle="oblique" fontcolor="#13AACA"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BAN_KEYWORD" fontsize="14" fontweight="bolder" fontfamily="NanumGothicBold" fontstyle="normal" halign="center" fontcolor="#fff"></xwing:datagrid-cell>
+					<xwing:datagrid-cell bindcolumn="BAN_CNT" halign="center" fontsize="14" fontfamily="NanumGothicBold" fontcolor="#fff"></xwing:datagrid-cell>
+					<xwing:datagrid-cell halign="center" fontsize="14" bgimage="../images/search_btn_16.png" bgimagealign="center center" cursor="pointer"></xwing:datagrid-cell>
+				</xwing:datagrid-row>
+			</xwing:datagrid-body>
+		</xwing:datagrid>
+		<xwing:splitbar id="splitbar1" left="600" top="90" width="10" height="373" borderwidth="0" anchor="top left" cursor="e-resize" bindwidget="r:grd_top_keyword,r:pan_bar_horizon"></xwing:splitbar>
+		<xwing:button id="btn_apply" value="추이 보기" left="360" top="443" click="btn_apply_click" height="35" width="130" iconmargin="-3 10 0 0" fontsize="12" fontweight="bolder" anchor="none" styles="btn_search"></xwing:button>
+		<xwing:label id="lbl_notice" value="※ 금칙어 콜 비율(%)" left="871" top="83" width="174" height="22" anchor="top right" fontsize="11" fontcolor="#111" halign="right"></xwing:label>
+		<xwing:panel id="pan_bar_horizon" left="610" top="105" width="440" height="335" anchor="top right left" visible="true" scroll="false" borderstyle="none" borderwidth="0" styles="pan_box_title" shadow="#bdcad6 2 0 0 0">
+		</xwing:panel>
+		<xwing:splitbar id="splitbar2" left="0" top="481" height="5" borderwidth="0" width="1050" cursor="n-resize" bindwidget="r:splitbar1,r:grd_top_keyword,r:pan_multi_line,r:pan_bar_horizon,m:btn_apply" bartype="vertical" anchor="top right left"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

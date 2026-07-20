@@ -1,0 +1,736 @@
+<?xml version="1.0" encoding="euc-kr"?>
+<crontab>	
+	<crontabentry id="1">
+        <seconds>15</seconds>
+        <minutes>3</minutes> 
+        <hours>8</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_001</parameters>
+        <description>사용자정보 변경내역 수집배치</description>
+    </crontabentry> 
+    
+    <crontabentry id="2">
+        <seconds>30</seconds>
+        <minutes>8</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_002</parameters>
+        <description>조직정보 변경내역 수집배치</description>
+    </crontabentry> 
+    
+    <!--TB_SC_CODE_MNG, TB_SC_MNG, TB_QST_KIND_MNG , TB_SC_QST_MNG, 문장 SPLIT 은 운영에서 사용 안함 -->
+   <!--  <crontabentry id="3">
+        <seconds>0</seconds>
+        <minutes>0</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_003</parameters>
+        <description>스크립트 코드 관리 변경내역 수집(TB_SC_CODE_MNG, TB_SC_MNG)</description>
+    </crontabentry>
+
+    <crontabentry id="4">
+        <seconds>0</seconds>
+        <minutes>10</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_004</parameters>
+        <description>질의유형관리(TB_QST_KIND_MNG)</description>
+    </crontabentry>
+    
+     <crontabentry id="5">
+        <seconds>0</seconds>
+        <minutes>30</minutes> 
+        <hours>3</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_005</parameters>
+        <description>스크립트 질의관리 수집(TB_SC_QST_MNG)</description>
+    </crontabentry> 
+   --> 
+  
+   <crontabentry id="6">
+        <seconds>0</seconds>
+        <minutes>35</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_006</parameters>
+        <description>근속년수 업데이트</description>
+    </crontabentry>  
+ <!--
+    <crontabentry id="7">
+        <seconds>0</seconds>
+        <minutes>0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57</minutes> 
+        <hours>4</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_007</parameters>
+        <description>문단으로 넘어온 스크립트 문장단위로 SPLIT 작업</description>
+    </crontabentry> -->
+   
+ 	<crontabentry id="8">
+        <seconds>15</seconds>
+        <minutes>30</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_008</parameters>
+        <description>테이블 삭제(기간별 테이블 삭제)</description>
+    </crontabentry> 
+	
+	<crontabentry id="9">
+		<seconds>20</seconds>
+		<minutes>0</minutes> 
+		<hours>5</hours> 
+		<daysofmonth>*</daysofmonth> 
+		<months>*</months> 
+		<daysofweek>*</daysofweek> 
+		<years>*</years> 
+		<bussinesdays>true</bussinesdays> 
+		<startDate></startDate> 
+		<endDate></endDate> 
+		<class>xcron.core.XCronScheduleService</class> 
+		<method>execute</method>
+		<parameters>SVC_COM_009</parameters>
+		<description>connectionpool_recreate_service</description>
+	</crontabentry>
+   
+    <crontabentry id="10">
+        <seconds>0</seconds>
+        <minutes>0</minutes> 
+        <hours>23</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_010</parameters>
+        <description>녹취청취파일삭제</description>
+    </crontabentry>
+    
+    <crontabentry id="11">
+        <seconds>35</seconds>
+        <minutes>0</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_011</parameters>
+        <description>시스템모니터링-SNMP 테이블 로그 삭제</description>
+    </crontabentry>
+    
+    <crontabentry id="12">
+        <seconds>15</seconds>
+        <minutes>30</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_012</parameters>
+        <description>상품코드, 담보코드 수집 배치</description>
+    </crontabentry>
+    
+    <crontabentry id="13">
+        <seconds>35</seconds>
+        <minutes>40</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_013</parameters>
+        <description>QC 리스트 정보 배치</description>
+    </crontabentry>
+    
+    <crontabentry id="14">
+        <seconds>40</seconds>
+        <minutes>50</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_014</parameters>
+        <description>휴일정보 업데이트 배치</description>
+    </crontabentry> 
+	
+	<crontabentry id="15">
+        <seconds>20</seconds>
+        <minutes>10</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_015</parameters>
+        <description>배분내역 동기화</description>
+    </crontabentry> 
+ 
+	<crontabentry id="16">
+        <seconds>0</seconds>
+        <minutes>2,8,14,20,26,32,38,44,50,56</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_001</parameters>
+        <description>RealTime DB + AiGEN 정보수집</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="17">
+        <seconds>0</seconds>
+        <minutes>5,11,17,23,29,35,41,47,53,59</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_001_1</parameters>
+        <description>RealTime DB + AiGEN 정보수집</description>
+    </crontabentry>  -->
+  
+    <crontabentry id="18">
+        <seconds>0</seconds>
+        <minutes>4,10,16,22,28,34,40,46,52,58</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_002</parameters>
+        <description>설계번호별 스트립트 결과 데이터 저장</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="19">
+        <seconds>0</seconds>
+        <minutes>1,7,13,19,25,31,37,43,49,55</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_002_1</parameters>
+        <description>설계번호별 스트립트 결과 데이터 저장</description>
+    </crontabentry>-->
+    
+     <crontabentry id="20">
+        <seconds>15</seconds>
+        <minutes>5,11,17,23,29,35,41,47,53,59</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_003</parameters>
+        <description>설계번호별 금칙어 결과 설계번호별로 데이터 저장</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="21">
+        <seconds>30</seconds>
+        <minutes>1,7,13,19,25,31,37,43,49,55</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_003_1</parameters>
+        <description>설계번호별 금칙어 결과 설계번호별로 데이터 저장</description>
+    </crontabentry> -->
+    
+    <crontabentry id="22">
+        <seconds>45</seconds>
+        <minutes>1,5,9,13,17,21,25,29,33,37,41,45,49,53,57</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_004</parameters>
+        <description>설계번호별 Grade 결과 데이터 저장</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="23">
+        <seconds>30</seconds>
+        <minutes>3,7,11,15,19,23,27,31,35,39,43,47,51,55,59</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_004_1</parameters>
+        <description>설계번호별 Grade 결과 데이터 저장</description>
+    </crontabentry>-->
+    
+     <crontabentry id="24">
+        <seconds>15</seconds>
+        <minutes>2,6,10,14,18,22,26,30,34,38,42,46,50,54,58</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_005</parameters>
+        <description>자동배분작업</description>
+    </crontabentry> 
+	
+	<!--<crontabentry id="25">
+        <seconds>0</seconds>
+        <minutes>0,4,8,12,16,20,24,28,32,36,40,44,48,52,56</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_005_1</parameters>
+        <description>자동배분작업</description>
+    </crontabentry> -->
+
+ <!--   <crontabentry id="19">
+        <seconds>27</seconds>
+        <minutes>*</minutes> 
+        <hours>8,10,12,14,16,18</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_006</parameters>
+        <description>시스템 모니터링 알림</description>
+    </crontabentry> -->
+    
+    <crontabentry id="26">
+        <seconds>15,45</seconds>
+        <minutes>*</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_007</parameters>
+        <description>시스템정보수집</description>
+    </crontabentry>
+   
+  <crontabentry id="27">
+        <seconds>0</seconds>
+        <minutes>0,6,12,18,24,30,36,42,48,54</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_008</parameters>
+        <description>RealTime DB에서 STT분석 완료된 콜 수집</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="28">
+        <seconds>0</seconds>
+        <minutes>3,9,15,21,27,33,39,45,51,57</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_008_1</parameters>
+        <description>RealTime DB에서 STT분석 완료된 콜 수집</description>
+    </crontabentry>-->
+    
+   <crontabentry id="29">
+        <seconds>35</seconds>
+        <minutes>15,45</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_009</parameters>
+        <description>분석 flag 업데이트</description>
+    </crontabentry>
+    
+  <!--<crontabentry id="22">
+        <seconds>30</seconds>
+        <minutes>2,8,14,20,26,32,38,44,50,56</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_011</parameters>
+        <description>STT CONTENT 암호화</description>
+    </crontabentry> -->
+
+	<crontabentry id="30">
+        <seconds>30</seconds>
+        <minutes>0,4,8,12,16,20,24,28,32,36,40,44,48,52,56</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_012</parameters>
+        <description>STT CONTENT SPLIT 작업</description>
+    </crontabentry>
+	
+	<!--<crontabentry id="31">
+        <seconds>30</seconds>
+        <minutes>2,6,10,14,18,22,26,30,34,38,42,46,50,54,58</minutes> 
+        <hours>*</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_012_1</parameters>
+        <description>STT CONTENT SPLIT 작업</description>
+    </crontabentry>-->
+
+     <crontabentry id="32">
+        <seconds>0</seconds>
+        <minutes>10</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_013</parameters>
+        <description>상담사별 전월평가점수 계산</description>
+    </crontabentry>  
+	
+	<!-- 4~6월 콜 작업 후에 반영 할 것-->
+	<crontabentry id="33">
+        <seconds>15</seconds>
+        <minutes>0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57</minutes> 
+        <hours>1,2,3,4,5,6</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>0</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_014</parameters>
+        <description>주말에 stt 일괄 암호화 작업 수행</description>
+    </crontabentry>
+    
+     <crontabentry id="34">
+        <seconds>10</seconds>
+        <minutes>20</minutes> 
+        <hours>2</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_020</parameters>
+        <description>QC 근무시간 측정 SUMMARY</description>
+    </crontabentry>
+    
+     <crontabentry id="35">
+        <seconds>5</seconds>
+        <minutes>10</minutes> 
+        <hours>4</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_021</parameters>
+        <description>테이블 기간별 삭제(기간:1년)</description>
+    </crontabentry> 
+
+	<crontabentry id="36">
+        <seconds>0</seconds>
+        <minutes>30</minutes> 
+        <hours>8</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_020</parameters>
+        <description>코드북초기화</description>
+    </crontabentry> 
+    
+    <crontabentry id="37">
+        <seconds>0</seconds>
+        <minutes>0,10,20,30,40,50</minutes> 
+        <hours>9-19</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_015</parameters>
+        <description>분석 콜 자동 다운로드</description>
+    </crontabentry> 
+    
+    <crontabentry id="38">
+        <seconds>0</seconds>
+        <minutes>0</minutes> 
+        <hours>3</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_022</parameters>
+        <description>청약 거절 콜 AIGEN으로 부터 수집</description>
+    </crontabentry>
+    
+    <crontabentry id="39">
+        <seconds>0</seconds>
+        <minutes>30</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_016</parameters>
+        <description>MRLS 콜 AIGEN으로 부터 수집</description>
+    </crontabentry> 
+    
+    <crontabentry id="40">
+        <seconds>0</seconds>
+        <minutes>10,30,50</minutes> 
+        <hours>2-7</hours> 
+        <daysofmonth>1</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_MS_017</parameters>
+        <description>MRLS 분석</description>
+    </crontabentry> 
+    
+    <crontabentry id="41">
+        <seconds>0</seconds>
+        <minutes>30</minutes> 
+        <hours>1</hours> 
+        <daysofmonth>*</daysofmonth> 
+        <months>*</months> 
+        <daysofweek>*</daysofweek> 
+        <years>*</years> 
+        <bussinesdays>true</bussinesdays> 
+        <startDate></startDate> 
+        <endDate></endDate> 
+        <class>com.inticube.xcron.core.XCronScheduleService</class> 
+        <method>execute</method>
+        <parameters>SVC_COM_023</parameters>
+        <description>테이블 기간별 삭제(기간:1년/매일)</description>
+    </crontabentry> 
+ </crontab>

@@ -1,0 +1,642 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+	<sql-service name='wfm.hr.hrm100m010p.dept.sel' datasource='is_stat' paging="false" type='prepared'>
+		<description>인사관리-조직관리-조직트리(조회)</description>
+		<result-name>DS_DEPT_LIST</result-name>
+		<query><![CDATA[
+			SELECT  D.DEPT_CD,
+			        UPPER_DEPT,
+			          CASE WHEN DEPT_TYPE = 01 THEN 0 WHEN DEPT_TYPE = 02 THEN 1 WHEN DEPT_TYPE = 03 THEN 2 WHEN DEPT_TYPE = 04 THEN 3 END DEPT_LEVEL,
+			          -- DEPT_LEVEL
+				     ISNULL((SELECT  'N'
+				               FROM  MS_DEPT DD
+				               WHERE  DD.UPPER_DEPT = D.DEPT_CD
+				            --   AND    DD.USE_YN ='Y'
+				               GROUP BY DD.UPPER_DEPT), 'Y') AS LEAF_YN,
+			        DEPT_NAME,
+			        CASE WHEN DEPT_TYPE >= 04 THEN DEPT_NAME + ' (' + D.DEPT_CD + ')'  ELSE D.DEPT_NAME END AS DEPT_NAME2,
+			        --  CASE WHEN DEPT_LEVEL >= 3 THEN CONCAT(DEPT_NAME ,' (' , D.DEPT_CD , ')' ) ELSE D.DEPT_NAME END AS DEPT_NAME2,
+			        D.USE_YN,
+			        D.ORG1_CD,
+			        D.ORG2_CD,
+			        D.ORG3_CD,
+			        D.ORG4_CD,
+			        D.SORT_NO AS ANL_USE_YN,
+			        D.CHG_ID,
+			        UM.USER_NAME as CHG_NAME,
+			        CONVERT(VARCHAR, GETDATE(), 112) CHG_TIME
+			FROM  MS_DEPT D
+			      LEFT OUTER JOIN MS_USERMASTER UM
+						ON D.CHG_ID = UM.USER_ID
+			WHERE 1=1
+			?schCode
+			?schName
+			ORDER BY UPPER_DEPT, D.DEPT_CD
+
+        ]]></query>
+		<parameter name="schCode" value="and d.dept_cd like CONCAT('%',?schCode,'%') " default="" />
+		<parameter name="schName" value="and d.dept_name like CONCAT('%',?schName,'%') " default="" />
+	</sql-service>
+
+	<sql-service name='wfm.hr.hrm100m010p.dept.sel.excel' datasource='is_stat' paging="false" type='prepared'>
+		<description>인사관리-조직관리-조직엑셀</description>
+		<result-name>EXCEL_LIST</result-name>
+		<query><![CDATA[
+			SELECT  (SELECT  DEPT_NAME from ms_dept b where a.org1_cd = b.DEPT_CD) ORG1_NAME,
+			        (SELECT  DEPT_NAME from ms_dept b where a.org2_cd = b.DEPT_CD) ORG2_NAME,
+			        a.DEPT_NAME,
+			        a.DEPT_CD
+			  FROM  ms_dept a
+			 WHERE  a.DEPT_TYPE = 04
+			 --  WHERE  a.DEPT_LEVEL = 3
+			   ?use_yn
+			order by org1_name, org2_name, DEPT_NAME
+        ]]></query>
+		<parameter name="use_yn" value="and a.USE_YN IN ('Y', 'N')" default="and a.USE_YN ='Y'" />
+	</sql-service>
+
+	<sql-service name="wfm.hr.hrm100m010p.deptinfo.sel" datasource="is_stat" type="prepared">
+		<description>부서현황</description>
+		<result-name>ds_dept_info</result-name>
+		<query><![CDATA[
+			SELECT ROW_NUMBER() OVER( ORDER BY D.DEPT_CD DESC) AS RNUM
+					,ISNULL((SELECT 'N'
+							  FROM ms_dept DD
+							 WHERE DD.UPPER_DEPT = D.DEPT_CD
+								GROUP BY DD.UPPER_DEPT), 'Y') AS LEAF_YN
+					,D.DEPT_CD
+					,'' AS MAPP_DEPT_CD
+					,'' AS NEXT_CENTER_CD
+					,'' AS OLD_UPPER_DEPT
+					,'' AS OLD_ORG1_CD
+					,'' AS OLD_ORG2_CD
+					,'' AS OLD_ORG3_CD
+					,'' AS OLD_ORG4_CD
+					, CASE WHEN D.DEPT_TYPE = 01 THEN 0 WHEN D.DEPT_TYPE = 02 THEN 1 WHEN D.DEPT_TYPE = 03 THEN 2 WHEN D.DEPT_TYPE = 04 THEN 3 END DEPT_LEVEL
+					--,D.DEPT_LEVEL
+					,D.UPPER_DEPT
+					,D.SORT_NO AS ANL_USE_YN
+					,'' AS NEXT_CENTER_SORT_NO
+					,D.DEPT_NAME
+					,D.DEPT_NAME DEPT_NAME2
+					,D.USE_YN
+					,D.ORG1_CD
+					,D.ORG2_CD
+					,D.ORG3_CD
+					,D.ORG4_CD
+					,D.CHG_ID
+					,UM.USER_NAME AS CHG_NAME
+					,CONVERT(VARCHAR,GETDATE(), 112)  AS CHG_TIME
+			  FROM  ms_dept D
+			  		,ms_usermaster UM
+			 WHERE UM.USER_ID = D.CHG_ID
+				AND D.DEPT_CD = ?dept_cd
+        ]]></query>
+	</sql-service>
+
+	<sql-service name='wfm.hr.hrm100m010p.sortno.upd01' datasource='is_stat' type='prepared' batch='false'>
+		<description>조직정렬순서수정</description>
+		<batch-name>ds_param</batch-name>
+		<query><![CDATA[
+			UPDATE cs_dept D
+			SET D.SORT_NO = ?target_sort_no
+			WHERE D.DEPT_CD = ?target_dept_cd
+        ]]>
+		</query>
+	</sql-service>
+	<sql-service name='wfm.hr.hrm100m010p.sortno.upd02' datasource='is_stat' type='prepared' batch='false'>
+		<description>조직정렬순서수정</description>
+		<batch-name>ds_param</batch-name>
+		<query><![CDATA[
+			UPDATE cs_dept D
+			SET D.SORT_NO = ?self_sort_no
+			WHERE D.DEPT_CD = ?self_dept_cd
+        ]]>
+		</query>
+	</sql-service>
+
+	<sql-service name='wfm.hr.hrm100m010p.dept.ins' datasource='is_stat' type='prepared' batch='true'>
+		<description>인사관리-조직관리-하위조직추가(등록)</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			INSERT INTO cs_dept (
+						  DEPT_CD
+						 ,DEPT_NAME
+						 ,DEPT_ENAME
+						 ,UPPER_DEPT
+						 ,ORG1_CD
+						 ,ORG2_CD
+						 ,ORG3_CD
+						 ,ORG4_CD
+						 ,DEPT_LEVEL
+						 ,USE_YN
+						 ,TEL_NO1
+						 ,TEL_NO2
+						 ,COMPANY_CD
+						 ,START_DATE
+						 ,END_DATE
+						 ,SORT_NO
+						 ,DEPT_INFO
+						 ,WORK_GROUP_CD
+						 ,CHG_ID
+						 ,CHG_TIME
+			) VALUES (
+						  ?dept_cd
+						 ,?dept_name
+						 ,?dept_ename
+						 ,?upper_dept
+						 ,IFNULL(?org1_cd, ?dept_cd )
+						 ,?org2_cd
+						 ,?org3_cd
+						 ,?org4_cd
+						 ,?dept_level
+						 ,?use_yn
+						 ,?tel_no1
+						 ,?tel_no2
+						 ,?company_cd
+						 ,?start_date
+						 ,?end_date
+						 ,(SELECT IFNULL(MAX(SORT_NO), 0) + 1 MAX_SORT_NO
+								FROM cs_dept D
+							  WHERE DEPT_LEVEL = ?dept_level
+								 AND IFNULL(UPPER_DEPT, ' ') = IFNULL(?upper_dept, ' '))
+						 ,?dept_info
+						 ,?work_group_cd
+						 ,?chg_id
+						 ,DATE_FORMAT(SYSDATE(), '%Y%m%d%H%i%s')
+			)
+        ]]></query>
+		<parameter name="dept_cd" value=" ?dept_cd " default="null" />
+		<parameter name="dept_name" value=" ?dept_name " default="null" />
+		<parameter name="dept_ename" value=" ?dept_ename " default="null" />
+		<parameter name="upper_dept" value=" ?upper_dept " default="null" />
+		<parameter name="org1_cd" value=" ?org1_cd " default="null" />
+		<parameter name="org2_cd" value=" ?org2_cd " default="null" />
+		<parameter name="org3_cd" value=" ?org3_cd " default="null" />
+		<parameter name="org4_cd" value=" ?org4_cd " default="null" />
+		<parameter name="dept_level" value=" ?dept_level " default="null" />
+		<parameter name="use_yn" value=" ?use_yn " default="null" />
+		<parameter name="tel_no1" value=" ?tel_no1 " default="null" />
+		<parameter name="tel_no2" value=" ?tel_no2 " default="null" />
+		<parameter name="company_cd" value=" ?company_cd " default="null" />
+		<parameter name="start_date" value=" ?start_date " default="null" />
+		<parameter name="end_date" value=" ?end_date " default="null" />
+		<parameter name="sort_no" value=" ?sort_no " default="null" />
+		<parameter name="dept_info" value=" ?dept_info " default="null" />
+		<parameter name="work_group_cd" value=" ?work_group_cd " default="null" />
+		<parameter name="chg_id" value=" ?chg_id " default="null" />
+	</sql-service>
+
+<!-- 
+***************************************
+수정없이 보여주기만 하는거라  이후 dept_level->dept_type 수정안함
+***************************************
+-->
+
+	<sql-service name='wfm.hr.hrm100m010p.deptupd.ins' datasource='is_stat' type='prepared' batch='true'>
+		<description>인사관리-조직관리-하위조직추가(등록)</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			INSERT INTO cs_dept_upd(
+						DEPT_CD
+					  , SEQ
+					  , UPD_DATE
+					  , UPPER_DEPT
+					  , ORG1_CD
+					  , ORG2_CD
+					  , ORG3_CD
+					  , ORG4_CD
+					  , ORG5_CD
+					  , ORG6_CD
+					  , OLD_UPPER_DEPT
+					  , OLD_ORG1_CD
+					  , OLD_ORG2_CD
+					  , OLD_ORG3_CD
+					  , OLD_ORG4_CD
+					  , OLD_ORG5_CD
+					  , OLD_ORG6_CD
+					  , CHG_ID
+					  , CHG_TIME
+			) VALUES (
+						?dept_cd
+					  , CS_DEPT_UPD_SQ.NEXTVAL
+					  , DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+					  , ?upper_dept
+					  , NVL(?org1_cd, ?dept_cd)
+					  , ?org2_cd
+					  , ?org3_cd
+					  , ?org4_cd
+					  , ?org5_cd
+					  , ?org6_cd
+					  , ''
+					  , ''
+					  , ''
+					  , ''
+					  , ''
+					  , ''
+					  , ''
+					  , ?chg_id
+					  , DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+			)
+        ]]></query>
+		<parameter name="dept_cd" value=" ?dept_cd " default="null" />
+		<parameter name="dept_name" value=" ?dept_name " default="null" />
+		<parameter name="dept_ename" value=" ?dept_ename " default="null" />
+		<parameter name="upper_dept" value=" ?upper_dept " default="null" />
+		<parameter name="org1_cd" value=" ?org1_cd " default="null" />
+		<parameter name="org2_cd" value=" ?org2_cd " default="null" />
+		<parameter name="org3_cd" value=" ?org3_cd " default="null" />
+		<parameter name="org4_cd" value=" ?org4_cd " default="null" />
+		<parameter name="org5_cd" value=" ?org5_cd " default="null" />
+		<parameter name="org6_cd" value=" ?org6_cd " default="null" />
+		<parameter name="dept_level" value=" ?dept_level " default="null" />
+		<parameter name="use_yn" value=" ?use_yn " default="null" />
+		<parameter name="tel_no1" value=" ?tel_no1 " default="null" />
+		<parameter name="tel_no2" value=" ?tel_no2 " default="null" />
+		<parameter name="company_cd" value=" ?company_cd " default="null" />
+		<parameter name="start_date" value=" ?start_date " default="null" />
+		<parameter name="end_date" value=" ?end_date " default="null" />
+		<parameter name="sort_no" value=" ?sort_no " default="null" />
+		<parameter name="dept_info" value=" ?dept_info " default="null" />
+		<parameter name="work_group_cd" value=" ?work_group_cd " default="null" />
+		<parameter name="chg_id" value=" ?chg_id " default="null" />
+		<parameter name="old_upper_dept" value=" ?old_upper_dept " default="null" />
+		<parameter name="old_org1_cd" value=" ?old_org1_cd " default="null" />
+		<parameter name="old_org2_cd" value=" ?old_org2_cd " default="null" />
+		<parameter name="old_org3_cd" value=" ?old_org3_cd " default="null" />
+		<parameter name="old_org4_cd" value=" ?old_org4_cd " default="null" />
+		<parameter name="old_org5_cd" value=" ?old_org5_cd " default="null" />
+		<parameter name="old_org6_cd" value=" ?old_org6_cd " default="null" />
+	</sql-service>
+
+	<sql-service name='wfm.hr.hrm100m010p_update_org_sub2' datasource='is_stat' type='prepared' batch='true'>
+		<description>인사관리-조직관리-하위조직수정(사용여부 수정)(센터인경우)</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			UPDATE cs_dept
+			SET
+				USE_YN = ?use_yn
+   		]]>
+   		</query>
+ 	</sql-service>
+
+	<!-- 사용자업로드 -->
+	<sql-service name='cs.hr.hrm110m10p.sel.dept' datasource='is_stat' paging="false" type='prepared'>
+			<description>부서 조회 트리용</description>
+			<result-name>DS_DEPT_LIST</result-name>
+			<query><![CDATA[
+				SELECT  DEPT_CD,
+				        UPPER_DEPT,
+				        ISNULL((SELECT  'N'
+					     	 	  FROM  ms_dept DD
+							     WHERE  DD.UPPER_DEPT = D.DEPT_CD
+							       AND  DD.use_yn = 'Y'
+						         GROUP BY DD.UPPER_DEPT), 'Y') AS LEAF_YN,
+						DEPT_NAME
+						,dbo.GET_DEPT_FULLNAME(D.DEPT_CD) DEPT_FULLNAME
+				  FROM  ms_dept D
+				 WHERE  use_yn = 'Y'
+				ORDER BY dept_level, dept_cd
+			]]></query>
+		</sql-service>
+
+		<sql-service name='cs.hr.hrm110m20p.dept' datasource='is_stat' paging="false" type='prepared'>
+			<description>부서 조회 </description>
+			<result-name>DS_DEPT</result-name>
+			<query><![CDATA[
+				SELECT	DEPT_CD CODEID,
+						GET_DEPT_FULLNAME(DEPT_CD) CODENAME
+				  FROM	cs_dept
+				 WHERE	1=1
+				   ?use_yn
+				   AND	DEPT_LEVEL = '3'
+				ORDER BY ORG1_CD, SORT_NO ASC
+			]]></query>
+			<parameter name='use_yn' value="AND if(?use_yn = 'Y', USE_YN='Y', 1=1)" default="" />
+		</sql-service>
+
+	   <sql-service name="cs.hr.hrm110m10t.upload.del" datasource='is_stat' type='prepared' batch='false'>
+		  <description>임시테이블삭제</description>
+			<query><![CDATA[
+				DELETE from cs_hr_user_upload  WHERE UPLOAD_ID = ?chg_id
+			]]></query>
+		</sql-service>
+
+		<sql-service name='cs.hr.hrm110m10t.upload' datasource='is_stat' paging="false" type='prepared' batch='true'>
+			<description></description>
+			<batch-name>insertlist</batch-name>
+			<query><![CDATA[
+				INSERT INTO cs_hr_user_upload
+				(
+					UPLOAD_ID
+				   ,DR_SER
+				   ,USER_ID
+				   ,EMP_NO
+				   ,USER_NAME
+				   ,ENTER_DATE
+				   ,USER_GRADE_CD
+				   ,DEPT_CD
+				   ,LEVEL_CD
+				   ,FUNCTION_CD
+				   ,AGENT_ID
+				   ,TENANT_ID
+				)
+				VALUES
+				(
+					?chg_id
+				   ,?row_no
+				   ,trim(?USER_ID)
+				   ,trim(?emp_no)
+				   ,trim(?user_name)
+				   ,?enter_date
+				   ,?user_grade_cd
+				   ,IF(?dept_cd = 'null',null,trim(?dept_cd))
+				   ,IF(?level_cd = 'null',null,trim(?level_cd))
+				   ,IF(?function_cd = 'null',null,trim(?function_cd))
+				   ,IF(?AGENT_ID = 'null',null,trim(?AGENT_ID))
+				   ,?tenant_id
+				)
+			]]></query>
+		</sql-service>
+
+	<sql-service name="cs.hr.hrm120m.personlist.sel" datasource="is_stat" type="simple">
+		<description>사원조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			SELECT		
+				B.USER_ID
+				  ,B.EMP_NO
+				  ,B.USER_NAME
+				  ,A.ORG1_CD
+				  ,A.ORG1_NAME
+				  ,A.ORG2_CD
+				  ,A.ORG2_NAME
+				  ,A.ORG3_CD
+				  ,A.ORG3_NAME
+	       	  	  ,B.USER_GRADE_CD
+				  ,A.USER_GRADE_NM
+				  ,isnull(B.ENTER_DATE,'') AS ENTER_DATE
+				  ,isnull(B.RETIRE_DATE,'') AS RETIRE_DATE
+				  ,CASE WHEN B.USE_YN = 'Y' THEN '재직' ELSE '퇴사' END  USE_YN
+				  ,isnull(A.WORK_MONTH,'') WORK_MONTH
+            FROM vw_usermaster A, ms_usermaster B, ms_dept C
+            WHERE A.USER_ID = B.USER_ID
+              AND B.DEPT_CD = C.DEPT_CD
+			AND A.DEPT_CD IS NOT NULL
+	            ?P_ORG1_CD
+	            ?P_ORG2_CD
+	            ?P_ORG3_CD
+	            ?USER_ID
+				?USER_NAME
+	            ?EMP_NO
+	            ?USER_GRADE_CD
+	           	?USE_YN
+                ORDER BY A.DEPT_CD, B.USER_NAME
+        ]]></query>
+		<parameter name='P_ORG1_CD' value="AND A.ORG1_CD        = '?P_ORG1_CD'" default="" />
+		<parameter name='P_ORG2_CD' value="AND A.ORG2_CD         = '?P_ORG2_CD'" default="" />
+		<parameter name='P_ORG3_CD' value="AND A.ORG3_CD       = '?P_ORG3_CD'" default="" />
+		<parameter name='USER_ID' value="AND B.USER_ID        = '?USER_ID'" default="" />
+		<parameter name='USER_NAME' value="AND B.USER_NAME   LIKE CONCAT('%','?USER_NAME','%')" default="" />
+		<parameter name='EMP_NO' value="AND B.EMP_NO      LIKE CONCAT('%',?EMP_NO,'%')" default="" />
+	<!-- 	<parameter name='WORK_GROUP_CD' value="AND A.WORK_GROUP_CD  IN (?WORK_GROUP_CD)" default="" /> -->
+	<!-- 	<parameter name='LEVEL_CD' value="AND B.LEVEL_CD IN (?LEVEL_CD) " default="" />  -->
+		<!-- <parameter name='FUNCTION_CD' value="AND B.FUNCTION_CD IN (?function_cd) " default="" />  -->
+	 	<parameter name='USER_GRADE_CD' value="AND B.USER_GRADE_CD  IN (?USER_GRADE_CD)" default="" />
+		<parameter name='USE_YN' value="AND B.USE_YN      LIKE '?USE_YN'" default="" />
+	</sql-service>
+
+
+	<sql-service name="cs.hrm.hrm120m10p.sel" datasource="is_stat" type="prepared">
+		<description>사원조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+			 SELECT
+				 'U' SAVE_MODE
+				,'0' CHG_PWD
+				,M.USER_ID
+				,M.USER_NAME
+				,M.EMP_NO
+				,M.USER_GRADE_CD
+				,M.DEPT_CD
+				,D.ORG1_CD
+				,D.ORG2_CD
+				,D.ORG3_CD
+				,GET_DEPT_FULLNAME(M.DEPT_CD) DEPT_FULLNAME
+				,M.ENTER_DATE
+				,M.USE_YN
+				,M.WORK_GROUP_CD
+				,M.DEGREE
+				,M.PASSWORD
+				,(SELECT USER_NAME FROM cs_usermaster C WHERE C.USER_ID=M.CHG_ID) CHG_ID
+				,M.CHG_TIME
+			FROM cs_usermaster M LEFT OUTER JOIN cs_dept D ON M.dept_cd = D.dept_cd
+			WHERE
+				   M.USER_ID=?user_id
+        ]]></query>
+	</sql-service>
+
+	<sql-service name="cs.hr.hrm120M010p.update" datasource="is_stat" type="prepared" batch='true'>
+		<description>사용자 수정</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			UPDATE	cs_usermaster
+               SET	USER_NAME = ?USER_NAME
+               		,USER_GRADE_CD = ?USER_GRADE_CD
+					,DEPT_CD = ?DEPT_CD
+                    ,CHG_ID=?CHG_ID
+                    ,CHG_TIME= DATE_FORMAT(NOW(),'%Y%m%d%H%i%s')
+                WHERE
+                    USER_ID = ?USER_ID
+        ]]></query>
+	</sql-service>
+
+	<sql-service name="cs.hr.hrm120m010p_insCheck" datasource="is_stat" type="prepared">
+		<description>중복체크(사번)</description>
+		<result-name>ds_check</result-name>
+		<query><![CDATA[
+			select	*
+			from ms_usermaster
+			where emp_no = ?emp_no
+        ]]></query>
+	</sql-service>
+
+
+	<sql-service name="cs.hr.hrm120M010p.insert" datasource="is_stat" type="prepared" batch='true'>
+		<description>사용자 등록</description>
+		<batch-name>batchlist</batch-name>
+		<query><![CDATA[
+			INSERT INTO
+				ms_usermaster
+			 (
+				  USER_ID
+				 ,EMP_NO
+				 ,USER_NAME
+				 ,USER_GRADE_CD
+				 ,DEPT_CD
+				 ,PASSWORD
+				 ,ENTER_DATE
+				 ,USE_YN
+				 ,PWD_ERR_CNT  -- update 20180326 
+				 ,REGISTID
+				 ,REGISTDATE
+				 ,REGISTTIME
+				 ,CHG_ID
+				 ,CHGDATE
+				 ,CHGTIME
+			 )
+			VALUES
+			  (
+				 ?EMP_NO
+				 ,?EMP_NO
+				 ,?USER_NAME
+				 ,?USER_GRADE_CD
+				 ,?DEPT_CD
+				 ,?PASSWORD
+				 ,FORMAT(GETDATE(), 'yyyyMMdd')
+				 ,'Y'
+				 ,0
+				 ,?CHG_ID
+				 ,FORMAT(GETDATE(), 'yyyyMMdd')
+				 ,FORMAT(GETDATE(), 'HHmmss')
+				 ,?CHG_ID
+				 ,FORMAT(GETDATE(), 'yyyyMMdd')
+				 ,FORMAT(GETDATE(), 'HHmmss')
+			 )
+        ]]></query>
+	</sql-service>
+
+
+	<sql-service name="cs.hrm.hrm120m.err_count_init.upd" datasource='is_stat' type='prepared' batch='false'>
+		<description>비밀번호오류횟수초기화</description>
+		<query><![CDATA[
+            UPDATE ms_usermaster
+            SET PWD_ERR_CNT = 0
+            WHERE USER_ID = ?user_id
+        ]]></query>
+	</sql-service>
+
+	<sql-service name='cs.com.com110p.pw.list.sel' datasource='is_stat' type='prepared'>
+		<description>사용자의 비밀번호 목록을 가져온다</description>
+		<result-name>passwordList</result-name>
+		<query><![CDATA[
+			SELECT
+				   USER_ID,
+				   PASSWORD,
+				   PWD_RECENT1,
+				   PWD_RECENT2
+			FROM ms_usermaster
+			WHERE USER_ID = ?userid
+		]]></query>
+	</sql-service>
+
+
+	<sql-service name="cs.com.com110p.pw.upd" datasource="is_stat" type="prepared">
+		<description>비밀번호 변경</description>
+		<query><![CDATA[
+			UPDATE cs_usermaster SET
+				PASSWORD = ?password,
+				PWD_RECENT1 = PASSWORD,
+				PWD_RECENT2 = PWD_RECENT1,
+				PWD_ERR_CNT='0',
+				PWD_CHG_DATE = DATE_FORMAT(SYSDATE(),'%Y%m%d')
+			WHERE USER_ID = ?userid
+		]]></query>
+	</sql-service>
+
+
+	<sql-service name="cs.hrm.HRM130M.sel" datasource="is_stat" type="prepared">
+		<description>기본정보조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+            SELECT
+                M.USER_ID
+                ,M.EMP_NO
+                ,M.USER_NAME
+                ,M.DEPT_CD
+                ,M.DEPT_NM
+                ,dbo.GET_DEPT_FULLNAME(M.DEPT_CD) DEPT_FULLNAME
+                ,M.ORG1_CD
+                ,M.ORG1_NAME
+                ,M.ORG2_CD
+                ,M.ORG2_NAME
+                ,M.ORG3_CD
+                ,M.ORG3_NAME
+				,M.CALLAUTH
+                ,M.LEVEL_CD
+                ,M.LEVEL_NAME
+                ,M.FUNCTION_CD
+                ,M.FUNCTION_NAME
+                ,M.JOB_CD
+                ,M.JOB_NAME
+                ,M.WORK_GROUP_CD
+                ,M.WORK_GROUP_NAME
+                ,M.USER_GRADE_CD
+                ,M.ENTER_DATE
+                ,M.RETIRE_DATE
+				,M.WORK_MONTH
+                --,DATEDIFF(month, M.ENTER_DATE, GETDATE()) WORK_MONTH
+                ,M.USE_YN
+                ,M.PWD_ERR_CNT
+            FROM vw_usermaster M
+            WHERE M.USER_ID = ?user_id
+        ]]></query>
+	</sql-service>
+
+	<sql-service name="cs.hrm.hrm130m.upd" datasource="is_stat" type="prepared" batch='true'>
+		<description>기본정보(수정)</description>
+		<batch-name>DS_LIST</batch-name>
+		<query><![CDATA[
+        UPDATE  ms_usermaster
+           SET  USER_NAME = ?USER_NAME,
+                DEPT_CD = ?DEPT_CD,
+                WORK_GROUP_CD = ?WORK_GROUP_CD,
+                LEVEL_CD = ?LEVEL_CD,
+                FUNCTION_CD = ?FUNCTION_CD,
+                USER_GRADE_CD = ?USER_GRADE_CD,
+                GPA_GBN = ?GPA_GBN,
+                AGENT_ID = ?AGENT_ID,
+                USE_YN = ?USE_YN,
+                RETIRE_DATE = CASE WHEN ?USE_YN = 'Y' THEN NULL ELSE FORMAT(GETDATE(), 'yyyyMMdd') END,
+                SEX = ?SEX,
+                MARRYCK = ?MARRYCK,
+                CHG_ID = ?CHG_ID,
+                CHG_TIME = FORMAT(GETDATE(),'yyyyMMddHHmmss')
+        WHERE
+                USER_ID = ?USER_ID
+        ]]></query>
+    	<parameter name='USER_NAME' value="?USER_NAME" default="NULL" />
+		<parameter name='WORK_GROUP_CD' value="?WORK_GROUP_CD" default="NULL" />
+		<parameter name='LEVEL_CD' value="?LEVEL_CD" default="NULL" />
+		<parameter name='FUNCTION_CD' value="?FUNCTION_CD" default="NULL" />
+		<parameter name='GPA_GBN' value="?GPA_GBN" default="NULL" />
+		<parameter name='AGENT_ID' value="?AGENT_ID" default="NULL" />
+		<parameter name='SEX' value="?SEX" default="NULL" />
+		<parameter name='MARRYCK' value="?MARRYCK" default="NULL" />
+		<parameter name='RETIRE_DATE' value="?RETIRE_DATE" default="FORMAT(GETDATE(), 'yyyyMMdd')" />
+	</sql-service>
+
+	<sql-service name="cs.hrm.HRM130M.user.delete" datasource="is_stat" type="prepared">
+		<description>사원정보삭제</description>
+		<query><![CDATA[
+
+		DELETE FROM ms_usermaster
+		WHERE USER_ID=?user_id
+
+        ]]></query>
+	</sql-service>
+	
+	<sql-service name="hr.inf020.dept.anl_useyn.upd" datasource="is_stat" type="prepared" batch='false'>
+		<description>조직 조회 조건 포함 여부 설정</description>
+		<query><![CDATA[
+	        UPDATE  ms_dept
+	           SET  SORT_NO = ?ANL_USE_YN,
+	                CHG_ID = ?CHG_ID,
+	                CHG_DATE = FORMAT(GETDATE(),'yyyyMMddHHmmss')
+	        WHERE
+	                DEPT_CD = ?DEPT_CD
+        ]]></query>
+	</sql-service>
+
+
+</query-collection>

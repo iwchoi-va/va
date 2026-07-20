@@ -1,0 +1,83 @@
+.xw-button-shell {
+	margin: 0;
+	padding: 0;
+	border: 0px none;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;	
+}
+
+.xw-button-shell-inner {
+ 	width: 100%;
+	height: 100%;
+	padding: 0px;
+	overflow: hidden;
+ 	border: 1px solid #798da7;
+	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px; 
+	background: linear-gradient(#e4eaf2, #b8c6d8);
+	background: -ms-linear-gradient(#e4eaf2, #b8c6d8);
+	background: -moz-linear-gradient(#e4eaf2, #b8c6d8);
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#e4eaf2),	to(#b8c6d8) );
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true',startColorstr=#e4eaf2, endColorstr=#b8c6d8);
+	background-color: #e4eaf2;
+}
+
+.xw-button {
+	width: 100%;
+	height: 100%;
+	padding: 0px;
+ 	border: 0px none; 
+/* 	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px; */
+	cursor: pointer;
+	font-size: 11px;
+ 	font-weight: bold;
+	white-space:nowrap;
+	text-align:center;
+	
+	-moz-user-select : none;
+	-webkit-user-select : none;
+}
+.xw-button-shell-inner:focus{
+	border-color: #228bf3;
+}
+
+.xw-button-icon{
+	display:inline-block;
+	width:14px;
+	height:100%;
+	background: no-repeat center;
+	line-height: 1em; 
+	vertical-align:middle;
+}
+
+.xw-button-label{
+	color: #2f4664;
+	line-height: 1em; 
+	vertical-align:middle;
+}
+
+.xw-button-disabled {
+	opacity: 0.7;
+	filter: alpha(opacity = 70);
+}
+.xw-button-shell-inner:hover {
+	background: #e3f1f6;
+	background:	-webkit-gradient(linear, 0 0, 0 bottom, from(#e3f1f6), to(#aed9e9) );
+	background: -ms-linear-gradient(#e3f1f6, #aed9e9);
+	background: -moz-linear-gradient(#e3f1f6, #aed9e9);
+	background: linear-gradient(#e3f1f6F, #aed9e9);
+	filter: progid:DXImageTransform.Microsoft.gradient(enabled='true',startColorstr=#e3f1f6, endColorstr=#aed9e9);
+}
+
+.xw-button-shell-inner:active,.xw-button-click {
+	border-color: #576d88;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#9fb0c6), to(#e5eaf2) );
+	background: -ms-linear-gradient(#9fb0c6, #e5eaf2);
+	background: -moz-linear-gradient(#9fb0c6, #e5eaf2);
+	background: linear-gradient(#9fb0c6, #e5eaf2);
+	filter: progid:DXImageTransform.Microsoft.gradient(enabled='true',startColorstr=#9fb0c6, endColorstr=#e5eaf2);
+}

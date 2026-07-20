@@ -1,0 +1,59 @@
+@CHARSET "UTF-8";
+*{font-family:'Malgun Gothic'}
+
+/* 채널 선택 관련 */
+
+#pan_social_card #pan_button #btn_news, 
+#pan_social_card #pan_button #btn_blog, 
+#pan_social_card #pan_button #btn_twitter{-webkit-transition: all 0.2s;
+  -moz-transition: all  0.2s;
+  transition: all  0.2s;}
+#pan_social_card #pan_button #btn_news{border-radius: 3px 0 0 3px;
+  -webkit-border-radius: 3px 0 0 3px;
+  -moz-border-radius: 3px 0 0 3px;}
+#pan_social_card #pan_button #btn_twitter{border-radius: 0 3px 3px 0;
+  -webkit-border-radius: 0 3px 3px 0;
+  -moz-border-radius: 0 3px 3px 0;}
+  
+#pan_social_card #pan_button #btn_news .xw-label-cell:hover{background-color :#3AD2B8; background-position:50% 0 !important;}
+#pan_social_card #pan_button #btn_news .xw-label-cell{
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+  background:url(../images/icon_vocie.png) no-repeat #39414B;background-position:50% -37px !important;
+  border-radius: 3px 0 0 3px;
+  -webkit-border-radius: 3px 0 0 3px;
+  -moz-border-radius: 3px 0 0 3px;
+}
+#pan_social_card #pan_button #btn_blog .xw-label-cell:hover{background-color :#347FF2; background-position:50% 50% !important;}
+#pan_social_card #pan_button #btn_blog .xw-label-cell{
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+  background:url(../images/icon_text.png) no-repeat #39414B;background-position:50% -37px !important;
+}
+
+#pan_social_card #pan_button #btn_twitter .xw-label-cell:hover{background-color :#FF6F1D; background-position:50% 50% !important;}
+#pan_social_card #pan_button #btn_twitter .xw-label-cell{
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+  background:url(../images/icon_social.png) no-repeat #39414B;background-position:50% -37px !important;
+  border-radius: 0 3px 3px 0;
+  -webkit-border-radius: 0 3px 3px 0;
+  -moz-border-radius: 0 3px 3px 0;
+}
+
+#pan_social_card div.xw-label-cell label {
+  display: inline-block;
+  -webkit-transition: all 0.3s;
+  -webkit-backface-visibility: hidden;
+  -moz-transition: all 0.3s;
+  -moz-backface-visibility: hidden;
+  transition: all 0.3s;
+  backface-visibility: hidden;}
+ #pan_social_card div.xw-label-cell:hover label{
+ -webkit-transform: translateY(30px);
+	-moz-transform: translateY(30px);
+	-ms-transform: translateY(30px);
+	transform: translateY(30px);}

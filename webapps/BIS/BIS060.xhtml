@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src="../xwing/js/xwing.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/scriptutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/orgutil.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/anlstatutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+var v_url               = "service::bis.bis060.sel.do";
+
+function page_load(event) {
+	XwingObject();
+
+	//$dpk_from_date.setValue("20180102");
+	$dpk_from_date.setValue(g_addDate("d", -1, g_toDate(), ""));
+	$dpk_to_date.setValue(g_toDate());
+	$edt_stime.setValue("090000");
+	$edt_etime.setValue("235959");
+
+	g_createOrg("pan_org", 2, "Y", "N", "Y", "", "전체",false,true);
+
+	f_selCodeBook();
+}
+
+
+function btn_search_click(event) {
+	if(checkDate($dpk_from_date,$dpk_to_date,$edt_stime,$edt_etime)) return;
+	f_selCodeBook();
+}
+
+function f_selCodeBook() {
+	var sdate = $dpk_from_date.getValue()+$edt_stime.getValue();
+	var edate = $dpk_to_date.getValue()+$edt_etime.getValue();
+	var param	= {
+			_sqlName: "cs.bis.bis060.total_process_status.sel",
+			SDATE:sdate,
+			EDATE:edate
+	};
+	g_orgToParam("", param);
+
+	var opt 	= {
+			reqId: "total_status",
+			url: v_url,
+			param: param
+	};
+
+
+
+	Xwing.request(opt, callback);
+}
+
+
+function btn_detail_search_click(event) {
+	var sdate = $dpk_from_date.getValue()+$edt_stime.getValue();
+	var edate = $dpk_to_date.getValue()+$edt_etime.getValue();
+	var ced_no = $edt_ced_no.getValue();
+	var param	= {
+			_sqlName: "cs.bis.bis060.ced_detail.sel",
+			SDATE:sdate,
+			EDATE:edate,
+			CED_NO : ced_no
+	};
+	g_orgToParam("", param);
+	var opt 	= {
+			reqId: "ced_status",
+			url: v_url,
+			param: param
+	};
+
+	Xwing.request(opt, callback);
+}
+
+function callback(reqId, res, err, xhr) {
+	switch(reqId) {
+
+	case "total_status":
+
+		$DS_LIST.clear();
+		$DS_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+
+		break;
+
+	case "ced_status":
+
+		$DS_DETAIL_LIST.clear();
+		$DS_DETAIL_LIST.setData(res.DS_LIST.column, res.DS_LIST.record);
+
+		break;
+
+
+	}
+
+
+}
+
+
+
+function expr_duration(cellObj,rowIdx) {
+	var opt = {};
+	var dsName="";
+
+		dsName = "DS_LIST";
+
+	var totalSeconds = $DS_LIST.getValue(rowIdx,'DURATION');
+	//var score = $DS_RES.getValue(rowIdx, "SCORE");
+
+	totalSeconds = Math.floor(totalSeconds / 100);
+	var h = (Math.floor(totalSeconds / 3600)).toString();
+	totalSeconds %= 3600;
+	var m = (Math.floor(totalSeconds / 60)).toString();
+	var s = (Math.floor(totalSeconds % 60)).toString();
+	opt['value'] = (h.length==1?"0"+h:h) + ":" + (m.length==1?"0"+m:m) + ":" + (s.length==1?"0"+s:s);
+	return opt;
+}
+
+function expr_duration2(cellObj,rowIdx) {
+	var opt = {};
+	var dsName="";
+
+		dsName = "DS_DETAIL_LIST";
+
+	var totalSeconds = $DS_DETAIL_LIST.getValue(rowIdx,'DURATION');
+	//var score = $DS_RES.getValue(rowIdx, "SCORE");
+
+	totalSeconds = Math.floor(totalSeconds / 100);
+	var h = (Math.floor(totalSeconds / 3600)).toString();
+	totalSeconds %= 3600;
+	var m = (Math.floor(totalSeconds / 60)).toString();
+	var s = (Math.floor(totalSeconds % 60)).toString();
+	opt['value'] = (h.length==1?"0"+h:h) + ":" + (m.length==1?"0"+m:m) + ":" + (s.length==1?"0"+s:s);
+	return opt;
+}
+
+/* ***********************************************************
+ * 키워드 엔터 이벤트 함수
+ *************************************************************/
+function edt_sch_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_search_click();
+	}
+}
+
+function edt_sch2_keyup(event) {
+	if(event.event.keyCode == '13') {
+		btn_detail_search_click();
+	}
+}
+/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_LIST">
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DURATION"></xwing:dataset-column>
+		<xwing:dataset-column id="CALL_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="CED_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="TOTAL_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE_CNT"></xwing:dataset-column>
+	</xwing:dataset>
+	<xwing:dataset id="DS_DETAIL_LIST">
+		<xwing:dataset-column id="CED_NO"></xwing:dataset-column>
+		<xwing:dataset-column id="REG_DATE"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_CD"></xwing:dataset-column>
+		<xwing:dataset-column id="ORG2_NM"></xwing:dataset-column>
+		<xwing:dataset-column id="DURATION"></xwing:dataset-column>
+		<xwing:dataset-column id="CALL_CNT"></xwing:dataset-column>
+		<xwing:dataset-column id="GRADE"></xwing:dataset-column>
+		<xwing:dataset-column id="REM_TIME"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="New Page" width="1050" height="780" load="page_load" scroll="false" top="-5">
+		<xwing:group id="group0_0" left="0" top="0" width="1050" height="58" anchor="top right left" styles="div_search" borderwidth="0" scroll="false">
+			<xwing:panel id="pan_org" left="520" top="15" width="420" height="25">
+			</xwing:panel>
+			<xwing:button id="btn_search" value="조 회" left="750" top="15" anchor="none" styles="btn_search" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" bgcolor="#1FABE0" click="btn_search_click"></xwing:button>
+			<xwing:label id="lbl1" left="10" top="15" value="일자기준" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+			<xwing:datepicker id="dpk_from_date" left="75" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl1_1" left="255" top="15" value="~" height="25" width="10" halign="center" styles="label"></xwing:label>
+			<xwing:edit id="edt_stime" left="180" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:edit id="edt_etime" left="378" top="15" height="25" mask="sec" width="70" halign="center" fontsize="11" maxlength="6" keyup="edt_sch_keyup"></xwing:edit>
+			<xwing:datepicker id="dpk_to_date" left="270" top="15" anchor="none" width="100" height="25"></xwing:datepicker>
+			<xwing:label id="lbl12" left="455" top="15" value="소속" height="25" width="60" anchor="left" styles="label_subtitle"></xwing:label>
+		</xwing:group>
+		<xwing:panel id="pnl_1" left="0" top="64" width="1067" height="392" anchor="right left">
+			<xwing:datagrid id="dgrd_service_list" left="15" top="50" width="1020" height="330" rownum="false" binddataset="DS_LIST" anchor="all" emptymessage="조회된 데이터가 없습니다." sortable="true" autofit="true" cursor="pointer" styles="table_border">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+					<xwing:datagrid-column width="120"></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="일자"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="설계건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="녹취건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="총녹취시간"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="전체건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="완료건수" halign="center" fontweight="bold"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="REG_DATE" halign="center" mask="date"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="left"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CED_CNT" halign="right" mask="comma"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CALL_CNT" halign="right" mask="comma"></xwing:datagrid-cell>
+						<xwing:datagrid-cell expr="expr_duration" bindcolumn="DURATION" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="TOTAL_CNT" halign="right" mask="comma"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="GRADE_CNT" halign="right" mask="comma"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:label id="lbl_subtitle1_0_0" value="전체 처리현황" left="10" top="0" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="top right left"></xwing:label>
+		</xwing:panel>
+		<xwing:panel id="pnl_va_sec" left="0" top="470" width="1054" height="311" anchor="all">
+			<xwing:datagrid id="dgrd_param" left="15" top="115" width="1020" height="187" rownum="true" binddataset="DS_DETAIL_LIST" anchor="all" editwhen="click" styles="table_border" autofit="true">
+				<xwing:datagrid-colgroup>
+					<xwing:datagrid-column width="130"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column width="100"></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+					<xwing:datagrid-column></xwing:datagrid-column>
+				</xwing:datagrid-colgroup>
+				<xwing:datagrid-head>
+					<xwing:datagrid-row height="30">
+						<xwing:datagrid-cell text="최종녹취인입일시"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="설계번호"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="센터"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="녹취건수"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="녹취 총시간" halign="center" fontweight="bold"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="등급"></xwing:datagrid-cell>
+						<xwing:datagrid-cell text="남은시간"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-head>
+				<xwing:datagrid-body>
+					<xwing:datagrid-row>
+						<xwing:datagrid-cell bindcolumn="REG_DATE" halign="center" mask="datetime"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CED_NO" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="ORG2_NM" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="CALL_CNT" halign="right" mask="comma"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="DURATION" halign="center" expr="expr_duration2"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="GRADE" halign="center"></xwing:datagrid-cell>
+						<xwing:datagrid-cell bindcolumn="REM_TIME" halign="center"></xwing:datagrid-cell>
+					</xwing:datagrid-row>
+				</xwing:datagrid-body>
+			</xwing:datagrid>
+			<xwing:label id="lbl_subtitle1_0_0_0" value="설계번호별 처리현황" left="10" top="3" width="1030" height="40" styles="label_boxtitle" halign="left" anchor="right left"></xwing:label>
+			<xwing:group id="group0" left="15" top="55" width="1020" height="50" anchor="right left" styles="div_search" borderwidth="0">
+				<xwing:label id="label5_1" value="설계번호" left="15" top="10" fontweight="bold" halign="right" width="75" height="25" styles="label_subtitle" anchor="top left"></xwing:label>
+				<xwing:edit id="edt_ced_no" left="98" top="10" height="25" width="192" anchor="top left" styles="edit_readonly" readonly="false" enabled="true" keyup="edt_sch2_keyup"></xwing:edit>
+				<xwing:button id="btn_detail_search" value="조 회" left="310" top="10" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_detail_search_click"></xwing:button>
+			</xwing:group>
+		</xwing:panel>
+		<xwing:splitbar id="splitbar" left="0" top="468" height="5" borderwidth="0" width="1050" cursor="n-resize" bindwidget="r:pnl_1,r:pnl_va_sec" bartype="vertical" anchor="right left" visible="true" shadow="#58728d 0 -3 0 0"></xwing:splitbar>
+	</xwing:page>
+</body>
+</html>

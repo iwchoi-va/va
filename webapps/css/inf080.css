@@ -1,0 +1,6 @@
+@CHARSET "utf-8";
+#dgrd_service_list .xw-datagrid-area-header .xw-mod th{ background-color: #d0d8dd !important; border:1px solid #c4d1d8;border-top:none;}
+#dgrd_service_list .xw-datagrid-area-header .xw-mod .xw-datagrid-font { color: #636363; }
+
+#dgrd_service_list_0 .xw-datagrid-area-header .xw-mod th{ background-color: #d0d8dd !important; }
+#dgrd_service_list_0 .xw-datagrid-area-header .xw-mod .xw-datagrid-font { color: #636363; }

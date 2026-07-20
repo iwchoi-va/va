@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<exception-config>
+
+	<default-error-page>error.page</default-error-page>
+	<admin-error-page>admin.error.admin</admin-error-page>
+
+	<exception class="com.locus.jedi.foundation.exception.BizDelegateException" 	page="waf.bizDelegate.error.page"/>
+	<exception class="com.locus.jedi.waf.action.WebActionException" 	page="waf.action.error.page"/>
+	<exception class="com.locus.jedi.waf.delegation.HostResponseException" 	page="waf.host.error.page"/>
+	<exception class="com.locus.jedi.waf.delegation.BizProcessException" 	page="waf.bizProcess.error.page"/>
+	<exception class="javax.servlet.ServletException" 	page="waf.error.page"/>
+	<exception class="com.locus.jedi.ejb.exception.BizAppException"	 page="waf.bizApp.error.page"/>
+</exception-config>

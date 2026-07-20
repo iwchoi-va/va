@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style>
+		html {
+			overflow:hidden;
+			resize: both;
+			height: 100%;
+			padding: 15px;
+		}
+		body {
+			background: #434343;
+			color: #fafafa;
+			font-family: "NanumBarunGothic", Helvetica, Arial, sans-serif;
+			font-size: 13px;
+			overflow: hidden;
+			height: 100%;
+			width: 100%;
+			margin: 0;
+		}
+		#container {
+			width: 100%;
+			height: 100%;
+		}
+		#btn_save {
+ 			width: 45px;
+		    height: 22px;
+		    border-radius: 5px;
+		    background-color: #2579d1;
+		    color: #fff;
+		    border-color: #2579d1;
+		    font-size: 11px; 
+		    padding: 0;
+		    cursor:pointer;
+		    font-weight:600;
+		    font-family: 'NanumBarunGothic','Malgun Gothic';
+		    letter-spacing:2px;
+		}
+    </style>
+	<script type='text/javascript' src='../chart/lib/jquery-1.11.1.js'></script>
+	</head>
+	
+	<body onLoad="calling()" style="margin:0;padding:0">
+
+		<div id="container"  style="backgroud-color:#fff;position:relative;height:420px;">
+		<div id="title" class="title">
+			<font size="3.5" color="#4cc8e9">[ 콜메모 ]</font><br><br>
+		</div>	
+			
+			<div id="memo"></div>
+			<div id="date" style="font-size:10px;text-align:right"></div>
+		
+		</div>
+			<div style="position:absolute; bottom:5px;right:5px">
+				<button id="btn_save" visible="true">수정</button>
+			</div>
+		
+		<script>
+	   		var xhr;
+		 	function calling(){
+		 		//constContext(); //브라우저 우측 메뉴 막아.
+				document.body.oncontextmenu = function(){return false;};
+		 		
+		 		var host = parent.host;
+	    		var contact_id = parent.contact_id;
+	    		
+	    		xhr = new XMLHttpRequest();
+	    		xhr.onreadystatechange = loader;
+	    		xhr.open("GET",encodeURI(host + "player.getCall_Info.do?cmd=memo&contact_id="+ contact_id ),false); 
+	    		xhr.send(null);
+		 	}
+		 	
+		 	function loader(){
+	   			if(xhr.readyState == 4 && xhr.status == 200) {
+		        	result = JSON.parse(xhr.responseText);
+		        	//temp
+		        	result.MEMO = "[상담사1] : 상품 1 확인요망";
+		        	result.DATE = "-2018.01.12 10:35:21";
+		        	document.getElementById("memo").innerHTML = result.MEMO;
+		        	document.getElementById("date").innerHTML = result.DATE;
+		        }
+		   	}
+	    </script>
+	</body>
+	
+</html>
+

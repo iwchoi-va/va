@@ -1,0 +1,5 @@
+html {overflow: hidden;resize: both;height: 100%;}
+body {font-family: 'Malgun Gothic';	overflow: hidden;height: 100%;width: 100%;margin: 0 auto; margin-top: 40px;
+}
+svg{ margin: 50px 15px 50px 15px; }
+.liquidFillGaugeText { font-family: Helvetica; font-weight: bold; }

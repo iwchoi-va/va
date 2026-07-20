@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<link rel="icon" href="../msens_icon.ico" />
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/common.js' type="text/javascript" charset="UTF-8"></script>
+<script src='../js/scriptutil.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/player.js" type="text/javascript" charset="UTF-8"></script>
+<script src="../js/xwing.dataset.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/dateutil.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/var v_url="service::oba.oba010.sel.do";
+var ced_no="", browser="";
+/***********************************************************************
+
+ * *********************************************************************/
+
+function page_load(event) {
+	XwingObject();
+		ced_no= parent.ced_no;
+		if(parent.$DS_INFO.getValue(0,"EDD_REGN_YN")=="Y"){ //OBA010T1의 DS_INFO EDD 대상여부
+			getInfo();
+		}else{
+			alert("EDD 대상자가 아닙니다."); //xiwng alert이 안된다.. 왤까?
+			return;
+		}
+		
+		//getInfo();
+}
+
+function getInfo(){
+	var opt = {
+			reqId: "getInfo",
+			url: v_url,
+			param: {
+				_sqlName  : 'oba.oba010t1t8.getInsuPlanMast.sel', 
+				CED_NO : ced_no
+			},
+			indicator: null,
+			showError: true
+	};
+	Xwing.request(opt, callback);
+}
+
+function getRiskGradeCalRstlVOList(){
+	 /*
+	 강화된 고객확인(LTTMINFR0105) 화면(기간계) 호출시 입력 파라미터
+	 amlBznsClcd   AML업무구분코드 = 01
+	 amlplno       AML증권번호 = 설계번호
+	 eddRegnDt     EDD등록일자
+	 eddOccSeqn    EDD발생순번
+	 eddRegnYn   EDD등록여부
+	 ptyId       고객ID = CON_P_CUST_NO
+	 watchListYn   WatchList여부
+	 */
+	
+	var url = getWebServiceIFURL();	
+	var serviceName ="LTTMINFR0105";
+	
+	var amlBznsClcd = '01';
+	var amlplno = ced_no;
+	var custId = $DS_MAST.getValue(0,"CON_P_CUST_NO");
+	var userid = $DS_MAST.getValue(0,"USERID");
+	var riskGradeCalChckVOList='[{"amlBznsClcd":"'+ amlBznsClcd+'","amlplno":"'+amlplno+'","custId":"'+ custId+'"}]';
+	var reqJson ='{"riskGradeCalChckVOList":'+riskGradeCalChckVOList+'}';
+	
+	//console.log(reqJson);
+	
+	var opt = {
+			reqId: "getRiskGradeCalRstlVOList",
+			url: "service::oba.oba010t1t8.getRiskGradeCalChckVOList.sel.do",
+			param: {
+				serviceUrl: url,
+				serviceName : serviceName ,
+				serviceResult : "riskGradeCalRstlVOList",
+				reqJson :reqJson,
+				userid : userid,
+				DS_RES: $DS_RES
+			},
+			indicator: null,
+			showError: true
+	};
+	
+	Xwing.request(opt, callback);
+}
+
+/* ***********************************************************
+ * 	콜백  함수 
+ *************************************************************/
+function callback(reqId, res, err, xhr){
+	if( res.Error != '0' ){
+			alert('ResultCode : ' + res.ResultCode + '\n\n' + 'ResultMessage : ' + res.ResultMessage);
+		return;
+	}
+	
+	switch (reqId) {
+		case "getInfo":
+			$DS_MAST.setData(res.DS_MAST.column, res.DS_MAST.record);
+			if($DS_MAST.size() > 0){
+				getRiskGradeCalRstlVOList();
+			}else{
+				alert("TM의 고객ID 정보가 존재하지 않습니다.");
+				return;
+			}	
+			
+			break;
+		case "getRiskGradeCalRstlVOList":
+			$DS_RES.setData(res.DS_RES.column, res.DS_RES.record);
+			if($DS_RES.size() > 0){
+				fnOpenPop();
+			}else{
+				alert("고객ID 정보가 존재하지 않습니다.");
+				return;
+			}
+			
+			
+		default: break;	
+	}
+}
+
+function fnOpenPop(){
+	var url = getWebServiceCoreURL();
+	//alert(url);
+	//console.log(data);
+	 var sAmlBznsClcd = $DS_RES.getValue(0, "amlBznsClcd");
+	 var sAmlplno  = $DS_RES.getValue(0, "amlplno");
+	 var sEddRegnDt  = "";
+	 var sEddOccSeqn  = "";
+	 var sEddRegnYn  = "";
+	 var sPtyId   = $DS_MAST.getValue(0,"CON_P_CUST_NO");
+	 var sWatchListYn = "";
+
+		
+	 var sScreenId       = "UWUAM006"; // 스크립ID필요
+
+	 var param = 'sAmlBznsClcd:'+sAmlBznsClcd+
+	'|sAmlplno:'+sAmlplno+
+	'|sEddRegnDt:'+sEddRegnDt+
+	'|sEddOccSeqn:'+sEddOccSeqn+
+	'|sEddRegnYn:'+sEddRegnYn+
+    '|sPtyId:'+sPtyId+
+    '|sWatchListYn:'+sWatchListYn+
+    '|sScreenId:'+sScreenId;
+
+	var data ='?groupId=LA'
+	    +'&menuId=LAAMP003'
+	    +'&menunm='+ encodeURI('강화된 고객확인')
+	    +'&delimiter='+'|'
+	    +'&param='+encodeURI(param)
+	    +'&paramDst='+''
+	    +'&callback='+'fn_riskIssueCallback';
+	    +'&iWidth='+'731'
+	    +'&iHeight='+'502';
+	    
+	window.open(url+data, "_blank", "width=740, height=510, left=100, top=10, location=no,resizable=no, scrollbars=no");
+}
+
+
+
+function getWebServiceIFURL(){
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}else if(hostname[0] == "vauat"){
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+	}else if(hostname[0] == "va"){
+		url = "https://ts.aig.co.kr/tmMciService.do";
+	}else{//로컬도 개발url로.
+		url = "https://tsuat.aig.co.kr/tmMciService.do";
+		//url = "https://tsdev.aig.co.kr/tmMciService.do";
+		//url = "http://10.51.193.38:18080/tmMciService.do";
+	}
+	return url;
+}
+
+function getWebServiceCoreURL(){
+	var hostname = window.location.hostname.split(".");
+	
+	var url ="";
+	if(hostname[0] == "vadev"){
+		url = "http://corecmdev.aig.co.kr/jsp/connect_channel.jsp";
+	}else if(hostname[0] == "vauat"){
+		url = "http://corecmuat.aig.co.kr/jsp/connect_channel.jsp";
+	}else if(hostname[0] == "va"){
+		url = "http://corecm.aig.co.kr/jsp/connect_channel.jsp";
+	}else{//로컬도 개발url로.
+		//url = "http://corecmdev.aig.co.kr/jsp/connect_channel.jsp";
+		url = "http://corecmuat.aig.co.kr/jsp/connect_channel.jsp";
+	}
+	
+	return url;
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="DS_MAST"></xwing:dataset>
+	<xwing:dataset id="DS_DETAIL"></xwing:dataset>
+	<xwing:dataset id="DS_RES">
+		<xwing:dataset-column id="amlBznsClcd"></xwing:dataset-column>
+		<xwing:dataset-column id="amlplno"></xwing:dataset-column>
+		<xwing:dataset-column id="eddRegnDt"></xwing:dataset-column>
+		<xwing:dataset-column id="eddOccSeqn"></xwing:dataset-column>
+		<xwing:dataset-column id="eddRegnYn"></xwing:dataset-column>
+		<xwing:dataset-column id="ptyId"></xwing:dataset-column>
+		<xwing:dataset-column id="watchListYn"></xwing:dataset-column>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="청약리스트 상세조회" width="769" height="402" load="page_load" scroll="false">
+		<xwing:panel id="pnl_info" left="0" top="0" width="769" height="400" anchor="all" bgcolor="#eee" scroll="false">
+			<xwing:panel id="pan_base_info" left="0" top="-5" scroll="false" width="769" height="400" anchor="all">
+			</xwing:panel>
+		</xwing:panel>
+	</xwing:page>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xwing="xwing.net">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=8;IE=9" />
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></meta>
+<script src='../xwing/js/xwing.js' type="text/javascript" charset="UTF-8"></script>
+<script src="../js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link href="../css/base.css" type="text/css" rel="stylesheet" charset="UTF-8" />
+<script src="../js/md5.js" type="text/javascript" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">/*<![CDATA[*/
+function page_load(event) {
+	XwingObject();
+}
+
+
+function btn_save_click(event) {
+	
+	var move = '';
+	if($rdo_anl.getValue() == "call_anl"){
+		move = "move";
+	}else{
+		move = "cus_move";
+	}
+		
+	parent.rcmHistory(move);
+	Xwing.parent.Xwing.getDialog("anl_grp").close();
+}/*]]>*/</script>
+<xwing:data>
+	<xwing:dataset id="rdo_anl_grp">
+		<xwing:dataset-column id="ID"></xwing:dataset-column>
+		<xwing:dataset-column id="VALUE"></xwing:dataset-column>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>call_anl</xwing:dataset-cell>
+			<xwing:dataset-cell>콜분석</xwing:dataset-cell>
+		</xwing:dataset-row>
+		<xwing:dataset-row>
+			<xwing:dataset-cell>cus_anl</xwing:dataset-cell>
+			<xwing:dataset-cell>고객분석</xwing:dataset-cell>
+		</xwing:dataset-row>
+	</xwing:dataset>
+</xwing:data>
+</head>
+<body>
+	<xwing:page id="page" title="사원정보수정" width="185" height="105" load="page_load" left="24" top="24">
+		<xwing:group id="grp_02" left="0" top="0" width="185" height="70" fontweight="bold" anchor="top right left" styles="div_perform" borderstyle="solid">
+			<xwing:button id="btn_org_daily_0" value="일별조직정보" left="515" top="385" width="100" iconmargin="0 3 0 0" anchor="right bottom" icon="../images/arrow.png" visible="true" click="btn_org_daily_click" height="20"></xwing:button>
+			<xwing:radio id="rdo_anl" left="27" top="19" domaindataset="rdo_anl_grp" domaincodecolumn="ID" domaintextcolumn="VALUE" width="150" height="30" binddataset="rdo_anl_grp" bindcolumn="ID" halign="center" fontweight="bold" fontcolor="#000000" styles="radio"></xwing:radio>
+		</xwing:group>
+		<xwing:button id="btn_save" value="선 택" left="115" top="75" anchor="none" styles="btn_action" width="60" tabindex="4" height="25" iconalign="left" borderwidth="0" shadow="0 0 0 " borderstyle="none" click="btn_save_click"></xwing:button>
+	</xwing:page>
+</body>
+</html>

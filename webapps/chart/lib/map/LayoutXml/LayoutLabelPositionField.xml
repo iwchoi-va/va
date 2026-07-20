@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rMateMapChart>
+	<MapChart id="mainMap" drillDownEnabled="false">
+		<series>
+			<MapSeries id="mapseries" >
+				<filters>
+					<DropShadowFilter distance="2" angle="45" color="0x888888"/>
+				</filters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+				<stroke>
+					<Stroke color="0xe1e1e1" weight="0.8" alpha="1"/>
+				</stroke>
+			</MapSeries>
+<!--
+labelPositionField 라벨 위치를 지정하는 data provider의 필드명
+-->
+			<MapPlotSeries id="plot" labelField="branchName" horizontalCenterGapField="h" verticalCenterGapField="v"
+				labelPositionField="lapos" color="0xFFFFFF" labelPosition="bottom" displayName="지점">
+				<labelFilters>
+					<GlowFilter blurX="5" blurY="5" color="0x111111"/>
+				</labelFilters>
+				<showDataEffect>
+					<SeriesInterpolate duration="1000"/>
+				</showDataEffect>
+			</MapPlotSeries>
+		</series>
+	</MapChart>
+</rMateMapChart>

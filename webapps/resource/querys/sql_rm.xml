@@ -1,0 +1,734 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<query-collection>
+	<sql-service name='getContent.sel_js' datasource='is_stat' type='prepared'>
+		<description>플레이어 자막 조회</description>
+		<query><![CDATA[
+			SELECT 
+				  M.UCID
+				, M.DURATION 
+				, M.CONTENT
+				, M.ENC_FLAG
+				, M.RXTX_GB
+			 FROM MS_STT_RSLT_MERGE M
+			 WHERE M.UCID = ?ucid
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.rec010.savePlayLog" datasource="is_stat" paging="false" type="prepared"  >
+  		<description>플레이 이력 저장</description>
+ 		<query><![CDATA[ 			
+			INSERT INTO ms_player_log
+			VALUES (format(GETDATE(),'yyyyMMdd')
+					,format(GETDATE(),'HHmmssfff')
+					,?play_user_id
+					,ISNULL((select top(1) USER_ID from ms_stt_meta where UCID=?rec_key),?rec_user_id)
+				    ,''
+				    ,?ced_no
+				    ,?rec_key
+				    ,?contact_user_ip
+				    ,?log_gb
+				    ,?play_user_id
+				    ,format(GETDATE(),'yyyyMMddHHmmss')
+				    ,?play_user_id
+				    ,format(GETDATE(),'yyyyMMddHHmmss')
+				    )
+		  ]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.getCallInfo.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>콜 정보가져오기</description>
+		<result-name>rec.player.getCallInfo.sel</result-name>
+		<query><![CDATA[
+			SELECT 
+				(SELECT USER_NAME+'('+USER_ID+')' FROM vw_usermaster WHERE USER_ID=A.USER_ID) USER_NM,
+				CON_P_CONT_NAME CUST_NM,
+				DMBO_CD,
+					(SELECT STUFF((
+						SELECT '^' + DMBO_NM
+						FROM ms_dmbo
+						where DMBO_CD IN  (SELECT Items FROM dbo.fn_split_string(A.DMBO_CD, ','))
+						AND PROD_CD = A.PROD_CD
+						FOR XML PATH('')
+					),1,1,'')) AS DMBO_NM,
+					CON_CON_MONTH_PREM TOT_PREM,
+					UCID_DATE,
+					PROD_NM
+				
+				FROM 
+				ms_stt_meta A
+				WHERE CON_ENT_DGN_NO=?CED_NO
+				AND UCID=?UCID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.getScriptmemo.sel" datasource="aig_tm" paging="false" type="prepared">
+		<description>콜 스크립트메모가져오기</description>
+		<result-name>DS_RES</result-name>
+		<query><![CDATA[
+					SELECT 
+						  NVL(MEMO,'등록된 메모가 없습니다') MEMO,
+                          (SELECT CONCAT(USERNAME||'('||'(',USERID||')') FROM tsown.tb_user WHERE USERID=a.UPDR_CRNO) USER_NM,
+						  ALTR_DT
+				   FROM tsown.tb_sc_memo a
+				   WHERE ENTR_DSGN_NO= ?CED_NO
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.getContactHistory.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>콜 접촉추이 가져오기</description>
+		<result-name>rec.player.getContactHistory.sel</result-name>
+		<query><![CDATA[
+			SELECT 
+					A.UCID,
+					UCID_DATE,
+					CONVERT(INT,(B.DURATION/100/60)) DURATION,
+					FILE_FULL_PATH FILE_PATH
+			FROM ms_stt_meta A, ms_stt_rslt_merge B
+			WHERE A.UCID=B.UCID
+			AND CON_ENT_DGN_NO=?CED_NO
+			ORDER BY CONVERT(numeric, UCID_DATE) DESC
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.callMemo.ins" datasource="is_stat" paging="false" type="prepared">
+		<description>콜 메모 입력</description>
+		<result-name>DS_RES</result-name>
+		<query><![CDATA[
+					INSERT INTO ms_call_memo (UCID,MEMO,REG_ID,REG_DATE,CHG_ID,CHG_DATE)
+					VALUES 
+					(
+					?UCID
+					,?MEMO
+					,?REG_ID
+ 					,format(GETDATE(),'yyyyMMddHHmmss')
+ 					,?REG_ID
+ 					,format(GETDATE(),'yyyyMMddHHmmss')
+ 					);
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.callMemo.del" datasource="is_stat" paging="false" type="prepared">
+		<description>콜 메모삭제</description>
+		<result-name>DS_RES</result-name>
+		<query><![CDATA[
+					DELETE FROM ms_call_memo WHERE SEQ_ID=?SEQ_ID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.callMemo.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>콜 메모 조회</description>
+		<result-name>DS_RES</result-name>
+		<query><![CDATA[
+				SELECT 	
+							'sel' TYPE,
+							SEQ_ID,
+							UCID,
+							MEMO,
+							(SELECT USER_NAME+'('+USER_ID+')' FROM ms_usermaster WHERE USER_ID = A.CHG_ID) USER_NM,
+							CHG_DATE DATE,
+							CHG_ID USER_ID
+				FROM ms_call_memo A
+				WHERE UCID=?UCID
+				ORDER BY CHG_DATE DESC 
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.getRXTXinfo.sel" datasource="aig_rec" paging="false" type="prepared">
+		<description>콜의 화자구분 여부 조회</description>
+		<result-name>DS_RXTX_RES</result-name>
+		<query><![CDATA[
+					SELECT fileid AS UCID,
+						   OrgFileFullPath AS FILE_PATH,
+						   SpCode AS SP_CODE,
+						   SUBSTRING(ISNULL(STT_R_TIME,'99999999'),0,9) AS STT_R_TIME
+					FROM Sponsor_CallInfo with(nolock)
+					WHERE fileid = ?UCID
+		]]></query>
+	</sql-service>
+	
+	<sql-service name="rec.player.getRXTXGB.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>수동배치의 화자구분 여부 조회</description>
+		<result-name>DS_RXTX_RES</result-name>
+		<query><![CDATA[
+					SELECT RXTX_GB 
+					FROM MS_STT_RSLT_MERGE
+					WHERE UCID = ?UCID
+		]]></query>
+	</sql-service>
+
+	<sql-service name="rec.rec030.rejectList.cnt.sel" datasource="is_stat" paging="false" type="simple">
+		<description>청약거절콜 카운트 건수</description>
+		<result-name>DS_CNT_LIST</result-name>
+		<query><![CDATA[
+				SELECT COUNT(1) totalcount FROM 
+				   (
+					SELECT 
+							TREATYBRHCD ORG2_CD
+							,TREATYBRHNM ORG2_NM
+							,A.CON_ENT_DGN_NO CED_NO
+							,CON_CON_OLT_PROP_YMD CED_DATE
+							,USER_ID
+							,USER_NAME+'('+USER_ID+')' USER_NM
+							,CON_P_CONT_NAME
+							,CON_IP_ISD_NAME
+							,CON_CON_MONTH_PREM MONTH_PREM
+							,PROD_NM
+							,NTC_DT
+							,EST_RESULT_CD
+							,(SELECT DISTINCT CODE_NAME FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS160' AND CODE_ID = B.EST_RESULT_CD) EST_RESULT_NM
+							,EST_COMMENT
+							,EST_QC_ID
+							,(SELECT DISTINCT USER_NAME FROM MS_USERMASTER WHERE USER_ID = B.EST_QC_ID)+'('+EST_QC_ID+')' EST_QC_NM
+							,EST_DATE
+					FROM MS_REJECT_LIST A LEFT OUTER JOIN MS_EST_HIST B ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO AND B.GUBUN = '1'
+					WHERE CON_CON_OLT_PROP_YMD BETWEEN '?SDATE' AND '?EDATE'
+					?org1_cd
+					?org2_flag
+					?org3_cd
+				 	?user_id
+				 	?ced_no
+				 	?est_rst
+				 	?est_yn
+				 	?cust_gb
+				 	?qc_nm
+				 ) A	
+		]]></query>
+		<parameter name='org1_cd' value="AND A.TREATYHQCD = '?ORG1_CD'" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND A.TREATYBRHCD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND A.TREATYBRHCD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND A.TREATYDEPTCD = '?ORG3_CD'" default="" />
+		<parameter name='user_id' value="AND A.USER_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND A.CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='cust_gb' value="" default="" >
+			<condition key="G" value="AND A.CON_P_CONT_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="P" value="AND A.CON_IP_ISD_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="A" value=""/>
+		</parameter>
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" />
+	</sql-service>
+	
+	<sql-service name="rec.rec030.rejectList.sel" datasource="is_stat" paging="false" type="simple">
+		<description>청약거절콜 조회</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+					SELECT 
+							TREATYBRHCD ORG2_CD
+							,TREATYBRHNM ORG2_NM
+							,A.CON_ENT_DGN_NO CED_NO
+							,SUBSTRING(CON_CON_OLT_PROP_YMD,0,9) CED_DATE
+							,USER_ID
+							,USER_NAME+'('+USER_ID+')' USER_NM
+							,CON_P_CONT_NAME
+							,CON_IP_ISD_NAME
+							,CON_CON_MONTH_PREM MONTH_PREM
+							,PROD_NM
+							,NTC_DT
+							,EST_RESULT_CD
+							,(SELECT DISTINCT CODE_NAME FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS160' AND CODE_ID = B.EST_RESULT_CD) EST_RESULT_NM
+							,EST_COMMENT
+							,EST_QC_ID
+							,(SELECT DISTINCT USER_NAME FROM MS_USERMASTER WHERE USER_ID = B.EST_QC_ID)+'('+EST_QC_ID+')' EST_QC_NM
+							,EST_DATE
+					FROM MS_REJECT_LIST A LEFT OUTER JOIN MS_EST_HIST B ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO AND B.GUBUN = '1'
+					WHERE CON_CON_OLT_PROP_YMD BETWEEN '?SDATE' AND '?EDATE'
+					?org1_cd
+					?org2_flag
+					?org3_cd
+				 	?user_id
+				 	?ced_no
+				 	?est_rst
+				 	?est_yn
+				 	?cust_gb
+				 	?qc_nm
+				 	ORDER BY A.USER_ID, A.CON_P_PSN_NO
+					OFFSET  CONVERT(INT,?_START) ROWS
+		 			FETCH NEXT CONVERT(INT,?_PAGESIZE) ROWS ONLY
+		]]></query>
+		<parameter name='org1_cd' value="AND A.TREATYHQCD = '?ORG1_CD'" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND A.TREATYBRHCD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND A.TREATYBRHCD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND A.TREATYDEPTCD = '?ORG3_CD'" default="" />
+		<parameter name='user_id' value="AND A.USER_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND A.CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='cust_gb' value="" default="" >
+			<condition key="G" value="AND A.CON_P_CONT_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="P" value="AND A.CON_IP_ISD_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="A" value=""/>
+		</parameter>
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" />
+	</sql-service>
+	
+	<sql-service name="rec.rec030.rejectList.all.sel" datasource="is_stat" paging="false" type="simple">
+		<description>청약거절콜 카운트 건수</description>
+		<result-name>DS_EXCEL</result-name>
+		<query><![CDATA[
+					SELECT 
+							TREATYBRHCD ORG2_CD
+							,TREATYBRHNM ORG2_NM
+							,A.CON_ENT_DGN_NO CED_NO
+							,SUBSTRING(CON_CON_OLT_PROP_YMD,0,9) CED_DATE
+							,USER_ID
+							,USER_NAME+'('+USER_ID+')' USER_NM
+							,CON_P_CONT_NAME
+							,CON_IP_ISD_NAME
+							,CON_CON_MONTH_PREM MONTH_PREM
+							,PROD_NM
+							,NTC_DT
+							,EST_RESULT_CD
+							,(SELECT DISTINCT CODE_NAME FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS160' AND CODE_ID = B.EST_RESULT_CD) EST_RESULT_NM
+							,EST_COMMENT
+							,EST_QC_ID
+							,(SELECT DISTINCT USER_NAME FROM MS_USERMASTER WHERE USER_ID = B.EST_QC_ID)+'('+EST_QC_ID+')' EST_QC_NM
+							,EST_DATE
+					FROM MS_REJECT_LIST A LEFT OUTER JOIN MS_EST_HIST B ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO AND B.GUBUN = '1'
+					WHERE CON_CON_OLT_PROP_YMD BETWEEN '?SDATE' AND '?EDATE'
+					?org1_cd
+					?org2_flag
+					?org3_cd
+				 	?user_id
+				 	?ced_no
+				 	?est_rst
+				 	?est_yn
+				 	?cust_gb
+				 	?qc_nm	
+				 	ORDER BY A.USER_ID, A.CON_P_PSN_NO
+		]]></query>
+		<parameter name='org1_cd' value="AND A.TREATYHQCD = '?ORG1_CD'" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND A.TREATYBRHCD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND A.TREATYBRHCD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND A.TREATYDEPTCD = '?ORG3_CD'" default="" />
+		<parameter name='user_id' value="AND A.USER_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND A.CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='cust_gb' value="" default="" >
+			<condition key="G" value="AND A.CON_P_CONT_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="P" value="AND A.CON_IP_ISD_NAME LIKE CONCAT('%','?CUST_NM','%')"/>
+			<condition key="A" value=""/>
+		</parameter>
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" />
+	</sql-service>
+	
+	<sql-service name='rec.rec030.est_rst_save.upd' datasource='is_stat' type='prepared'>
+		<description>평가 정보 업데이트</description>
+		<query><![CDATA[
+			MERGE MS_EST_HIST AS A
+				USING (SELECT 'X' AS DUAL) AS B
+				ON ( GUBUN = ?EST_GUBUN AND CON_ENT_DGN_NO = ?CON_ENT_DGN_NO)
+				WHEN MATCHED THEN
+					UPDATE SET 
+						EST_RESULT_CD = ?EST_RESULT_CD,
+						EST_COMMENT = ?EST_COMMENT,
+						EST_QC_ID = ?EST_QC_ID,
+						EST_DATE = format(GETDATE(),'yyyyMMddHHmmss'),
+						CHG_ID = ?EST_QC_ID,
+						CHG_DATE = format(GETDATE(),'yyyyMMddHHmmss')
+				WHEN NOT MATCHED THEN
+					INSERT(
+						GUBUN
+					   ,CON_ENT_DGN_NO
+					   ,EST_RESULT_CD
+					   ,EST_COMMENT
+					   ,EST_QC_ID
+					   ,EST_DATE
+					   ,REG_ID
+					   ,REG_DATE
+					   ,CHG_ID
+					   ,CHG_DATE
+					  )
+					VALUES ( 
+						?EST_GUBUN
+					   ,?CON_ENT_DGN_NO
+					   ,?EST_RESULT_CD
+					   ,?EST_COMMENT
+					   ,?EST_QC_ID
+					   ,format(GETDATE(),'yyyyMMddHHmmss')
+					   ,?EST_QC_ID
+					   ,format(GETDATE(),'yyyyMMddHHmmss')
+					   ,?EST_QC_ID
+					   ,format(GETDATE(),'yyyyMMddHHmmss')
+					);
+		]]></query>
+	</sql-service>
+	
+	
+	<sql-service name="rec.rec020T1.getMrlsList.sel" datasource="is_stat" paging="false" type="simple">
+		<description>MRLS 콜 조회</description>
+		<result-name>DS_MRLS_LIST</result-name>
+		<query><![CDATA[
+				SELECT ROW_NUMBER() OVER(ORDER BY a.CENTER_CD, A.AGENT_ID,CUST_ID, REG_DT DESC, A.CON_ENT_DGN_NO) AS No,
+					   A.CON_ENT_DGN_NO, A.CENTER_CD, A.CENTER_NM,
+					   CONCAT(REC_YN, '/', TM_CNT) AS CNT_STAT,
+					   REC_YN,
+					   TM_CNT,
+					   A.MR_YN,
+					   A.LS_YN,
+					   A.REG_DT,
+					   CONCAT(A.AGENT_NM , '(' , A.AGENT_ID , ')') AS AGENT_NM,
+					   AGENT_ID,
+					   A.CUST_ID,
+					   A.CON_IP_PSN_NAME,
+					   A.BIRTH_DT,
+					   CASE WHEN B.EST_RESULT_CD IS NULL THEN '대기' ELSE '완료' END AS EST_YN,
+					   ISNULL(B.EST_RESULT_CD, '') AS EST_RESULT_CD,
+					   B.EST_COMMENT,
+					   CASE WHEN B.EST_QC_ID IS NOT NULL THEN CONCAT((SELECT USER_NAME FROM MS_USERMASTER WHERE USER_ID = B.EST_QC_ID), '(',  B.EST_QC_ID , ')') 
+							ELSE '' END AS EST_QC_NM,
+					   B.EST_DATE,
+					   A.PASS_YN
+				FROM
+					(
+					SELECT  A.CON_ENT_DGN_NO, A.CENTER_CD, A.CENTER_NM, 
+							ISNULL(SUM(A.REC_YN),0) AS REC_YN,
+							COUNT(1) AS TM_CNT,
+							(CASE WHEN SUM(MR_YN) > 0 THEN 'Y' ELSE 'N' END) AS MR_YN,
+							(CASE WHEN SUM(LS_YN) > 0 THEN 'Y' ELSE 'N' END) AS LS_YN,
+							MIN(REG_DT) AS REG_DT,
+							AGENT_ID, AGENT_NM,
+							MAX(CUST_ID) AS CUST_ID,
+							CON_IP_PSN_NAME,
+							BIRTH_DT,
+							(CASE WHEN SUM(PASS_YN) > 0 THEN 'Y' ELSE 'N' END) AS PASS_YN
+					FROM 
+						(SELECT CON_ENT_DGN_NO, 
+							   CENTER_CD, CENTER_NM,
+							   CASE WHEN (MR_CODE <> '' AND MR_CODE IS NOT NULL) THEN 1 ELSE 0 END AS MR_YN,
+							   CASE WHEN (LS_CODE <> '' AND LS_CODE IS NOT NULL) THEN 1 ELSE 0 END AS LS_YN,
+							   CASE WHEN REC_YN = 'Y' THEN 1 ELSE 0 END AS REC_YN,
+							   CASE WHEN PASS_YN = 'Y' THEN 1 ELSE 0 END AS PASS_YN,
+							   REG_DT,
+							   AGENT_ID, AGENT_NM,
+							   CUST_ID, CON_IP_PSN_NAME,
+							   BIRTH_DT
+						FROM MS_MRLS_LIST
+						WHERE 1=1
+						?ced_no
+						?con_ip_psn_name
+						?org1_cd
+						?org2_flag
+						?org3_cd
+					 	?user_id
+					   ) A
+					GROUP BY A.con_ent_dgn_no, A.CENTER_CD, A.CENTER_NM, A.AGENT_ID, A.AGENT_NM,A.CON_IP_PSN_NAME, BIRTH_DT
+					HAVING MIN(REG_DT) BETWEEN '?sdate' AND '?edate'
+					) A LEFT OUTER JOIN MS_EST_HIST B
+				ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO
+				WHERE 1=1
+				?est_date_flag
+				?est_rst
+				?est_yn
+				?qc_nm
+				ORDER BY a.CENTER_CD, A.AGENT_ID,CUST_ID, REG_DT DESC, A.CON_ENT_DGN_NO
+				OFFSET  CONVERT(INT,?_START) ROWS
+		 		FETCH NEXT CONVERT(INT,?_PAGESIZE) ROWS ONLY
+		]]></query>
+		<parameter name='org1_cd' value="AND CENTER_CD IN (SELECT DEPT_CD FROM MS_DEPT WHERE UPPER_DEPT ='?ORG1_CD')" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND CENTER_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND CENTER_CD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='est_date_flag' value="" default="" >
+			<condition key="true" value="AND B.EST_DATE between '?est_sdate' AND '?est_edate'"/>
+			<condition key="false" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND AGENT_ID IN (SELECT USER_ID FROM MS_USERMASTER WHERE TREATYDEPTCD = '?ORG3_CD')" default="" />
+		<parameter name='user_id' value="AND AGENT_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='con_ip_psn_name' value="AND CON_IP_PSN_NAME like CONCAT('?CON_IP_PSN_NAME','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" /> 		
+	</sql-service>
+	
+	<sql-service name="rec.rec020T1.getMrlsList.totCount.sel" datasource="is_stat" paging="false" type="simple">
+		<description>MRLS 콜 전체 건수 조회</description>
+		<result-name>DS_CNT_LIST</result-name>
+		<query><![CDATA[
+				SELECT COUNT(1) AS TOT_CNT
+				FROM
+					(
+					SELECT  A.CON_ENT_DGN_NO, A.CENTER_CD, A.CENTER_NM, 
+							ISNULL(SUM(A.REC_YN),0) AS REC_YN,
+							(CASE WHEN SUM(MR_YN) > 0 THEN 'Y' ELSE 'N' END) AS MR_YN,
+							(CASE WHEN SUM(LS_YN) > 0 THEN 'Y' ELSE 'N' END) AS LS_YN,
+							MIN(REG_DT) AS REG_DT,
+							AGENT_ID, AGENT_NM,
+							MAX(CUST_ID) AS CUST_ID,
+							CON_IP_PSN_NAME,
+							BIRTH_DT,
+							(CASE WHEN SUM(PASS_YN) > 0 THEN 'Y' ELSE 'N' END) AS PASS_YN
+					FROM 
+						(SELECT CON_ENT_DGN_NO, 
+							   CENTER_CD, CENTER_NM,
+							   CASE WHEN (MR_CODE <> '' OR MR_CODE IS NOT NULL) THEN 1 ELSE 0 END AS MR_YN,
+							   CASE WHEN (LS_CODE <> '' OR LS_CODE IS NOT NULL) THEN 1 ELSE 0 END AS LS_YN,
+							   CASE WHEN REC_YN = 'Y' THEN 1 ELSE 0 END AS REC_YN,
+							   CASE WHEN PASS_YN = 'Y' THEN 1 ELSE 0 END AS PASS_YN,
+							   REG_DT,
+							   AGENT_ID, AGENT_NM,
+							   CUST_ID, CON_IP_PSN_NAME,
+							   BIRTH_DT
+						FROM MS_MRLS_LIST
+						WHERE 1=1
+						?ced_no
+						?con_ip_psn_name
+						?org1_cd
+						?org2_flag
+						?org3_cd
+					 	?user_id
+					   ) A
+					GROUP BY A.con_ent_dgn_no, A.CENTER_CD, A.CENTER_NM, A.AGENT_ID, A.AGENT_NM, A.CON_IP_PSN_NAME, BIRTH_DT
+					HAVING MIN(REG_DT) BETWEEN '?sdate' AND '?edate'
+					) A LEFT OUTER JOIN MS_EST_HIST B
+				ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO
+				WHERE 1=1
+				?est_date_flag
+				?est_rst
+				?est_yn
+				?qc_nm
+		]]></query>
+		<parameter name='org1_cd' value="AND CENTER_CD IN (SELECT DEPT_CD FROM MS_DEPT WHERE UPPER_DEPT ='?ORG1_CD')" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND CENTER_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND CENTER_CD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='est_date_flag' value="" default="" >
+			<condition key="true" value="AND B.EST_DATE between '?est_sdate' AND '?est_edate'"/>
+			<condition key="false" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND AGENT_ID IN (SELECT USER_ID FROM MS_USERMASTER WHERE TREATYDEPTCD = '?ORG3_CD')" default="" />
+		<parameter name='user_id' value="AND AGENT_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='con_ip_psn_name' value="AND CON_IP_PSN_NAME like CONCAT('?CON_IP_PSN_NAME','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" /> 		
+	</sql-service>
+	
+	<sql-service name="rec.rec020T1.getMrlsList.excel.sel" datasource="is_stat" paging="false" type="simple">
+		<description>MRLS 콜 조회-엑셀다운</description>
+		<result-name>DS_EXCEL</result-name>
+		<query><![CDATA[
+				SELECT ROW_NUMBER() OVER(ORDER BY a.CENTER_CD, A.AGENT_ID,CUST_ID, REG_DT DESC, A.CON_ENT_DGN_NO) AS No,
+					   A.CON_ENT_DGN_NO, A.CENTER_CD, A.CENTER_NM,
+					   CONCAT(REC_YN,'/',TM_CNT) AS CNT_STAT,
+					   REC_YN,
+					   TM_CNT,
+					   A.MR_YN,
+					   A.LS_YN,
+					   A.REG_DT,
+					   CONCAT(A.AGENT_NM , '(' , A.AGENT_ID , ')') AS AGENT_NM,
+					   AGENT_ID,
+					   A.CUST_ID,
+					   A.CON_IP_PSN_NAME,
+					   A.BIRTH_DT,
+					   CASE WHEN B.EST_RESULT_CD IS NULL THEN '대기' ELSE '완료' END AS EST_YN,
+					   ISNULL(B.EST_RESULT_CD, '') AS EST_RESULT_CD,
+					   B.EST_COMMENT,
+					   CASE WHEN B.EST_QC_ID IS NOT NULL THEN CONCAT((SELECT USER_NAME FROM MS_USERMASTER WHERE USER_ID = B.EST_QC_ID), '(',  B.EST_QC_ID , ')') 
+							ELSE '' END AS EST_QC_NM,
+					   B.EST_DATE,
+					   A.PASS_YN,
+					   (CASE WHEN (select count(1) from MS_MRLS_LIST where REG_DT BETWEEN '?sdate' AND '?edate' and CENTER_CD = A.CENTER_CD and AGENT_ID = A.AGENT_ID and CUST_ID = A.CUST_ID and CON_IP_PSN_NAME = A.CON_IP_PSN_NAME AND PASS_YN = 'Y') > 0 THEN 'Y' ELSE 'N' END) AS PASS_YN_ALL
+				FROM
+					(
+					SELECT  A.CON_ENT_DGN_NO, A.CENTER_CD, A.CENTER_NM, 
+							ISNULL(SUM(A.REC_YN),0) AS REC_YN,
+							COUNT(1) AS TM_CNT,
+							(CASE WHEN SUM(MR_YN) > 0 THEN 'Y' ELSE 'N' END) AS MR_YN,
+							(CASE WHEN SUM(LS_YN) > 0 THEN 'Y' ELSE 'N' END) AS LS_YN,
+							MIN(REG_DT) AS REG_DT,
+							AGENT_ID, AGENT_NM,
+							CUST_ID AS CUST_ID,
+							CON_IP_PSN_NAME,
+							BIRTH_DT,
+							(CASE WHEN SUM(PASS_YN) > 0 THEN 'Y' ELSE 'N' END) AS PASS_YN
+					FROM 
+						(SELECT CON_ENT_DGN_NO, 
+							   CENTER_CD, CENTER_NM,
+							   CASE WHEN (MR_CODE <> '' AND MR_CODE IS NOT NULL) THEN 1 ELSE 0 END AS MR_YN,
+							   CASE WHEN (LS_CODE <> '' AND LS_CODE IS NOT NULL) THEN 1 ELSE 0 END AS LS_YN,
+							   CASE WHEN REC_YN = 'Y' THEN 1 ELSE 0 END AS REC_YN,
+							   CASE WHEN PASS_YN = 'Y' THEN 1 ELSE 0 END AS PASS_YN,
+							   REG_DT,
+							   AGENT_ID, AGENT_NM,
+							   CUST_ID, CON_IP_PSN_NAME,
+							   BIRTH_DT
+						FROM MS_MRLS_LIST
+						WHERE 1=1
+						?ced_no
+						?con_ip_psn_name
+						?org1_cd
+						?org2_flag
+						?org3_cd
+					 	?user_id
+					   ) A
+					GROUP BY A.con_ent_dgn_no, A.CENTER_CD, A.CENTER_NM, A.AGENT_ID, A.AGENT_NM, A.CON_IP_PSN_NAME, A.CUST_ID, BIRTH_DT
+					HAVING MIN(REG_DT) BETWEEN '?sdate' AND '?edate'
+					) A LEFT OUTER JOIN MS_EST_HIST B
+				ON A.CON_ENT_DGN_NO = B.CON_ENT_DGN_NO
+				WHERE 1=1
+				?est_date_flag
+				?est_rst
+				?est_yn
+				?qc_nm
+				ORDER BY a.CENTER_CD, A.AGENT_ID,CUST_ID, REG_DT DESC, A.CON_ENT_DGN_NO
+		]]></query>
+		<parameter name='org1_cd' value="AND CENTER_CD IN (SELECT DEPT_CD FROM MS_DEPT WHERE UPPER_DEPT ='?ORG1_CD')" default="" />
+		<parameter name='org2_flag' value="" default="" >
+			<condition key="M" value="AND CENTER_CD IN (SELECT CODE_ID FROM MS_CODEBOOK WHERE CODE_TYPE = 'SYS002' AND CODE_ID NOT IN  ('KB00','00') AND USE_YN = 'Y')"/>
+			<condition key="O" value="AND CENTER_CD = '?ORG2_CD'"/>
+			<condition key="A" value=""/>
+		</parameter> 
+		<parameter name='est_date_flag' value="" default="" >
+			<condition key="true" value="AND B.EST_DATE between '?est_sdate' AND '?est_edate'"/>
+			<condition key="false" value=""/>
+		</parameter> 
+		<parameter name='org3_cd' value="AND AGENT_ID IN (SELECT USER_ID FROM MS_USERMASTER WHERE TREATYDEPTCD = '?ORG3_CD')" default="" />
+		<parameter name='user_id' value="AND AGENT_ID in (?USER_ID)" default="" />
+		<parameter name='ced_no' value="AND CON_ENT_DGN_NO like CONCAT('?CED_NO','%')" default="" />
+		<parameter name='con_ip_psn_name' value="AND CON_IP_PSN_NAME like CONCAT('?CON_IP_PSN_NAME','%')" default="" />
+		<parameter name='est_rst' value="AND B.EST_RESULT_CD = '?EST_RST'" default="" />
+		<parameter name='est_yn' value="" default="" >
+			<condition key="Y" value="AND B.EST_RESULT_CD IS NOT NULL"/>
+			<condition key="N" value="AND B.EST_RESULT_CD IS NULL"/>
+		</parameter> 	
+		<parameter name='qc_nm' value="AND B.EST_QC_ID IN (SELECT DISTINCT USER_ID FROM MS_USERMASTER WHERE USER_NAME LIKE CONCAT('%','?QC_NM','%'))" default="" /> 		
+	</sql-service>
+	
+	<sql-service name="rec.rec020t1.getMrlsUcid.sel" datasource="is_stat" paging="false" type="prepared">
+		<description>MRLS에 매칭되는 설계콜 정보 조회</description>
+		<result-name>DS_MRLS</result-name>
+		<query><![CDATA[
+				SELECT 	
+							CON_ENT_DGN_NO,
+							UCID,
+							ISNULL(MR_CODE,'') AS MR_CODE,
+							ISNULL(LS_CODE,'') AS LS_CODE
+				FROM ms_mrls_list with(nolock)
+				WHERE 1=1
+				AND CON_ENT_DGN_NO = ?ced_no
+				ORDER BY CON_ENT_DGN_NO, UCID
+		]]></query>
+	</sql-service>
+	
+	
+	<sql-service name='rec.rec020t1.getUcid.sel'  datasource="aig_rec" paging="false" type="simple">
+		<description>가입설계번호의 콜일시 가져오기</description>
+		<result-name>DS_SPO</result-name>
+		<query><![CDATA[
+  			SELECT
+				FILEID UCID,
+				substring(RECSTARTDT,0,5)+'-'+substring(RECSTARTDT,5,2)+'-'+substring(RECSTARTDT,7,2)+' '+substring(RECSTARTDT,9,2)+':'+substring(RECSTARTDT,11,2)+':'+substring(RECSTARTDT,13,2) UCID_DATE,
+				OrgFileFullPath FILE_FULL_PATH,
+				'' AS DATETIME,
+				'' ANL_STAT
+			FROM Sponsor_CallInfo A WITH (NOLOCK)
+			WHERE 1=1
+			?ced_no
+			?ucid
+			ORDER BY UCID_DATE DESC
+		]]></query>
+		<parameter name='ced_no' value="AND TPANO LIKE CONCAT('%','?CED_NO','%')" default="" /> 
+		<parameter name='ucid' value="AND FILEID IN (?ucid)" default="" /> 
+	</sql-service>
+	
+	
+	<sql-service name='rec.rec020t2.notmatchedList.sel'  datasource="aig_rec" paging="false" type="simple">
+		<description>TM미매칭 콜 찾기</description>
+		<result-name>DS_LIST</result-name>
+		<query><![CDATA[
+  			SELECT ROW_NUMBER() OVER(ORDER BY RecStartDT, TPANO) AS No,
+  				   FILEID,
+  				   SpCode, 
+  				   RecStartDT, 
+  				   OrgFileFullPath AS FILE_PATH,
+				   TPANO,
+				   CASE WHEN (MR_Code = '' OR MR_Code IS NULL) THEN 'N' ELSE 'Y' END AS MR_YN,
+				   CASE WHEN (LS_Code = '' OR LS_Code IS NULL) THEN 'N' ELSE 'Y' END AS LS_YN,
+				   AgentName,
+				   CustomerName
+			FROM Sponsor_CallInfo WITH(NOLOCK)
+			WHERE 1=1
+			AND RecStartDT BETWEEN '?SDATE' AND '?EDATE'
+			AND SpCode <> '30384'
+			AND ISNULL(MR_CODE,'')  <> 'M0000000001'
+			AND ISNULL(LS_CODE,'')  <> 'F0000000001'
+			?spcode
+			?cust_nm
+			?ced_no
+			?mrls_gb
+			?agent_nm
+			ORDER BY RecStartDT, TPANO
+			OFFSET  CONVERT(INT,?_START) ROWS
+		 	FETCH NEXT CONVERT(INT,?_PAGESIZE) ROWS ONLY
+		]]></query>
+		<parameter name='spcode' value="AND SpCode IN (?SPCODE)" default="" />
+		<parameter name='cust_nm' value="AND CustomerName LIKE CONCAT('%','?CUST_NM','%')" default="" />
+		<parameter name='ced_no' value="AND TPANO LIKE CONCAT('%','?CED_NO','%')" default="" />
+		<parameter name='agent_nm' value="AND AgentName LIKE CONCAT('%','?AGENT_NM','%')" default="" />
+		<parameter name='mrls_gb' value="" default="" >
+			<condition key="MR" value="AND MR_Code IS NOT NULL"/>
+			<condition key="LS" value="AND LS_Code IS NOT NULL"/>
+		</parameter> 	 
+	
+	</sql-service>
+	
+	<sql-service name='rec.rec020t2.notmatchedList.totCount.sel'  datasource="aig_rec" paging="false" type="simple">
+		<description>TM미매칭 콜 전체 건수</description>
+		<result-name>DS_CNT_LIST</result-name>
+		<query><![CDATA[
+  			SELECT count(1) as cnt
+			FROM Sponsor_CallInfo WITH(NOLOCK)
+			WHERE 1=1
+			AND RecStartDT BETWEEN '?SDATE' AND '?EDATE'
+			AND SpCode <> '30384'
+			AND ISNULL(MR_CODE,'')  <> 'M0000000001'
+			AND ISNULL(LS_CODE,'')  <> 'F0000000001'
+			?spcode
+			?cust_nm
+			?ced_no
+			?mrls_gb
+			?agent_nm
+		]]></query>
+		<parameter name='spcode' value="AND SpCode IN (?SPCODE)" default="" />
+		<parameter name='cust_nm' value="AND CustomerName LIKE CONCAT('%','?CUST_NM','%')" default="" />
+		<parameter name='ced_no' value="AND TPANO LIKE CONCAT('%','?CED_NO','%')" default="" />
+		<parameter name='agent_nm' value="AND AgentName LIKE CONCAT('%','?AGENT_NM','%')" default="" />
+		<parameter name='mrls_gb' value="" default="" >
+			<condition key="MR" value="AND MR_Code IS NOT NULL"/>
+			<condition key="LS" value="AND LS_Code IS NOT NULL"/>
+		</parameter> 	 
+	
+	</sql-service>
+</query-collection>

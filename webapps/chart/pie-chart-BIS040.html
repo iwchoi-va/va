@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  	<link rel="stylesheet" type="text/css" href="./css/line-pie.css">
+  	<script type='text/javascript' src='./lib/jquery-1.11.1.js'></script>
+	
+		</head>
+		
+		<body>
+		  	<script type='text/javascript' src='./lib/echarts.min.js'></script>	
+			<div id="container" style="padding-top:0px"></div>
+			
+			<script>
+		var width, height,option;
+		var container = document.getElementById('container');
+		var chart = echarts.init(container);
+		
+		$( window ).bind("resize", function(){
+			width = parent.$pnl_pie_chart.getAttribute("width");
+			height =  parent.$pnl_pie_chart.getAttribute("height");
+			$("#container").width( width ); 
+			$("#container").height(height);  // 40: legend-y
+			 chart.resize(width - 40, height-100, true);
+		});
+		
+		window.onload = function(){
+			document.body.oncontextmenu = function(){return false;};
+		}
+		
+		$(function () {
+			var category = new Array();
+			
+			var ds_grade = parent.$DS_GRADE;
+			var pie_size = (parent.$pnl_pie_chart.getAttribute("width") - 150); 
+			var item_style = {};
+				
+			function getData(){
+				var data = new Array();
+				var sum = 0;
+			        
+			    for ( var j=0; j<ds_grade.size(); j++ ) {
+			       sum += Number(ds_grade.getValue(j,'COUNT'));  //파이차트용
+			    }
+			        
+				for(var i =0; i<ds_grade.size(); i++ ){
+					if(ds_grade.getValue(i, "COUNT") == 0){
+						data.push({
+							value: '',	
+							name: ds_grade.getValue(i,"GRADE")+"("+ ds_grade.getValue(i, "COUNT") +"건)",
+							label:{show:false}
+						})
+					}else{	
+						data.push({
+								value: Number(ds_grade.getValue(i, "COUNT") / sum * 100),	
+								name: ds_grade.getValue(i,"GRADE")+"("+ ds_grade.getValue(i, "COUNT") +"건)"
+							})
+					}	
+				}
+				return data;
+			}
+			
+				var itemStyle = {
+					    normal: {
+					        opacity: 0.7,
+					     /*    color: {
+					        	['#768292','#B2E7EC','#A7C8EA','#CBDDCF','#C5DFD9','#C3C8CF']
+					        }, */
+					        borderWidth: 3,
+					        borderColor: '#235894'
+					    }
+					};
+				function legendData() {
+		        	var data=[];
+		        	for(var i =0; i<ds_grade.size(); i++ ){
+							data.push(ds_grade.getValue(i,"GRADE")+"("+ ds_grade.getValue(i, "COUNT") +"건)");
+					}
+		        	return data;
+				}
+			
+				 option = {
+					    tooltip : {
+					        trigger: 'item',
+					        formatter: "{a} <br/>{b} : {d}%"
+	                    	
+					    }
+				 		,toolbox: {
+					        feature: {
+					            restore: {show: true, title:'새로고침'}
+					        }
+					    },
+					     legend: {
+					        orient: 'vertical',
+					        left: 'left',
+					        data: legendData()
+					        
+					    }, 
+					    series : [
+					        {
+					            name: '비율',
+					            type: 'pie',
+					            radius : '70%',
+					            avoidLabelOverlap:true,
+					            center: ['50%', '60%'],
+					            color:['#005A84','#0073AE','#00A4E4','#4CC8E9','#ACE0F0','#E4701F','#79A22E','#C41130','#FEB811','#AF006E'],
+					            	//['#768292','#B2E7EC','#A7C8EA','#CBDDCF','#C7DFD9','#C3C8CF'],
+					            data:getData(),
+					            label:{
+					            	color:'#333',
+							    	fontWeight:'bolder',
+							    	position:'inside',
+							    	fontSize:12
+					            },
+					            itemStyle: {
+					                emphasis: {
+					                    shadowBlur: 10,
+					                    shadowOffsetX: 0,
+					                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+					                },
+					               
+					            }
+					        }
+					    ]
+					}; 
+
+
+			
+				if (option && typeof option === "object") {
+					chart.setOption(option,true);
+				}
+				
+			
+			
+			/* setTimeout(function(){
+			    $('#container').highcharts({
+			        chart: {
+			            plotBackgroundColor: null,
+			            plotBorderWidth: null,
+			            plotShadow: false,
+			            type: 'pie'
+			        },
+			        title: {
+			            text: ''
+			        },
+			        
+			        credits: { enabled: false }, //차트 하단에 출처 삭제기능
+			        
+			        tooltip: {
+			            pointFormat: '{series.name}: <b>{point.percentage:.0f}%</b>'
+			        },
+			        plotOptions: {
+			            pie: {
+			                allowPointSelect: true,
+			                cursor: 'pointer',
+			                dataLabels: {
+			                    enabled: true,
+			                    format: '<b>{point.name}</b><br>{point.percentage:.0f} %',
+			                    style: {
+			                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+			                    },
+			                }
+			            }
+			        },
+			        
+			        series: getSeries()
+				});
+			}, 500); */
+			
+		});
+
+		</script>
+		
+		</body>
+
+</html>
+

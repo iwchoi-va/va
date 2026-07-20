@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<query-collection>
+	<resource key="is_stat" datasource="java:/comp/env/jdbc/mssql" description="is_voc DB"/>
+	<resource key="aig_tm" datasource="java:/comp/env/jdbc/tm" description="aig_tm DB"/>
+	<resource key="aig_rec" datasource="java:/comp/env/jdbc/rec" description="rec DB"/>
+	<resource key="snmp" datasource="java:/comp/env/jdbc/snmp" description="snmp DB"/>
+	<resource key="is_stat_prod" datasource="java:/comp/env/jdbc/prodmssql" description="is_voc_prod_DB"/>
+	<resource key="is_stat_uat" datasource="java:/comp/env/jdbc/uatmssql" description="is_voc_uat_DB"/>
+	
+	
+</query-collection>

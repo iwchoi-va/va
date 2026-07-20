@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service name='SHOW-CONF' ref='HANSOL-NGF' svc_id='SHOW-CONF'
+	resource='server' transaction='false'>
+	<description>정보 조회 (SHOW-CONF) </description>
+	<header>
+		<field name='SERVER' 					fld_id='SERVER' 				default='1' 		type='Number' 	length='4' 		inout='INOUT' />
+		<field name='BODY_LENGTH' 				fld_id='BODY_LENGTH' 			default='0' 		type='Number' 	length='4' 		inout='INOUT' />
+		<field name='OMC_DATA' 					fld_id='OMC_DATA' 				default='1' 		type='Number' 	length='4' 		inout='INOUT' />
+	</header>
+	<request>
+		<field name='ID' 						fld_id='ID' 					default='cubex' 	type='string' 	length='16' 	inout='' />
+		<field name='PASSWORD' 					fld_id='PASSWORD' 				default='cubex' 	type='string' 	length='32' 	inout='' />
+		<field name='DIRECTORY' 				fld_id='DIRECTORY' 				default='cmd' 		type='string' 	length='8' 		inout='' />
+		<field name='COMMAND' 					fld_id='COMMAND' 				default='' 			type='string' 	length='32' 	inout='' />
+		<field name='PARAMETER' 				fld_id='PARAMETER' 				default='' 			type='string' 	length='0' 		inout='' />
+	</request>
+	<response>
+		<field name='RES_DATE' 					fld_id='RES_DATE' 				default='' 			type='line'   	length='0' 		inout='' />
+		<field name='RES_TITLE' 				fld_id='RES_TITLE' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='HOST_NAME' 				fld_id='HOST_NAME' 				default='' 			type='string' 	length='0' 		inout=':' />
+		
+		<field name='LINE1' 					fld_id='LINE1' 					default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='TITLE1' 					fld_id='TITLE1' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='LINE2' 					fld_id='LINE2' 					default='' 			type='skip' 	length='0' 		inout='' />
+        <field name='PROFILE' 					fld_id='PROFILE' 				default='' 			type='string' 	length='0' 		inout='=' />
+        
+        <field name='TITLE2' 					fld_id='TITLE2' 				default='' 			type='skip' 	length='0' 		inout='' />
+        <field name='BaseDir' 					fld_id='BaseDir' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SystemNumber' 				fld_id='SystemNumber' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='HostName' 					fld_id='HostName' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CorePath' 					fld_id='CorePath' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TracePath' 				fld_id='TracePath' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='ProductName' 				fld_id='ProductName' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UserName' 					fld_id='UserName' 				default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE3' 					fld_id='TITLE3' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='DbHost' 					fld_id='DbHost' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DbSvcName' 				fld_id='DbSvcName' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DbUserName' 				fld_id='DbUserName' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DbPassword' 				fld_id='DbPassword' 			default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE4' 					fld_id='TITLE4' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='OLSystemNumber' 			fld_id='OLSystemNumber' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaHA' 					fld_id='EnaHA' 					default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE5' 					fld_id='TITLE5' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='InternalSIP' 				fld_id='InternalSIP' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaSelfReplication' 		fld_id='EnaSelfReplication' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SuppRemoteReplication' 	fld_id='SuppRemoteReplication' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SipBroker' 				fld_id='SipBroker' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MaxForwards' 				fld_id='MaxForwards' 			default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE6' 					fld_id='TITLE6' 				default=''			type='skip' 	length='0' 		inout='' />
+		<field name='ScolThreadNum' 			fld_id='ScolThreadNum' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RingBufferSize' 			fld_id='RingBufferSize' 		default='' 			type='string' 	length='0' 		inout='=' />
+        <field name='BLANK' 		        	fld_id='BLANK' 		            default='' 			type='skip' 	length='0' 		inout='' />
+        
+		<field name='LINE3' 					fld_id='LINE3' 					default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='TITLE7' 					fld_id='TITLE7' 				default=''			type='skip' 	length='0' 		inout='' />
+		<field name='LINE4' 					fld_id='LINE4' 					default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='SERVICE' 					fld_id='SERVICE' 				default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE8' 					fld_id='TITLE8' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='TraceEnabled' 				fld_id='TraceEnabled' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LogLevel' 					fld_id='LogLevel' 				default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE9' 					fld_id='TITLE9' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='CollectShortPeriod' 		fld_id='CollectShortPeriod' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CollectLongPeriod' 		fld_id='CollectLongPeriod' 		default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='TITLE10' 					fld_id='TITLE10' 				default='' 			type='skip' 	length='0'		inout='' />
+		<field name='Ip' 						fld_id='Ip' 					default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UdpPort' 					fld_id='UdpPort' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TcpPort' 					fld_id='TcpPort' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TlsPort' 					fld_id='TlsPort' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='Transport' 				fld_id='Transport' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SipUri' 					fld_id='SipUri' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='ContactAddr' 				fld_id='ContactAddr' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='ConnInterval' 				fld_id='ConnInterval' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaLoopDetect' 			fld_id='EnaLoopDetect' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaRport' 					fld_id='EnaRport' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaTls' 					fld_id='EnaTls' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TlsCertificateChainPath' 	fld_id='TlsCertificateChainPath' default='' 		type='string' 	length='0' 		inout='=' />
+		<field name='TlsPrivateKeyPath' 		fld_id='TlsPrivateKeyPath' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TlsVerifyLocationPath' 	fld_id='TlsVerifyLocationPath'	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TlsPassword' 				fld_id='TlsPassword' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TlsPeerAuth' 				fld_id='TlsPeerAuth' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SipTransPoolRateHigh' 		fld_id='SipTransPoolRateHigh' 	default='' 			type='string' 	length='0' 		inout='=' />
+		
+		
+		<field name='TITLE11' 					fld_id='TITLE11' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='PbxID' 					fld_id='PbxID' 					default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LocalDomainName' 			fld_id='LocalDomainName' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LocalServiceIP' 			fld_id='LocalServiceIP' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MediaServerAddr' 			fld_id='MediaServerAddr' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UseRemoteMS' 				fld_id='UseRemoteMS' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DspIP' 					fld_id='DspIP' 					default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DspControlPort' 			fld_id='DspControlPort' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DspRemotePort' 			fld_id='DspRemotePort' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SurfBoardIP' 				fld_id='SurfBoardIP' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SurfBoardPort' 			fld_id='SurfBoardPort' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='AllowedMethod' 			fld_id='AllowedMethod' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DefaultExpires' 			fld_id='DefaultExpires' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MinExpireTime' 			fld_id='MinExpireTime' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MaxAuthUserCnt' 			fld_id='MaxAuthUserCnt' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UseAuthInfo' 				fld_id='UseAuthInfo'			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SuppMultiReg' 				fld_id='SuppMultiReg' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaLastRegOvw' 			fld_id='EnaLastRegOvw' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RegAwaitAuthTimer' 		fld_id='RegAwaitAuthTimer' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MediaByPass' 				fld_id='MediaByPass' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='ExtensionLength' 			fld_id='ExtensionLength' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='AgentPasswordLength' 		fld_id='AgentPasswordLength' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CallLog' 					fld_id='CallLog' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SetAgentDelayTime'		 	fld_id='SetAgentDelayTime' 		default='' 			type='string'	length='0' 		inout='=' />
+		<field name='DtmfDelayTime' 			fld_id='DtmfDelayTime' 			default='' 			type='string'	length='0' 		inout='=' />
+		<field name='DBLoginId' 				fld_id='DBLoginId' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DBPasswd' 					fld_id='DBPasswd' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DBName' 					fld_id='DBName' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='DBHost' 					fld_id='DBHost' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RecDBHost' 				fld_id='RecDBHost' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RecDBLoginId' 				fld_id='RecDBLoginId' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RecDBName' 				fld_id='RecDBName' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RecDBPasswd' 				fld_id='RecDBPasswd' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RecordingPath' 			fld_id='RecordingPath' 			default='' 			type='string' 	length='0' 		inout='=' />		
+		<field name='UdpWebPort' 				fld_id='UdpWebPort' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MaxWebSessionDuration' 	fld_id='MaxWebSessionDuration' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MinWebSessionDuration' 	fld_id='MinWebSessionDuration' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CdrBaseDir' 				fld_id='CdrBaseDir' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CdrTimeDuration' 			fld_id='CdrTimeDuration' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='SystemStatusTimer' 		fld_id='SystemStatusTimer' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MsAuditTimer' 				fld_id='MsAuditTimer' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CallLongTermLimit' 		fld_id='CallLongTermLimit' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CallUnstableLimit' 		fld_id='CallUnstableLimit' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UACMAwaitTimer' 			fld_id='UACMAwaitTimer' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LMServerIP' 				fld_id='LMServerIP' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LMServerPort' 				fld_id='LMServerPort' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='ConnRetryTimer' 			fld_id='ConnRetryTimer' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='BasicLicenseDuration' 		fld_id='BasicLicenseDuration' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LicenseSystemName' 		fld_id='LicenseSystemName' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LicenseSystemId' 			fld_id='LicenseSystemId' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UncondLicenseConn' 		fld_id='UncondLicenseConn' 		default='' 			type='string' 	length='0' 		inout='=' />
+		
+		
+		<field name='TITLE12' 					fld_id='TITLE12' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='SetAgentWACafterRona' 		fld_id='SetAgentWACafterRona' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MaxCallForwardingCnt' 		fld_id='MaxCallForwardingCnt' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='HoldImplicit' 				fld_id='HoldImplicit' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='NoAnswerTimer' 			fld_id='NoAnswerTimer' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaMusicOnHold' 			fld_id='EnaMusicOnHold' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaDistinctiveRing' 		fld_id='EnaDistinctiveRing' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaMusicTone' 				fld_id='EnaMusicTone' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LogoutReasonCode' 			fld_id='LogoutReasonCode' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaSMCDR' 					fld_id='EnaSMCDR' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='EnaUser2UserRestr' 		fld_id='EnaUser2UserRestr' 		default='' 			type='string' 	length='0' 		inout='=' />
+		
+		
+		<field name='TITLE13' 					fld_id='TITLE13' 				default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='TempPoolRateHigh' 		    fld_id='TempPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='TMRPoolRateHigh' 		    fld_id='TMRPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CallPoolRateHigh' 		    fld_id='CallPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='RegPoolRateHigh' 		    fld_id='RegPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='IndlgPoolRateHigh' 		fld_id='IndlgPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='OutdlgPoolRateHigh' 		fld_id='OutdlgPoolRateHigh' 	default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CSTAPoolRateHigh' 			fld_id='CSTAPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='UDLGPoolRateHigh' 			fld_id='UDLGPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LSRateHigh' 				fld_id='LSRateHigh' 			default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='VectPoolRateHigh' 			fld_id='VectPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MsPoolRateHigh' 			fld_id='MsPoolRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='MsChanRateHigh' 			fld_id='MsChanRateHigh' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='LongTermCallMin' 			fld_id='LongTermCallMin' 		default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='CheckTrunkByTimer' 		fld_id='CheckTrunkByTimer' 		default='' 			type='string' 	length='0' 		inout='=' />
+		
+		<field name='LINE5' 					fld_id='LINE5' 					default='' 			type='skip' 	length='0' 		inout='' />
+		<field name='RESULT' 					fld_id='RESULT' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='COMPLETED' 				fld_id='COMPLETED' 				default='' 			type='string' 	length='0' 		inout='=' />
+		<field name='BLANK2' 					fld_id='BLANK2' 				default='' 			type='skip' 	length='0' 		inout='' />
+	</response>
+</service>
