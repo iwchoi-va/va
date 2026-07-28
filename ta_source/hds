@@ -1,0 +1,128 @@
+#!/bin/bash
+
+# hds - Startup script for hansol TA server
+
+start()
+{
+	echo -n $"Start hansol TA: "
+	nohup python dsmain.py >/dev/null 2>&1 &
+	RETVAL=$?
+	if [ $RETVAL -eq 0 ]
+	then
+		echo "Startup success."
+	else
+		echo "Startup failed."
+	fi
+	echo
+}
+
+stop()
+{
+	echo -n $"Stopping hansol TA: "
+    #killproc "$PIDFILEPATH"
+	#kill $(pgrep -f dsmain)
+	local pid=$(pgrep -f dsmain)
+	kill -TERM $pid > /dev/null 2>&1
+	#killproc "$(pgrep -f dsmain)"
+	if [ $? -eq 0 ]
+	then
+		echo "Termination success."
+	else
+		echo "Termination failed."
+	fi
+	echo
+}
+
+restart()
+{
+	stop
+	start
+}
+
+reload()
+{
+	#local pid_file="$PIDFILEPATH"
+	#local pid=$(getprocessid "$pid_file")
+	local pid=$(pgrep -f dsmain)
+	kill -USR1 $pid > /dev/null 2>&1
+}
+
+retrain()
+{
+	local pid_file="$PIDFILEPATH"
+	local pid=$(getprocessid "$pid_file")
+
+	kill -USR2 $pid > /dev/null 2>&1
+}
+
+getprocessid()
+{
+	local pid=`cat "$1" | awk '{print $0}'`
+	echo "$pid"
+}
+
+killproc()
+{
+	#local pid_file=$1
+	#local pid=$(getprocessid "$pid_file")
+	local pid=$1
+	local -i x=0
+	local -i delay=60
+	local -i duration=5
+
+	kill -TERM $pid > /dev/null 2>&1
+	sleep 20000
+	while [ $x -le $delay ]
+	do
+		if ps -p $pid > /dev/null
+		then
+			echo
+			echo "$pid is running. Retry termination process"
+		else
+			return 1
+		fi
+		sleep $duration
+		x=$(( $x + $duration))
+	done
+
+	kill -KILL $pid > /dev/null 2>&1
+	sleep 10000
+
+	local RC=$?
+	if ps -p $pid > /dev/null
+	then
+		RC=0 #failed to stop server
+	else
+		RC=1 #success
+	fi
+
+	return $RC
+}
+
+RETVAL=0
+
+case "$1" in
+  start)
+    start
+	;;
+  stop)
+	stop
+	;;
+  #restart|reload)
+  restart)
+    restart
+	;;
+  reload)
+    reload
+	;;
+  retrain)
+    retrain
+	;;
+
+  *)
+    #echo "Usage: $0 {start|stop|restart|reload|retrain}"
+	echo "Usage: $0 {start|stop|restart}"
+	RETVAL=1
+esac
+
+exit $RETVAL
